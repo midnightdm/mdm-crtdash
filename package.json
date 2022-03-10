@@ -1,0 +1,23 @@
+{
+  "name": "mdm-crt-phplite",
+  "version": "1.0.0",
+  "description": "Widescreen dashboard of CRT live data in vanilla JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.66.0",
+    "webpack-cli": "^4.9.1"
+  },
+  "dependencies": {
+    "firebase": "^9.6.3",
+    "firebase-tools": "^10.2.1",
+    "javascript-time-ago": "^2.3.10",
+    "remove-strict-webpack-plugin": "^0.1.2"
+  }
+}
