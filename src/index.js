@@ -156,7 +156,10 @@ async function outputAllVessels() {
         `<div class="list-wrap">
           <h4 class="map-label">${obj.mapLabel}</h4>
           <h4 class="tile-title">${obj.name}</h4> 
-          <img class="dir-img" src="${obj.dirImg}"/>              
+          <div class="dir-container">
+            <img class="dir-img" src="${obj.dirImg}"/>          
+            <span class="speed">${Math.round(obj.speed)}</span>
+          </div>            
         </div>
         <h5>${obj.liveLocation}</h5>
       </li>`;
@@ -165,12 +168,19 @@ async function outputAllVessels() {
   } else {
     for(let vessel in liveScans) {
       let obj = liveScans[vessel];
+      let spd = "";
+      if(obj.dir !=="undetermined") {
+        spd = Math.round(obj.speed);
+      }
       allVesselsOutput+= 
       `<li>
         <div class="list-wrap">
           <h4 class="map-label">${obj.mapLabel}</h4>
           <h4 class="tile-title">${obj.name}</h4> 
-          <img class="dir-img" src="${obj.dirImg}"/>              
+          <div class="dir-container">
+            <img class="dir-img" src="${obj.dirImg}"/>
+            <span class="speed">${spd}</span>
+          </div>               
         </div>
         <h5>${obj.liveLocation}</h5>
       </li>`;
