@@ -283,7 +283,7 @@ async function initLiveScan() {
     //Events below to fire on specific intervals (Modulas % determines multiples)
     
     //Advance moving vessel icons every second predictivly
-    predictMovement() 
+    //predictMovement() 
 
     //Step transponder list scroll every 10 seconds
     if(liveScans.length > 0 && liveScanModel.tock%10==0) {
