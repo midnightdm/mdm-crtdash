@@ -1,155 +1,19 @@
 body {
-  
   margin: 0;
   padding: 0;
   font-family: 'Merriweather Sans', sans-serif;
 }
 
-@media (max-width: 1899px) {
-  :root {
-    /* FOR h720 x w1280 SCREEN */
-    --quad-ht: 300px;
-    --quad-wd: 533px;
-    --list-ht: 600px;
-    --list-wd: 214px;
-    --hbar-wd: 1280px;
-    --hbar-ht:   60px;
-    --tbar-wd: 525px; /* 99% of quad-wd */
-    --dtbl-ht: 266px; /* 88.8% of quad-ht */
-    --dtbl-wd: 333px; /* 62.5% of quad-wd */
-    --dmap-ht: 133px; /* 44.4% of quad-ht */
-    --dmap-wd: 166px; /* 31.259% of quad-wd */
-    --evul-ht: 266px; /* 88.8% of quad-ht */
-    --evul-wd: 266px; /* 50% of quad-wd */
-    --evli-wd: 253px; /* 95% of evul-wd */
-    --imgl-ht:  63px;
-    --imgl-wd: 132px;
-    --h1-logo: 1.98rem;
-    --h1-lvdt: 3rem;
-    --gcol-a:  533px;
-    --gcol-b:  533px;
-    --gcol-c:  214px;
-    --h2-top:   60px; /*Where Map label floats */
-    --h4evt-f: 0.9rem; /* Event h4 Size */  
-    --h4evt-s: 0.5rem; /*  Event Line Space */
-    --evt-pf: 0.6rem; /* Event <p> font size */
-    --h4vsli: 1.2rem;  /* Vessel List Title */
-    --news-pf: 17pt; /* News text size */
-    --h3wpnt-f: .6rem; /* Waypoint Text size */
-    --primary-bg: black;
-  }
+h4.map-label {
+  padding: 5px 8px;
+  font-size: 10px;
+}
 
-  h4.map-label {
-    padding: 5px 8px;
-    font-size: 10px;
-  }
-
-  .list-wrap {
-    padding: 4px 0.5rem;
-  }
+.list-wrap {
+  padding: 4px 0.5rem;
 }
 
 
-@media (min-width: 1900px) {
-  :root {
-    /* FOR h1080 x w1920 SCREEN */
-    --quad-ht: 450px;
-    --quad-wd: 800px; 
-    --list-ht: 900px;
-    --list-wd: 320px;
-    --hbar-wd: 1920px;
-    --hbar-ht:   90px; 
-    --tbar-wd: 792px; /* 99% of quad-wd */
-    --dtbl-ht: 400px; /* 88.8% of quad-ht */
-    --dtbl-wd: 500px; /* 62.5% of quad-wd */
-    --dmap-ht: 200px; /* 44.4% of quad-ht */
-    --dmap-wd: 250px; /* 31.25% of quad-wd */
-    --evul-ht: 400px; /* 88.8% of quad-ht */
-    --evul-wd: 400px; /* 50% of quad-wd*/
-    --evli-wd: 380px; /* 95% of evul-wd */
-    --imgl-ht:  95px;
-    --imgl-wd: 200px;
-    --h1-logo: 3rem;
-    --h1-lvdt: 50pt;
-    --gcol-a:  800px;
-    --gcol-b:  800px;
-    --gcol-c:  320px;
-    --h2-top:   91px; /*Where Map label floats */
-    --h4evt-f: 1.2rem; /* Event h4 Size */  
-    --h4evt-s: 1rem; /*  Event Line Space */
-    --evt-pf: 1rem; /* Event <p> font size */
-    --h4vsli: 2rem;  /* Vessel List Title */
-    --news-pf: 2.2rem; /* News text size */
-    --h3wpnt-f: 1.2rem; /* Waypoint Text size */
-    --primary-bg: black;
-  }
-
-  h4.map-label {
-    padding: 5px 8px;
-    font-size: 15px;
-  }
-
-  .list-wrap {
-    padding: 10px 0.5rem;
-  }
-}
-/*
-
-@media (min-width: 3000px) {
-  :root {
-    /* FOR h2160 x w3840 SCREEN /
-    --quad-ht:  900px;
-    --quad-wd: 1600px;
-    --list-ht: 1800px;
-    --list-wd:  640px;
-    --hbar-wd: 3840px;
-    --hbar-ht:  180px;
-    --tbar-wd: 1584px; /* 99% of quad-wd /
-    --dtbl-ht:  800px; /* 88.8% of quad-ht /
-    --dtbl-wd: 1000px; /* 62.5% of quad-wd /
-    --dmap-ht:  400px; /* 44.4% of quad-ht /
-    --dmap-wd:  500px; /* 31.259% of quad-wd /
-    --evul-ht:  800px; /* 88.8% of quad-ht /
-    --evul-wd:  800px; /* 50% of quad-wd /
-    --evli-wd:  760px; /* 95% of evul-wd /
-    --imgl-ht:  190px;
-    --imgl-wd:  400px;
-    --h1-logo: 6rem;
-    --h1-lvdt: 7rem;
-    --gcol-a:  1600px;
-    --gcol-b:  1600px;
-    --gcol-c:   640px;
-    --h2-top:   180px; /*Where Map label floats /
-    --h4evt-f: 1.8rem; /* Event h4 Size /  
-    --h4evt-s: 1rem; /*  Event Line Space /
-    --evt-pf: 1.6rem; /* Event <p> font size /
-    --h4vsli: 2rem;  /* Vessel List Title /
-    --news-pf: 4rem; /* News text size /
-    --h3wpnt-f: 2rem; /* Waypoint Text size /
-    --primary-bg: black;
-  }
-
- 
-
-  h4.map-label {
-    padding: 5px 8px;
-    font-size: 15px;
-  }
-
-  .list-wrap {
-    padding: 10px 0.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-  }
-  body {
-    max-width: 3840px;
-    max-height: 2160px;
-  }
-}
-
- */
 
 .grid-container {
   display: grid;
@@ -378,7 +242,21 @@ h4.map-label {
   margin-right: auto;
 }
 
+.list-wrap div.dir-container {
+  position: relative;
+  text-align: center;
+}
 
+.list-wrap span.speed {
+  color: white;
+  font-size: small;
+  display: inline-block; 
+  position: absolute; 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+}
 
 
 /* Data frame styling*/

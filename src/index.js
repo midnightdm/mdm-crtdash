@@ -14,7 +14,7 @@ TimeAgo.addDefaultLocale(en)
 const timeAgo = new TimeAgo('en-US')
 
 //Keypress event listeners
-let keysPressed = {};
+var keysPressed = {};
 document.addEventListener('keydown', (event) => {
   keysPressed[event.key] = true;
 
@@ -270,7 +270,7 @@ function outputWaypoint() {
 }
 
 
-async function initLiveScan() {  
+async function initLiveScan(rotateTransponders=true) {  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
    * Begin a 60 sec master clock for loop control    */
   setInterval( ()=> {
@@ -296,7 +296,7 @@ async function initLiveScan() {
     //predictMovement() 
 
     //Step transponder list scroll every 10 seconds
-    if(liveScans.length > 0 && liveScanModel.tock%10==0) {
+    if(rotateTransponders && liveScans.length > 0 && liveScanModel.tock%10==0) {
       stepTransponderView()
     } 
 
