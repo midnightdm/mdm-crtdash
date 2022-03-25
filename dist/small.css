@@ -23,13 +23,10 @@ h4.map-label {
 }
 
 
-#map1 {
-  grid-column-start: 1;
-  grid-column-end: 2;
-  grid-row-start:2;
-  grid-row-end:3;
-  min-height: var(--quad-ht); max-height: var(--quad-ht);
-  min-width:  var(--quad-wd); max-width:  var(--quad-wd);; 
+#map {
+  height: 0vh;
+  width: 0vw;
+  visibility: hidden;
 }
 #vessdata {
   background-color: var(--primary-bg);
@@ -183,6 +180,15 @@ h2 {
 
 
 /* Vessel List styling */
+span.waypoint {
+  display:inline-block;
+  width: 100%;
+  background-color: red;
+  color: rgb(245, 230, 230);
+  margin: 2px; 
+  padding: 2px;
+}
+
 img.dir-img {
   margin-left: auto;
   margin-right: auto;
@@ -284,13 +290,7 @@ h4.map-label {
 div#img-frame img {
   max-width: var(--dmap-wd); overflow: hidden;
 }
-#map2 {
-  grid-column-start: 2;
-  grid-column-end: 3;
-  grid-row-start:2;
-  grid-row-end:3;
-  width: var(--dmap-wd);  height: var(--dmap-ht);
-}
+
 
 ul#all-vessels {  
   list-style-type: none;
