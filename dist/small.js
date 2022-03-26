@@ -44,7 +44,7 @@ function LiveScanModel() {
   self.numVessels    = 0;
   prevWaypoint       = {};
   prevVpubID         = 0;
-  self.selectedView  = {view: "viewList", idx: null };
+  self.selectedView  = {view: "list", idx: null };
   self.focusPosition = {lat: 41.857202, lng:-90.184084};
   self.nowPage       = "list";
   self.lastPage      = "list";
@@ -53,7 +53,8 @@ function LiveScanModel() {
   self.voiceOn       = false;  
 
   //Page elements
-  self.pageInsert    = document.getElementById("pageInsert");
+  self.pageInsert    = document.getElementById("page-insert");
+  self.vessList      = document.getElementById("vess-list");
   self.allVessels    = document.getElementById("all-vessels");
   self.totVessels    = document.getElementById("total-vessels");
   self.mapDiv        = document.getElementById("map");
@@ -167,7 +168,7 @@ function LiveScanModel() {
   self.initalizeMap = function() {
     //create maps
     self.map = new google.maps.Map(
-      document.getElementById("map"), 
+      self.mapDiv, 
       {
         zoom: 12, 
         center: {lat: 41.85002, lng:-90.184084}, 
@@ -297,27 +298,69 @@ function LiveScanModel() {
     initLiveScan();  
   };
 
-  self.goToPage = function(index, name=null) {
+  self.goToPage = function(name="list", index) {
+    console.log("goToPage()", name, index);
+    let lastView;
     switch(name) {
       case "detail": {
-        var lastView = self.nowPage;
-        self.selectedView( {view: 'viewDetail', idx: index} );
-        self.lastPage = lastView;
-        self.nowPage = 'detail';
+        // lastView = self.nowPage;
+        self.selectedView = {view: 'detail', idx: index};
+        // self.lastPage = lastView;
+        // self.nowPage = 'detail';
+        self.outputDetail(index);
         break;
       }
       case "list": {
-        var lastView = self.nowPage;
-        self.selectedView = {view: 'viewList', idx: index} ;
-        self.lastPage = lastview;
-        self.nowPage = 'list';
+        // lastView = self.nowPage;
+        self.selectedView = {view: 'list', idx: index} ;
+        // self.lastPage = lastview;
+        // self.nowPage = 'list';
+        self.outputAllVessels();
         break;
       }
     }
   };
 
+  self.outputDetail = function(index) {
+    self.mapDiv.classList.add("active");
+    self.vessList.classList.remove("active");
+    let obj = self.liveScans[index];
+    let detailOutput = 
+      
+    `<ul>
+        <li>
+        <div class="list-wrap">
+          <h4 class="map-label">${obj.mapLabel}</h4>
+          <button onClick="liveScanModel.goToPage('list')">LIST</button>
+          <h4 class="tile-title">${obj.name}</h4> 
+          <div class="dir-container">
+            <img class="dir-img" src="${obj.dirImg}"/>
+            <span class="speed">${obj.spd}</span>
+          </div>               
+        </div>
+        <div class="data-cont grid2-container">
+          <div id="data-table">
+            <ul id="selected-vessel">
+              <li class="dataPoint"><span class="th">TYPE:</span> <span class="td">${obj.type}</span></li>
+              <li class="dataPoint"><span class="th">MMSI #:</span> <span class="td">${obj.id}</span></li>
+              <li class="dataPoint"><span class="th">COURSE:</span> <span class="td">${obj.course}°</span></li>
+              <li class=dataPoint><span class=th>SPEED:</span> <span class=td>${obj.speed} Knots</span></li>
+              <li class="dataPoint"><span class="th">DIRECTION:</span> <span class="td dir">${obj.dir}</span>  </li>
+              <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">${obj.lat.toFixed(7)}, ${obj.lng.toFixed(7)}</span>  
+              </li>
+            </ul>
+          </div>
+          <div id="img-frame"><img id="data-image" src="${obj.imageUrl}"></div><br>
+        </div>
+        <h5>${obj.liveLocation}</h5>
+        </li>
+    </ul>`;
+    self.pageInsert.innerHTML = detailOutput;
+  };
 
   self.outputAllVessels = async function() {
+    self.mapDiv.classList.remove("active");
+    self.vessList.classList.add("active");
     let allVesselsOutput = "", i;
     //Order vessels by river segment
     let segments = {s0:[], s1:[], s2:[], s3:[], s4:[]};
@@ -345,6 +388,7 @@ function LiveScanModel() {
         `<li>
           <div class="list-wrap">
             <h4 class="map-label">${obj.mapLabel}</h4>
+            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
             <h4 class="tile-title">${obj.name}</h4> 
             <div class="dir-container">
               <img class="dir-img" src="${obj.dirImg}"/>
@@ -364,6 +408,7 @@ function LiveScanModel() {
         `<li>
           <div class="list-wrap">
             <h4 class="map-label">${obj.mapLabel}</h4>
+            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
             <h4 class="tile-title">${obj.name}</h4> 
             <div class="dir-container">
               <img class="dir-img" src="${obj.dirImg}"/>
@@ -383,6 +428,7 @@ function LiveScanModel() {
         `<li>
           <div class="list-wrap">
             <h4 class="map-label">${obj.mapLabel}</h4>
+            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
             <h4 class="tile-title">${obj.name}</h4> 
             <div class="dir-container">
               <img class="dir-img" src="${obj.dirImg}"/>
@@ -402,6 +448,7 @@ function LiveScanModel() {
         `<li>
           <div class="list-wrap">
             <h4 class="map-label">${obj.mapLabel}</h4>
+            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
             <h4 class="tile-title">${obj.name}</h4> 
             <div class="dir-container">
               <img class="dir-img" src="${obj.dirImg}"/>
@@ -421,6 +468,7 @@ function LiveScanModel() {
         `<li>
           <div class="list-wrap">
             <h4 class="map-label">${obj.mapLabel}</h4>
+            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
             <h4 class="tile-title">${obj.name}</h4> 
             <div class="dir-container">
               <img class="dir-img" src="${obj.dirImg}"/>
@@ -433,7 +481,8 @@ function LiveScanModel() {
     }       
     self.totVessels.innerHTML = liveScanModel.liveScans.length+" Vessels"; //Total Vessels Title
     self.allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
-  }
+    self.pageInsert.innerHTML = ""
+;  }
   
 
 }
@@ -586,7 +635,7 @@ async function initLiveScan(rotateTransponders=true) {
           //Create & push
           if(key==-1) {
             obj = liveScanModel.mapper(new LiveScan(), dat, true);
-            console.log("new obj:", obj);
+            obj.key = liveScanModel.liveScans.length;
             liveScanModel.liveScans.push(obj);
             //len = await fetchPassagesList()
             //outputSelVessel(); // LET CLOCK DO ALL UPDATES
@@ -603,7 +652,7 @@ async function initLiveScan(rotateTransponders=true) {
         });
         
         //Write to page if viewList is active
-        if(liveScanModel.selectedView.view=="viewList") {
+        if(liveScanModel.selectedView.view=="list") {
           liveScanModel.outputAllVessels();
         }
 

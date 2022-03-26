@@ -28,29 +28,37 @@ h4.map-label {
   width: 0vw;
   visibility: hidden;
 }
+
+#map.active {
+  margin: .1rem;
+  height: 50vh;
+  width: 98vw;
+  visibility: visible;
+}
+
 #vessdata {
-  background-color: var(--primary-bg);
+  background-color: black;
   grid-column-start: 2;
   grid-column-end: 3;
   grid-row-start:2;
   grid-row-end:3;
-  min-height: var(--quad-ht); max-height: var(--quad-ht);
-  min-width:  var(--quad-wd); max-width:  var(--quad-wd);
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64.vw;
   text-align: center;
 }
 
 #vessevnt {
-  background-color: var(--primary-bg);
+  background-color: black;
   grid-column-start: 1;
   grid-column-end: 2;
   grid-row-start:3;
   grid-row-end:4;
-  min-height: var(--quad-ht); max-height: var(--quad-ht);
-  min-width:  var(--quad-wd); max-width:  var(--quad-wd);
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw;
   text-align: center;
 }
 #waypoint {
-  background-color: var(--primary-bg);
+  background-color: black;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: bottom;
@@ -58,62 +66,61 @@ h4.map-label {
   grid-column-end: 3;
   grid-row-start:3;
   grid-row-end:4;
-  min-height: var(--quad-ht); max-height: var(--quad-ht);
-  min-width:  var(--quad-wd); max-width:  var(--quad-wd);
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw;
   text-align: center;
   position: relative;
 }
 
 #waypoint-inner h3 {
-  font-size: var(--h3wpnt-f);
+  font-size: 0.6rem;
 }
 
 
-#vesslist {
-  background-color: var(--primary-bg);
-  grid-column-start: 3;
-  grid-column-end:   4;
-  grid-row-start:    2;
-  grid-row-end:      4;
-  min-height: var(--list-ht); max-height: var(--list-ht);
-  min-width:  var(--list-wd); max-width:  var(--list-wd);
+#vess-list {
+  visibility: hidden;
+  background-color: rgba(228, 225, 225, 0.836);
+  /* min-height: 83.33vh; max-height: 86.33vh;
+    min-width:  16.72vw; max-width:  16.72vw; */
   text-align: center;
 }
 
+#vess-list.active {
+  visibility: visible;
+}
 
 #titlebar {
-  background-color: var(--primary-bg);
+  background-color: black;
   grid-column-start: 1;
   grid-column-end: 4;
   grid-row-start: 1;
   grid-row-end: 2;
-  min-height: var(--hbar-ht); max-height: var(--hbar-ht);
-  min-width:  var(--hbar-wd); max-width:  var(--hbar-wd);
+  min-height: 8.33vh; max-height: 8.33vh;
+  min-width:  100vw; max-width:  100vw;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   
 }
 #newsbar {
-  background-color: var(--primary-bg);
+  background-color: black;
   grid-column-start: 1;
   grid-column-end: 4;
   grid-row-start:4;
   grid-row-end:5;
   text-align: center;
-  min-height: var(--hbar-ht); max-height: var(--hbar-ht);
-  min-width:  var(--hbar-wd); max-width:  var(--hbar-wd);
+  min-height: 8.33vh; max-height: 8.33vh;
+  min-width:  100vw; max-width:  100vw;
 }
 
 /* Label that's outside the Flow  */
 h2#overlay {
   position: absolute;
-  top: var(--h2-top);
+  top: 8.33vh;
   text-align: center;
-  width: var(--tbar-wd);
-  min-width: var(--tbar-wd); max-width: var(--tbar-wd);
+  width: 41.02vw;
+  min-width: 41.02vw; max-width: 41.02;
   margin: 2px 6px;
-  
 }
 
 
@@ -121,12 +128,12 @@ h2#overlay {
 #logo-img {   
   position: relative;
   z-index: 95;
-  width: var(--imgl-wd);
-  height: var(--imgl-ht); 
+  width: 10.31vw;
+  height: 8.75vh; 
 }
 
 .logo h1 {     
-  font-size: var(--h1-logo);
+  font-size: 1.98rem;
   color: #000;
   padding: 5px;
   border-radius: 8px;
@@ -144,10 +151,10 @@ h2#overlay {
   margin: 5px;
 }
 h1 {
-  font-size: var(--h1-lvdt);
+  font-size: 2rem;
   font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  color: white;
-  transform: translateY(-35px);
+  color:black;
+  
 }
 
 
@@ -172,7 +179,7 @@ h2 {
 /* Text in newsbar */
 #newstext {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: var(--news-pf);
+  font-size: 17pt;
   color: white;
 }
 
@@ -182,6 +189,7 @@ h2 {
 /* Vessel List styling */
 span.waypoint {
   display:inline-block;
+  letter-spacing: .4rem;
   width: 100%;
   background-color: red;
   color: rgb(245, 230, 230);
@@ -196,9 +204,9 @@ img.dir-img {
   filter: drop-shadow(2px 2px 4px #4444dd);
 }
 .listMode ul {
-  padding: 0px 5px;
-  max-width: 30rem;
-  max-height: var(--list-ht);
+  padding: 0px .2rem;
+  max-width: 98vw;
+  /*  max-height: var(--list-ht); */
   overflow: hidden;
 }
 .listMode ul li {
@@ -267,28 +275,29 @@ h4.map-label {
 
 /* Data frame styling*/
 .grid2-container {
+  background-color: black;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  grid-gap: 5px;
-  padding: 5px;  
+  grid-gap: .1rem;
+  padding: .1rem;  
 }
 #data-table {
   grid-column-start: 1;
   grid-column-end: 2;
   grid-row-start:1;
   grid-row-end:3;
-  width: var(--dtbl-wd);  height: var(--dtbl-ht);
+  width: 60vw;  height: auto;
 }
 #img-frame {
   grid-column-start: 2;
   grid-column-end: 3;
-  grid-row-start:1;
-  grid-row-end:  2;
-  background-color: var(--primary-bg);
-  width: var(--dmap-wd);  height: var(--dmap-ht);
+  grid-row-start:2;
+  grid-row-end:  3;
+  background-color: black;
+  width: 25vw;  height: auto;
 }
 div#img-frame img {
-  max-width: var(--dmap-wd); overflow: hidden;
+  max-width: 100%; overflow: hidden;
 }
 
 
@@ -335,12 +344,12 @@ ul#all-vessels {
 #event-passenger {
   grid-column-start: 1;
   grid-column-end: 2;
-  width: var(--evul-wd);  height: var(--evul-ht);
+  width: 20vw;  height: 20vh;
 }
 #event-other {
   grid-column-start: 2;
   grid-column-end: 3;
-  width: var(--evul-wd);  height: var(--evul-ht);
+  width: 20vw;  height: 20vh;
 }
 
 li.card {
@@ -385,7 +394,7 @@ li.card h4 time {
 li.card p {
   color: black;
   font-family: Arial;
-  font-size: var(--evt-pf);
+  font-size: 0.6rem;
   margin-top: 0px;
   margin-bottom: 2px;
   padding: 0px 0px 0px 2px;
