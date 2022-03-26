@@ -356,6 +356,8 @@ function LiveScanModel() {
         </li>
     </ul>`;
     self.pageInsert.innerHTML = detailOutput;
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
   };
 
   self.outputAllVessels = async function() {
