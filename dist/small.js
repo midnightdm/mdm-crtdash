@@ -325,6 +325,7 @@ function LiveScanModel() {
     self.mapDiv.classList.add("active");
     self.vessList.classList.remove("active");
     let obj = self.liveScans[index];
+    console.log("detail index:", index);
     let detailOutput = 
       
     `<ul>
@@ -483,10 +484,8 @@ function LiveScanModel() {
     }       
     self.totVessels.innerHTML = liveScanModel.liveScans.length+" Vessels"; //Total Vessels Title
     self.allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
-    self.pageInsert.innerHTML = ""
-;  }
-  
-
+    self.pageInsert.innerHTML = "";
+  }
 }
 
 
@@ -656,6 +655,8 @@ async function initLiveScan(rotateTransponders=true) {
         //Write to page if viewList is active
         if(liveScanModel.selectedView.view=="list") {
           liveScanModel.outputAllVessels();
+        } else {
+          liveScanModel.outputDetail(liveScanModel.selectedView.idx);
         }
 
       } 
