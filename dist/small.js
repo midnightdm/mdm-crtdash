@@ -299,21 +299,20 @@ function LiveScanModel() {
   };
 
   self.goToPage = function(name="list", index) {
-    console.log("goToPage()", name, index);
+    //console.log("goToPage()", name, index);
     let lastView;
     switch(name) {
       case "detail": {
         // lastView = self.nowPage;
         self.selectedView = {view: 'detail', idx: index};
-        // self.lastPage = lastView;
-        // self.nowPage = 'detail';
+        self.map.setCenter(self.liveScans[index].position);
+        self.map.setZoom(14);
         self.outputDetail(index);
         break;
       }
       case "list": {
         // lastView = self.nowPage;
         self.selectedView = {view: 'list', idx: index} ;
-        // self.lastPage = lastview;
         // self.nowPage = 'list';
         self.outputAllVessels();
         break;
@@ -325,7 +324,7 @@ function LiveScanModel() {
     self.mapDiv.classList.add("active");
     self.vessList.classList.remove("active");
     let obj = self.liveScans[index];
-    console.log("detail index:", index);
+    //console.log("detail index:", index);
     let detailOutput = 
       
     `<ul>
