@@ -4,8 +4,6 @@ Contains all code for static page tiny.html which customizes CRT data for KiOS o
 
  *   *   *   *   *   *   *   *   *   *
 
-
-
 -- Begin class definitions --
 */
 
@@ -14,7 +12,8 @@ function LiveScanModel() {
   let self = this;
 
   //Config values
-  self.fetchUrl  = "https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
+  self.fetchUrl  = "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans";
+  //"https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
   self.tock      = 0;
 
   //Loaded data store
@@ -28,17 +27,21 @@ function LiveScanModel() {
   self.lastPage      = "list";
 
   //Page elements
-  self.pageInsert    = document.getElementById("page-insert");
-  self.vessList      = document.getElementById("vess-list");
-  self.allVessels    = document.getElementById("all-vessels");
-  self.totVessels    = document.getElementById("total-vessels");
-  //self.mapDiv        = document.getElementById("map");
+  self.pageInsert    = $("#page-insert");
+  self.vessList      = $("#vess-list");
+  self.allVessels    = $("#all-vessels");
+  self.totVessels    = $("#total-vessels");
+  
   
   //Method assigns data to Livescan objects
   self.mapper = function(o, dat, isNew) {
     o.transponderTS  = parseInt(dat.transponderTS);
-    o.lat  = dat.liveLastLat;
-    o.lng  = dat.liveLastLon;
+    o.lat  = dat.liveLastLat || "";
+    o.lng  = dat.liveLastLon || "";
+    if(isNew) {
+      o.lat = dat.liveInitLat || "";
+      o.lng = dat.liveInitLon || "";
+    }
     o.id   = parseInt(dat.liveVesselID);
     o.name = dat.liveName;
     o.liveLocation = dat.liveLocation || "Not Calculated";
@@ -81,11 +84,16 @@ function LiveScanModel() {
 
   self.outputDetail = function(index) {
     //self.mapDiv.classList.add("active");
-    self.vessList.classList.remove("active");
+    self.vessList.removeClass("active");
     let obj = self.liveScans[index];
+    obj.spd = "";
+    if(obj.dir !=="undetermined") {
+      obj.spd = Math.round(obj.speed);
+    }
+    let lat = obj.lat ==="" ? "" : obj.lat.toFixed(7);
+    let lng = obj.lng ==="" ? "" : obj.lng.toFixed(7);
     //console.log("detail index:", index);
-    let detailOutput = 
-      
+    let detailOutput =     
     `<ul>
         <li>
         <div class="list-wrap">
@@ -104,7 +112,7 @@ function LiveScanModel() {
               <li class="dataPoint"><span class="th">COURSE:</span> <span class="td">${obj.course}°</span></li>
               <li class=dataPoint><span class=th>SPEED:</span> <span class=td>${obj.speed} Knots</span></li>
               <li class="dataPoint"><span class="th">DIRECTION:</span> <span class="td dir">${obj.dir}</span>  </li>
-              <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">${obj.lat.toFixed(7)}, ${obj.lng.toFixed(7)}</span>  
+              <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">${lat}, ${lng}</span>  
               </li>
             </ul>
           </div>
@@ -113,17 +121,17 @@ function LiveScanModel() {
         <h5>${obj.liveLocation}</h5>
         </li>
     </ul>`;
-    self.pageInsert.innerHTML = detailOutput;
+    self.pageInsert.html(detailOutput);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
   };
 
   self.outputAllVessels = async function() {
     //self.mapDiv.classList.remove("active");
-    self.vessList.classList.add("active");
+    self.vessList.addClass("active");
     let allVesselsOutput = "", i;
     //Order vessels by river segment
-    let segments = {s0:[], s1:[], s2:[], s3:[], s4:[]};
+    let segments = [ [], [], [], [], [] ];
     for(let vessel in self.liveScans) {
       let obj = self.liveScans[vessel];
       obj.spd = "";
@@ -131,112 +139,46 @@ function LiveScanModel() {
         obj.spd = Math.round(obj.speed);
       }
       switch(obj.segment) {
-        case 0: { segments.s0.push(obj); break; }
-        case 1: { segments.s1.push(obj); break; }
-        case 2: { segments.s2.push(obj); break; }
-        case 3: { segments.s3.push(obj); break; }
-        case 4: { segments.s4.push(obj); break; }
+        case 0: { segments[0].push(obj); break; }
+        case 1: { segments[1].push(obj); break; }
+        case 2: { segments[2].push(obj); break; }
+        case 3: { segments[3].push(obj); break; }
+        case 4: { segments[4].push(obj); break; }
       }
     }
     //Build output string for each segment
-    
-    if(segments.s4.length) {
-      segments.s4 = segments.s4.sort(compareSeg)
-      for(i=0; i<segments.s4.length; i++) {
-        obj = segments.s4[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">DATA</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
+    const maplines = [
+      ``,
+      `<li><span class="waypoint">3 SOUTH</span></li>`,
+      `<li><span class="waypoint">RR  BRIDGE</span></li>`,
+      `<li><span class="waypoint">LOCK 13</span></li>`,
+      `<li><span class="waypoint">3 NORTH</span></li>`
+    ];
+    for(i=4; i>-1; i--) {
+      if(segments[i].length) {
+        segments[i] = segments[i].sort(compareSeg);
+        for(j=0; j<segments[i].length; j++) {
+          obj = segments[i][j];
+          allVesselsOutput+= 
+          `<li>
+            <div class="list-wrap">
+              <h4 class="map-label">${obj.mapLabel}</h4>
+              <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
+              <h4 class="tile-title">${obj.name}</h4> 
+              <div class="dir-container">
+                <img class="dir-img" src="${obj.dirImg}"/>
+                <span class="speed">${obj.spd}</span>
+              </div>               
+            </div>
+            <h5>${obj.liveLocation}</h5>
+          </li>`;
+        }
       }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">3 NORTH</span></li>`;
-    if(segments.s3.length) {
-      segments.s3 = segments.s3.sort(compareSeg)
-      for(i=0; i<segments.s3.length; i++) {
-        obj = segments.s3[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">DATA</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">LOCK 13</span></li>`;
-    if(segments.s2.length) {
-      segments.s2 = segments.s2.sort(compareSeg)
-      for(i=0; i<segments.s2.length; i++) {
-        obj = segments.s2[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">DATA</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">RR  BRIDGE</span></li>`;
-    if(segments.s1.length) {
-      segments.s1 = segments.s1.sort(compareSeg)
-      for(i=0; i<segments.s1.length; i++) {
-        obj = segments.s1[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">DATA</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">3 SOUTH</span></li>`;
-    if(segments.s0.length) {
-      segments.s0 = segments.s0.sort(compareSeg)
-      for(i=0; i<segments.s0.length; i++) {
-        obj = segments.s0[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">DATA</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
+      allVesselsOutput+= maplines[i];
     }       
-    self.totVessels.innerHTML = liveScanModel.liveScans.length+" Vessels"; //Total Vessels Title
-    self.allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
-    self.pageInsert.innerHTML = "";
+    self.totVessels.html(liveScanModel.liveScans.length+" Vessels"); //Total Vessels Title
+    self.allVessels.html(allVesselsOutput);     //List of All transponders in range
+    self.pageInsert.html("");
   }
 }
 
@@ -352,12 +294,10 @@ class LiveScan {
 /* * * * * * * * *
 * Functions  
 */
-async function initLiveScan(rotateTransponders=true) {  
+function initLiveScan() {  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
    * Begin a 60 sec master clock for loop control    */
   setInterval( async ()=> {
-    //Advance clock every 1 sec
-    liveScanModel.tock++
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
@@ -366,18 +306,8 @@ async function initLiveScan(rotateTransponders=true) {
 
     //Get livescan transponders every 20 sec
     if(liveScanModel.tock%20==0) {
-      const myHeaders = new Headers({
-        'Content-Type': 'application/json'
-      });
-      
-      let response = await fetch(liveScanModel.fetchUrl,  {
-        headers: myHeaders
-      });
-      if(response.status===200) {
-        let data = await response.json();
+      $.getJSON(liveScanModel.fetchUrl, {}, function(data) {
         let key, obj, len;
-        
-       
         data.forEach( (dat) => {
           if(!liveScanModel.liveScans.length){
             key = -1;
@@ -410,14 +340,100 @@ async function initLiveScan(rotateTransponders=true) {
         } else {
           liveScanModel.outputDetail(liveScanModel.selectedView.idx);
         }
+      });  
+      
+      // const myHeaders = new Headers({
+      //   'Content-Type': 'application/json'
+      // });
+      
+      // let response = await fetch(liveScanModel.fetchUrl,  {
+      //   headers: myHeaders
+      // });
+      // if(response.status===200) {
+      //   let data = await response.json();
+      //   let key, obj, len;
+        
+       
+      //   data.forEach( (dat) => {
+      //     if(!liveScanModel.liveScans.length){
+      //       key = -1;
+      //     } else {
+      //       key = getKeyOfId(liveScanModel.liveScans, dat.liveVesselID);
+      //     }
+          
+      //     //Create & push
+      //     if(key==-1) {
+      //       obj = liveScanModel.mapper(new LiveScan(), dat, true);
+      //       obj.key = liveScanModel.liveScans.length;
+      //       liveScanModel.liveScans.push(obj);
+      //       //len = await fetchPassagesList()
+      //       //outputSelVessel(); // LET CLOCK DO ALL UPDATES
+      //     }
+      //     //Find & Update
+      //     else {
+      //       liveScanModel.liveScans[key] = liveScanModel.mapper(liveScanModel.liveScans[key], dat, false)
+      //       //Has num of vessels changed?
+      //       if(liveScanModel.liveScans.length != liveScanModel.numVessels) {
+      //         //Store new vessels quantity
+      //         liveScanModel.numVessels = liveScanModel.liveScans.length;              
+      //       }
+      //     }  
+      //   });
+        
+      //   //Write to page if viewList is active
+      //   if(liveScanModel.selectedView.view=="list") {
+      //     liveScanModel.outputAllVessels();
+      //   } else {
+      //     liveScanModel.outputDetail(liveScanModel.selectedView.idx);
+      //   }
 
-      } 
+      // } 
     }
+    //Advance clock every 1 sec
+    liveScanModel.tock++
   }, 1000);
   /*  END OF CLOCK LOOP   */
  
 }
 
+
+function getData() {
+  $.getJSON(liveScanModel.fetchUrl, {}, function(data) {
+    let key, obj, len;
+    data.forEach( (dat) => {
+      if(!liveScanModel.liveScans.length){
+        key = -1;
+      } else {
+        key = getKeyOfId(liveScanModel.liveScans, dat.liveVesselID);
+      }
+      
+      //Create & push
+      if(key==-1) {
+        obj = liveScanModel.mapper(new LiveScan(), dat, true);
+        obj.key = liveScanModel.liveScans.length;
+        liveScanModel.liveScans.push(obj);
+        //len = await fetchPassagesList()
+        //outputSelVessel(); // LET CLOCK DO ALL UPDATES
+      }
+      //Find & Update
+      else {
+        liveScanModel.liveScans[key] = liveScanModel.mapper(liveScanModel.liveScans[key], dat, false)
+        //Has num of vessels changed?
+        if(liveScanModel.liveScans.length != liveScanModel.numVessels) {
+          //Store new vessels quantity
+          liveScanModel.numVessels = liveScanModel.liveScans.length;              
+        }
+      }  
+    });
+    
+    //Write to page if viewList is active
+    if(liveScanModel.selectedView.view=="list") {
+      liveScanModel.outputAllVessels();
+    } else {
+      liveScanModel.outputDetail(liveScanModel.selectedView.idx);
+    }
+  });  
+}
 
 
 
@@ -470,7 +486,7 @@ function initMap() {
  */
 const liveScanModel = new LiveScanModel();
 //window.initMap = initMap;
-window.initLiveScan = initLiveScan;
+//window.initLiveScan = initLiveScan;
 
 
 
@@ -480,3 +496,4 @@ window.initLiveScan = initLiveScan;
  *  ACTIONS SECTION 
  */
 initLiveScan();
+//getData()

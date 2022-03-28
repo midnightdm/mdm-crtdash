@@ -14,7 +14,8 @@ function LiveScanModel() {
   let self = this;
 
   //Config values
-  self.fetchUrl  = "https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
+  self.fetchUrl  = "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans"; 
+  //"https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
   self.clinton   = {lat: 41.857202, lng:-90.184084};
   self.red       = "#ff0000";
   self.green     = "#34A16B";
@@ -97,6 +98,8 @@ function LiveScanModel() {
 
 
     if(isNew) {
+      o.lat = dat.liveInitLat;
+      o.lng = dat.liveInitLon;
       o.mapLabel = self.lab[++self.labelIndex];
       o.mapMarker = new google.maps.Marker({
         position: new google.maps.LatLng(43.116055, -94.679274),
@@ -324,9 +327,14 @@ function LiveScanModel() {
     self.mapDiv.classList.add("active");
     self.vessList.classList.remove("active");
     let obj = self.liveScans[index];
-    //console.log("detail index:", index);
-    let detailOutput = 
-      
+    obj.spd = "";
+    if(obj.dir !=="undetermined") {
+      obj.spd = Math.round(obj.speed);
+    }
+    //Contingency for null lat/lng
+    let lat = obj.lat ==="" ? "" : obj.lat.toFixed(7);
+    let lng = obj.lng ==="" ? "" : obj.lng.toFixed(7);
+    let detailOutput =     
     `<ul>
         <li>
         <div class="list-wrap">
@@ -346,7 +354,7 @@ function LiveScanModel() {
               <li class="dataPoint"><span class="th">COURSE:</span> <span class="td">${obj.course}°</span></li>
               <li class=dataPoint><span class=th>SPEED:</span> <span class=td>${obj.speed} Knots</span></li>
               <li class="dataPoint"><span class="th">DIRECTION:</span> <span class="td dir">${obj.dir}</span>  </li>
-              <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">${obj.lat.toFixed(7)}, ${obj.lng.toFixed(7)}</span>  
+              <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">${lat}, ${lng}</span>  
               </li>
             </ul>
           </div>
@@ -363,9 +371,9 @@ function LiveScanModel() {
   self.outputAllVessels = async function() {
     self.mapDiv.classList.remove("active");
     self.vessList.classList.add("active");
-    let allVesselsOutput = "", i;
+    let allVesselsOutput = "", i, j;
     //Order vessels by river segment
-    let segments = {s0:[], s1:[], s2:[], s3:[], s4:[]};
+    let segments = [ [], [], [], [], [] ];
     for(let vessel in self.liveScans) {
       let obj = self.liveScans[vessel];
       obj.spd = "";
@@ -373,113 +381,42 @@ function LiveScanModel() {
         obj.spd = Math.round(obj.speed);
       }
       switch(obj.segment) {
-        case 0: { segments.s0.push(obj); break; }
-        case 1: { segments.s1.push(obj); break; }
-        case 2: { segments.s2.push(obj); break; }
-        case 3: { segments.s3.push(obj); break; }
-        case 4: { segments.s4.push(obj); break; }
+        case 0: { segments[0].push(obj); break; }
+        case 1: { segments[1].push(obj); break; }
+        case 2: { segments[2].push(obj); break; }
+        case 3: { segments[3].push(obj); break; }
+        case 4: { segments[4].push(obj); break; }
       }
     }
     //Build output string for each segment
-    
-    if(segments.s4.length) {
-      segments.s4 = segments.s4.sort(compareSeg)
-      for(i=0; i<segments.s4.length; i++) {
-        obj = segments.s4[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <h4 class="map-label">${obj.mapLabel}</h4>
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
+    const maplines = [
+      ``,
+      `<li><span class="waypoint">3 SOUTH</span></li>`,
+      `<li><span class="waypoint">RR  BRIDGE</span></li>`,
+      `<li><span class="waypoint">LOCK 13</span></li>`,
+      `<li><span class="waypoint">3 NORTH</span></li>`
+    ];
+    for(i=4; i>-1; i--) {
+      if(segments[i].length) {
+        segments[i] = segments[i].sort(compareSeg);
+        for(j=0; j<segments[i].length; j++) {
+          obj = segments[i][j];
+          allVesselsOutput+= 
+          `<li>
+            <div class="list-wrap">
+              <h4 class="map-label">${obj.mapLabel}</h4>
+              <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
+              <h4 class="tile-title">${obj.name}</h4> 
+              <div class="dir-container">
+                <img class="dir-img" src="${obj.dirImg}"/>
+                <span class="speed">${obj.spd}</span>
+              </div>               
+            </div>
+            <h5>${obj.liveLocation}</h5>
+          </li>`;
+        }
       }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">3 NORTH</span></li>`;
-    if(segments.s3.length) {
-      segments.s3 = segments.s3.sort(compareSeg)
-      for(i=0; i<segments.s3.length; i++) {
-        obj = segments.s3[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <h4 class="map-label">${obj.mapLabel}</h4>
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">LOCK 13</span></li>`;
-    if(segments.s2.length) {
-      segments.s2 = segments.s2.sort(compareSeg)
-      for(i=0; i<segments.s2.length; i++) {
-        obj = segments.s2[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <h4 class="map-label">${obj.mapLabel}</h4>
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">RR  BRIDGE</span></li>`;
-    if(segments.s1.length) {
-      segments.s1 = segments.s1.sort(compareSeg)
-      for(i=0; i<segments.s1.length; i++) {
-        obj = segments.s1[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <h4 class="map-label">${obj.mapLabel}</h4>
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
-    }
-    allVesselsOutput+=`<li><span class="waypoint">3 SOUTH</span></li>`;
-    if(segments.s0.length) {
-      segments.s0 = segments.s0.sort(compareSeg)
-      for(i=0; i<segments.s0.length; i++) {
-        obj = segments.s0[i];
-        allVesselsOutput+= 
-        `<li>
-          <div class="list-wrap">
-            <h4 class="map-label">${obj.mapLabel}</h4>
-            <button onClick="liveScanModel.goToPage('detail',${obj.key})">MAP</button> 
-            <h4 class="tile-title">${obj.name}</h4> 
-            <div class="dir-container">
-              <img class="dir-img" src="${obj.dirImg}"/>
-              <span class="speed">${obj.spd}</span>
-            </div>               
-          </div>
-          <h5>${obj.liveLocation}</h5>
-        </li>`;
-      }
+      allVesselsOutput+= maplines[i];
     }       
     self.totVessels.innerHTML = liveScanModel.liveScans.length+" Vessels"; //Total Vessels Title
     self.allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
@@ -599,12 +536,11 @@ class LiveScan {
 /* * * * * * * * *
 * Functions  
 */
-async function initLiveScan(rotateTransponders=true) {  
+function initLiveScan() {  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
    * Begin a 60 sec master clock for loop control    */
   setInterval( async ()=> {
-    //Advance clock every 1 sec
-    liveScanModel.tock++
+
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
@@ -660,6 +596,8 @@ async function initLiveScan(rotateTransponders=true) {
 
       } 
     }
+    //Advance clock every 1 sec
+    liveScanModel.tock++
   }, 1000);
   /*  END OF CLOCK LOOP   */
  

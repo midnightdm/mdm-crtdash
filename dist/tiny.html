@@ -6,11 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" type="text/css" href="small.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script> 
   <title>Clinton River Traffic</title>
 </head>
 <body>
   <div id="page-insert" class="listMode">
     <h1>Loading Vessel Data...</h1>
+    <button onClick="liveScanModel.goToPage('list')">LIST</button>
   </div> 
   <div id="vess-list" class="active"><h2 id="total-vessels">0 Vessels</h2>
     <section class="listMode">
@@ -21,8 +23,6 @@
 
   <script src="tiny.js"></script>
 
-  <script type="application/javascript">
-    initLiveScan(false);
-  </script>
+
 </body>
 </html>
