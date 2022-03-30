@@ -269,7 +269,18 @@ h4.map-label {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+}
+
+a.btn {
+  background-color: #888a89; /* Green */
+  border: none;
+  color: rgb(12, 8, 8);
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  box-shadow: 4px 4px rgba(0,0,0,0.5);
 }
 
 

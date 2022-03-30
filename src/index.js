@@ -114,9 +114,10 @@ async function outputSelVessel() {
   liveScanModel.map2.setCenter(  
       new google.maps.LatLng(liveScans[live].lat, liveScans[live].lng)
   );
-  var vesselID = liveScans[live].id
-  var passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
-  var passageDate = liveScanModel.passagesList[passageIdx].date
+  let vesselID = liveScans[live].id
+  let passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
+  let passageDate = liveScanModel.passagesList[passageIdx].date
+  
   
   //Build output for selected vessel
   selVesselOutput += 
@@ -273,27 +274,16 @@ function outputWaypoint() {
 async function initLiveScan(rotateTransponders=true) {  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
    * Begin a 60 sec master clock for loop control    */
-  setInterval( ()=> {
-    //Advance clock every 1 sec
-    liveScanModel.tock++
+  setInterval( async ()=> {
+
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
-      // liveScanModel.minute++
-      // console.log("minute",liveScanModel.minute)
-      //Every 5 minutes cleanup vessels list
-      // if(liveScanModel.minute==5) {
-      //   liveScanModel.minute = 0
-      //   liveScans.splice(0, liveScans.length)
-      // }
 
       //Also refresh time element views
       updateTimes()
     }
     //Events below to fire on specific intervals (Modulas % determines multiples)
-    
-    //Advance moving vessel icons every second predictivly
-    //predictMovement() 
 
     //Step transponder list scroll every 10 seconds
     if(rotateTransponders && liveScans.length > 0 && liveScanModel.tock%10==0) {
@@ -309,16 +299,60 @@ async function initLiveScan(rotateTransponders=true) {
       }
     }
     
-    //Change news text every 20 sec
-          //console.log("liveScanModel.news.length", liveScanModel.news.length)
-    if(liveScanModel.news.length && liveScanModel.tock%20==0) {
-      if(liveScanModel.newsKey >= liveScanModel.news.length) {
-        liveScanModel.newsKey = 0;
+    //Every 20 sec --> 
+    if(liveScanModel.tock%20==0) {
+      //Change news text...
+      if(liveScanModel.news.length) {
+        if(liveScanModel.newsKey >= liveScanModel.news.length) {
+          liveScanModel.newsKey = 0;
+        }
+        //console.log("outputNews", liveScanModel.newsKey)
+        outputNews();
+        liveScanModel.newsKey++
       }
-      //console.log("outputNews", liveScanModel.newsKey)
-      outputNews();
-      liveScanModel.newsKey++
+      
+      //...and fetch livescan data from API
+      const myHeaders = new Headers({
+        'Content-Type': 'application/json'
+      });
+      
+      const response = await fetch(liveScanModel.fetchUrl,  {
+        headers: myHeaders
+      });
+      if(response.status===200) {
+        const data = await response.json();
+        let key, obj, len, dat, i;
+        
+        for(i=0; i<data.length; i++){
+          dat = data[i];
+          if(!liveScans.length){
+            key = -1;
+          } else {
+            key = getKeyOfId(liveScans, dat.liveVesselID);
+          }
+          
+          //Create & push
+          if(key==-1) {
+            obj = await liveScanModel.mapper(new LiveScan(), dat, true);
+            obj.key = liveScans.length;
+            liveScans.push(obj);
+          }
+          //Find & Update
+          else {
+            liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
+            //Has num of vessels changed?
+            if(liveScans.length != liveScanModel.numVessels) {
+              //Store new vessels quantity
+              liveScanModel.numVessels = liveScans.length;              
+            }
+          }  
+        };
+      }  
     }
+    //Every 1 sec advance clock 
+    liveScanModel.tock++;
+    //Advance moving vessel icons predictively
+    //predictMovement() 
   }, 1000);
   /*  END OF CLOCK LOOP   */
 
@@ -333,7 +367,7 @@ async function initLiveScan(rotateTransponders=true) {
     
   } else {
     //Initiate liveScans db snapshot
-    initLiveScanSnapshot()
+    //  initLiveScanSnapshot() DISABLED
     //And its deletion manager
     //initDeleteSnapshot()
   }
@@ -344,7 +378,8 @@ async function initLiveScan(rotateTransponders=true) {
   await fetchNews();
   //Do first outputs
   outputOtherAlerts();
-  outputPassengerAlerts();  
+  outputPassengerAlerts();
+  outputSelVessel();  
 }
 
 function updateTimes() {

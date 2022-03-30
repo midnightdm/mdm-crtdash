@@ -3,6 +3,7 @@
 export const LiveScanModel = {   
   clinton: {lat: 41.857202, lng:-90.184084},
   interval: 20000,
+  fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans",
   tock: 0,
   minute: 0,
   labelIndex:0,

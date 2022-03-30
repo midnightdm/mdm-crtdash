@@ -129,7 +129,7 @@ function LiveScanModel() {
   self.outputAllVessels = async function() {
     //self.mapDiv.classList.remove("active");
     self.vessList.addClass("active");
-    let allVesselsOutput = "", i;
+    let allVesselsOutput = "", i, j;
     //Order vessels by river segment
     let segments = [ [], [], [], [], [] ];
     for(let vessel in self.liveScans) {
