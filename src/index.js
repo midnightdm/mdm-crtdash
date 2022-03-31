@@ -448,7 +448,7 @@ async function fetchAllAlerts() {
       liveScanModel.alertsAll = [...tempAlertsAll]
       //Update in browser
       outputOtherAlerts();
-      playSound();
+      //playSound();  MOVED TO fetchWaypoint()
     })
   }
   return new Promise((resolve, reject )=>{
@@ -474,7 +474,7 @@ async function fetchPassengerAlerts() {
       liveScanModel.alertsPassenger = [...tempAlertsPassenger]
       //Update in broswer
       outputPassengerAlerts();
-      playSound();
+      //playSound(); MOVED TO fetchWaypoint()
     })
   }
   return new Promise((resolve, reject )=>{
@@ -541,6 +541,7 @@ function fetchWaypoint() {
         console.log("no waypoint match to an event was found")
       }
       outputWaypoint()
+      playSound()
     })
 
     getDoc(doc(db, "Voicepublish", vpubID))
