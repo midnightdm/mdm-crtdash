@@ -352,7 +352,7 @@ async function initLiveScan(rotateTransponders=true) {
     //Every 1 sec advance clock 
     liveScanModel.tock++;
     //Advance moving vessel icons predictively
-    //predictMovement() 
+    predictMovement() 
   }, 1000);
   /*  END OF CLOCK LOOP   */
 
@@ -376,6 +376,7 @@ async function initLiveScan(rotateTransponders=true) {
   await fetchPassengerAlerts();
   await fetchWaypoint();
   await fetchNews();
+  await fetchPassagesList()
   //Do first outputs
   outputOtherAlerts();
   outputPassengerAlerts();
@@ -550,7 +551,7 @@ function fetchWaypoint() {
         let dt = new Date()
         let ts = Math.round(dt.getTime()/1000)
         let diff = ts - liveScanModel.announcement.vpubTS
-        console.log("vpubID/prev/diff ", vpubID,liveScanModel.prevVpubID,diff)
+        //console.log("vpubID/prev/diff ", vpubID,liveScanModel.prevVpubID,diff)
         if(vpubID > liveScanModel.prevVpubID && diff < 300) {
           return true
         }
@@ -669,9 +670,14 @@ function predictMovement() {
       bearing = parseInt(o.course);
       //Predict next point
       point = calculateNewPositionFromBearingDistance(o.lat, o.lng, bearing, distance);
-      //Update map view but not object
-      o.map1marker.setPosition(new google.maps.LatLng(point[0], point[1]));
-      o.map2marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+  
+      //Update map view & object lat/lng
+      liveScans[o.key].map1marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+      liveScans[o.key].map2marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+      liveScans[o.key].lat = point[0];
+      liveScans[o.key].lng = point[1];
+      
+      //o.map2marker.setPosition(new google.maps.LatLng(point[0], point[1]));
       // coords = liveScanModel.getShipSpriteCoords(bearing);
       // if(o.type=="Passenger") {
       //   icon = {
@@ -688,7 +694,7 @@ function predictMovement() {
       // }
       // o.map1marker.setIcon(icon); 
       // o.map2marker.setIcon(icon);
-      console.log(o.name+' predicted='+point[0]+' '+point[1]) 
+      //console.log(o.name+' predicted='+o.map1marker.getPosition(), point[0], point[1]); 
     } 
     
   });  

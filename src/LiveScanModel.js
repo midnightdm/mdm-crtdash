@@ -3,7 +3,7 @@
 export const LiveScanModel = {   
   clinton: {lat: 41.857202, lng:-90.184084},
   interval: 20000,
-  fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans",
+  fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/json",
   tock: 0,
   minute: 0,
   labelIndex:0,
@@ -145,7 +145,7 @@ export const LiveScanModel = {
       //o.map1marker.setMap(m1)
       //o.map2marker.setMap(m2)
 
-      if(o.speed>0.9) { //If transponder reported movement...
+      if(o.speed>1.9) { //If transponder reported movement...
         if((o.lng != o.prevLng) || (o.lat != o.prevLat)) { //...did its location change?           
           //Yes means the transponder report is current. Update time value.
           let now = Date.now()          
