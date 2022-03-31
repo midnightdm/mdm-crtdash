@@ -656,7 +656,7 @@ function predictMovement() {
     //Skip if vessel not moving or bogus position data
     
     if( o.isMoving && (o.lat > 1) && (-o.lng > 1)) {
-      console.log(o.name+" moving->"+o.isMoving);
+      //console.log(o.name+" moving->"+o.isMoving);
       //Remove 'kts' from speed & change to int 
       speed = parseInt(o.speed);
       //Multiply knots by 1.852 to get KPH
