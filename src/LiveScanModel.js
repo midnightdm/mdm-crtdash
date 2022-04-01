@@ -38,6 +38,7 @@ export const LiveScanModel = {
   waypoint: {},
   prevWaypoint: {},
   prevVpubID: 0,
+  prevApubID: 0,
   news: [ 
     {key: "00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
     {key: "01", text: "Welcome to the new <em>dashboard</em> page. It's optimized for HD wide screens."}

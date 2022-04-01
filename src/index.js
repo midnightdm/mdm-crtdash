@@ -505,12 +505,19 @@ function fetchWaypoint() {
     if(liveScanModel.prevVpubID == 0) {
       liveScanModel.prevVpubID = vpubID
     }
+    if(liveScanModel.prevApubID == 0) {
+      liveScanModel.prevApubID = apubID
+    }
     getDoc(doc(db, "Alertpublish",  apubID))
     .then( (document) => {
       if(document.exists()) {
-        let waypoint = document.data()
-        liveScanModel.waypoint = waypoint
-        return true
+        liveScanModel.waypoint = document.data()
+        let dt = new Date()
+        let ts = Math.round(dt.getTime()/1000)
+        let diff = ts - liveScanModel.waypoint.apubTS
+        if(apubID > liveScanModel.prevApubID && diff < 300) {
+          return true
+        }       
       } else {
         liveScanModel.waypoint = {
           apubText: "Waypoint update is unavailable",
@@ -520,8 +527,8 @@ function fetchWaypoint() {
         return false
       }
     })
-    .then( (success) => {
-      if(!success) return
+    .then( (isNew) => {
+      if(!isNew) return
       //Calculate waypoint by event and direction data
       let dir = liveScanModel.waypoint.apubDir.includes('wn') ? "down" : "up"
       //Strip waypoint basename as event name
@@ -532,7 +539,7 @@ function fetchWaypoint() {
 
       if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[18].apubID) {
         const li = document.getElementById("pass18")
-        li.classList.add('isNew')
+        li.classList.add('isNew')      
         console.log("waypoint match found to passenger event -> playSound()")
         playSound()
       } else if(liveScanModel.waypoint.apubID===liveScanModel.alertsAll[19].apubID) {
@@ -544,7 +551,6 @@ function fetchWaypoint() {
         console.log("no waypoint match to an event was found")
       }
       outputWaypoint()
-      
     })
 
     getDoc(doc(db, "Voicepublish", vpubID))
@@ -555,7 +561,7 @@ function fetchWaypoint() {
         let dt = new Date()
         let ts = Math.round(dt.getTime()/1000)
         let diff = ts - liveScanModel.announcement.vpubTS
-        //console.log("vpubID/prev/diff ", vpubID,liveScanModel.prevVpubID,diff)
+        
         if(vpubID > liveScanModel.prevVpubID && diff < 300) {
           return true
         }
