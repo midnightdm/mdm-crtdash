@@ -344,7 +344,9 @@ async function initLiveScan(rotateTransponders=true) {
             //Has num of vessels changed?
             if(liveScans.length != liveScanModel.numVessels) {
               //Store new vessels quantity
-              liveScanModel.numVessels = liveScans.length;              
+              liveScanModel.numVessels = liveScans.length;
+              //Reset rotating key to avoid desynch
+              liveScanModel.rotatingKey = 0;              
             }
           }  
         };
