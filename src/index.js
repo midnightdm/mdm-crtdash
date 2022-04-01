@@ -533,17 +533,18 @@ function fetchWaypoint() {
       if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[18].apubID) {
         const li = document.getElementById("pass18")
         li.classList.add('isNew')
-        console.log("waypoint match found to passenger event")
+        console.log("waypoint match found to passenger event -> playSound()")
+        playSound()
       } else if(liveScanModel.waypoint.apubID===liveScanModel.alertsAll[19].apubID) {
         const li = document.getElementById("all19")
         li.classList.add('isNew')
-        console.log("waypoint match found to other event")
+        console.log("waypoint match found to other event -> playSound()")
+        playSound()
       } else {
         console.log("no waypoint match to an event was found")
       }
       outputWaypoint()
-      playSound()
-      console.log("playSound() run fetchWaypoint()");
+      
     })
 
     getDoc(doc(db, "Voicepublish", vpubID))
