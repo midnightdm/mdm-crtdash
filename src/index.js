@@ -505,17 +505,18 @@ function fetchWaypoint() {
     if(liveScanModel.prevVpubID == 0) {
       liveScanModel.prevVpubID = vpubID
     }
-    if(liveScanModel.prevApubID == 0) {
-      liveScanModel.prevApubID = apubID
-    }
+
     getDoc(doc(db, "Alertpublish",  apubID))
     .then( (document) => {
       if(document.exists()) {
         liveScanModel.waypoint = document.data()
-        let dt = new Date()
-        let ts = Math.round(dt.getTime()/1000)
-        let diff = ts - liveScanModel.waypoint.apubTS
-        if(apubID > liveScanModel.prevApubID && diff < 300) {
+        //let dt = new Date()
+        //let ts = Math.round(dt.getTime()/1000)
+        //let diff = ts - liveScanModel.waypoint.apubTS
+        if(apubID > liveScanModel.prevApubID) {
+          if(liveScanModel.prevApubID == 0) {
+            liveScanModel.prevApubID = apubID
+          }
           return true
         }       
       } else {
