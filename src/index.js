@@ -20,6 +20,7 @@ document.addEventListener('keydown', (event) => {
 
   if (keysPressed['Control'] && event.code == 'Space') {
       playSound();
+      console.log("playSound() run by key press");
   }
   if (keysPressed['Shift'] && event.code == 'Space') {
     playAnnouncement();
@@ -542,6 +543,7 @@ function fetchWaypoint() {
       }
       outputWaypoint()
       playSound()
+      console.log("playSound() run fetchWaypoint()");
     })
 
     getDoc(doc(db, "Voicepublish", vpubID))
