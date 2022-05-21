@@ -73,11 +73,18 @@ app.post('/comment', async (req, res) => {
   const json = req.body
   //If comment not set, create new
   if(json.msgID=="newcomment") {
-    const ret = await db.collection('Comments').add(json)
+    const doc = db.collection('Comments').doc();
+    const ret = await doc.set(json);
+    await doc.update({
+      ts: FieldValue.serverTimestamp()
+    });
     res.end("Comment "+ret.id+" posted.");
   } else {
     const doc =  db.collection('Comments').doc(json.msgID);
     const ret = await doc.set(json, {merge: true });
+    await doc.update({
+      ts: FieldValue.serverTimestamp()
+    });
     res.end("Comment "+ret.id+" updated.")
   }   
 })
