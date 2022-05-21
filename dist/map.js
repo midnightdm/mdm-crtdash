@@ -654,6 +654,7 @@ function initMap() {
  *   Constants for DOM references
  */
 const liveScanModel = new LiveScanModel();
+window.liveScanModel = liveScanModel;
 window.initMap = initMap;
 window.initLiveScan = initLiveScan;
 

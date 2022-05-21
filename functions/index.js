@@ -16,6 +16,7 @@ const cors    = require('cors');
 const app = express();
 app.use(cors({origin:true}));
 
+
 //html strings
 const bodytop = `
 <!DOCTYPE html>
@@ -67,6 +68,19 @@ app.get('/detail/:vessID', async (req, res) => {
     res.status(200).send(bodytop+detail+bodybot);
   }
 });
+
+app.post('/comment', async (req, res) => {
+  const json = req.body
+  //If comment not set, create new
+  if(json.msgID=="newcomment") {
+    const ret = await db.collection('Comments').add(json)
+    res.end("Comment "+ret.id+" posted.");
+  } else {
+    const doc =  db.collection('Comments').doc(json.msgID);
+    const ret = await doc.set(json, {merge: true });
+    res.end("Comment "+ret.id+" updated.")
+  }   
+})
 
 exports.livescans = functions.https.onRequest(app);
 
