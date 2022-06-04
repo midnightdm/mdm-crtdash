@@ -19,11 +19,14 @@ document.addEventListener('keydown', (event) => {
   keysPressed[event.key] = true;
 
   if (keysPressed['Control'] && event.code == 'Space') {
-      playSound();
-      console.log("playSound() run by key press");
+    console.log("playSound() triggered by CTRL + SPACE key press");  
+    playSound();
+      
   }
   if (keysPressed['Shift'] && event.code == 'Space') {
+    console.log("playAnnouncement() triggered by SHIFT + SPACE key press");
     playAnnouncement();
+
   }
 });
 
@@ -104,14 +107,31 @@ async function outputSelVessel() {
   let selVesselOutput = "";
   let live   = liveScanModel.rotatingKey; 
   if(liveScans[live]===undefined) { 
-    console.log("outputSelVessel() failed using rotating key ",live);
-    return; 
+    if(liveScanModel.rotatingKey > liveScans.length) {
+      console.log("Rotating Key updated from "+liveScanModel.rotatingKey+" to 0 by outputSelVessel()")
+      liveScanModel.rotatingKey = 0
+    }  
+    return new Promise((resolve, reject )=>{
+      resolve()
+      reject()
+    })
   }
-  if(liveScans[live].lat==undefined) {
-    console.log("outputSelVessel() "+liveScans[live].name+" failed with undefined lat");
-    return;
+  if(typeof liveScans[live].lat != 'number') {
+    let to = typeof liveScans[live].lat
+    console.log("outputSelVessel() "+liveScans[live].name+" failed because lat "+liveScans[live].lat+" is NaN.  Instead it was typeof", to);
+    return new Promise((resolve, reject )=>{
+      resolve()
+      reject()
+    })
   }
-  //console.log("center position: ",liveScans[live].lat, liveScans[live].lng)
+  if(typeof liveScans[live].lng != 'number') {
+    let to = typeof liveScans[live].lng
+    console.log("outputSelVessel() "+liveScans[live].name+" failed because lng "+liveScans[live].lng+" is NaN.   Instead it was typeof ", to);
+    return new Promise((resolve, reject )=>{
+      resolve()
+      reject()
+    })
+  }
   liveScanModel.map2.setCenter(  
       new google.maps.LatLng(liveScans[live].lat, liveScans[live].lng)
   );
@@ -143,7 +163,11 @@ async function outputSelVessel() {
   </span></li>`;
   selVessel.innerHTML  = selVesselOutput;      //Selected Vessel's Data
   dataTitle.innerHTML  = liveScans[live].name;
-  dataImage.setAttribute('src', liveScans[live].imageUrl); 
+  dataImage.setAttribute('src', liveScans[live].imageUrl);
+  return new Promise((resolve, reject )=>{
+    resolve()
+    reject()
+  }) 
 }
 
 async function outputAllVessels() {
@@ -216,7 +240,11 @@ function outputPassengerAlerts() {
   //Build output for passenger alerts
   if(!liveScanModel.alertsPassenger.length) return;
   let alertsOutputPassenger =
-    `<li id="pass18" class="card animate__animated animate__slideInRight">
+    `<li id="pass19" class="card animate__animated animate__slideInRight">
+      <h4>${liveScanModel.alertsPassenger[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[19].date)}</time></h4>
+      <p>${liveScanModel.alertsPassenger[19].apubText}</p>
+    </li>
+    <li class="card animate__animated animate__slideInDown">
       <h4>${liveScanModel.alertsPassenger[18].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[18].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[18].date)}</time></h4>
       <p>${liveScanModel.alertsPassenger[18].apubText}</p>
     </li>
@@ -231,10 +259,6 @@ function outputPassengerAlerts() {
     <li class="card animate__animated animate__slideInDown">
       <h4>${liveScanModel.alertsPassenger[15].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[15].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[15].date)}</time></h4>
       <p>${liveScanModel.alertsPassenger[15].apubText}</p>
-    </li>
-    <li class="card animate__animated animate__slideInDown">
-      <h4>${liveScanModel.alertsPassenger[14].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[14].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[14].date)}</time></h4>
-      <p>${liveScanModel.alertsPassenger[14].apubText}</p>
     </li>`;
     ulPass.innerHTML     = alertsOutputPassenger;
 }
@@ -293,9 +317,10 @@ async function initLiveScan(rotateTransponders=true) {
 
     //Change data slide every 15 sec when there is live data
     if(liveScans.length > 0 && liveScanModel.tock%15==0) {
-      outputSelVessel();
+      await outputSelVessel();
       liveScanModel.rotatingKey++;       
-      if(liveScanModel.rotatingKey >= liveScans.length) {
+      if(liveScanModel.rotatingKey > liveScans.length) {
+        console.log("Rotating key updated from "+liveScanModel.rotatingKey+" to 0 by loop controller.")
         liveScanModel.rotatingKey = 0;
       }
     }
@@ -532,16 +557,23 @@ function fetchWaypoint() {
     })
     .then( (isNew) => {
       if(!isNew) return
+
       //Calculate waypoint by event and direction data
       let dir = liveScanModel.waypoint.apubDir.includes('wn') ? "down" : "up"
       //Strip waypoint basename as event name
       let event = liveScanModel.waypoint.apubEvent.substr(0, liveScanModel.waypoint.apubEvent.length-2)
       let str = event + "-" + dir + "-map.png"
       liveScanModel.waypoint.bgMap = "https://storage.googleapis.com/www.clintonrivertraffic.com/images/"+str
+      //Prevent audio play on reload
+      if(liveScanModel.isReload) {
+        liveScanModel.isReload = false 
+        outputWaypoint()
+        console.log("waypoint output skipping play on browser reload.")
+        return
+      }
       //Change class of event with matching apubID
-
-      if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[18].apubID) {
-        const li = document.getElementById("pass18")
+      if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[19].apubID) {
+        const li = document.getElementById("pass19")
         li.classList.add('isNew')      
         console.log("waypoint match found to passenger event -> playSound()")
         playSound()
@@ -719,7 +751,7 @@ function calculateNewPositionFromBearingDistance(lat, lng, bearing, distance) {
   var lon2 = Math.PI / 180 * lng + Math.atan2(Math.sin( Math.PI / 180 * bearing) * Math.sin(distance / R) * Math.cos( Math.PI / 180 * lat ), Math.cos(distance / R) - Math.sin( Math.PI / 180 * lat) * Math.sin(lat2));
   var rLat = 180 / Math.PI * lat2;
   var rLng = 180 / Math.PI * lon2; 
-  return [ rLat.toFixed(6), rLng.toFixed(6) ];
+  return [ parseFloat(rLat.toFixed(6)), parseFloat(rLng.toFixed(6)) ];
 }
 
 
@@ -804,7 +836,7 @@ function initLiveScanSnapshot() {
         let obj = await liveScanModel.mapper(new LiveScan(liveScanModel), dat, true)
         liveScans.push(obj);
         let len = await fetchPassagesList()
-        outputSelVessel(); // LET CLOCK DO ALL UPDATES
+        await outputSelVessel(); // LET CLOCK DO ALL UPDATES
         outputAllVessels();
       }
       //Find & Update

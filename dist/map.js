@@ -332,8 +332,11 @@ function LiveScanModel() {
       obj.spd = Math.round(obj.speed);
     }
     //Contingency for null lat/lng
-    let lat = obj.lat ==="" ? "" : obj.lat.toFixed(7);
-    let lng = obj.lng ==="" ? "" : obj.lng.toFixed(7);
+    let lat = obj?.lat.toFixed(7) || ""
+    let lng = obj?.lng.toFixed(7) || ""
+    
+    //let lat = obj.lat ==="" ? "" : obj.lat.toFixed(7);
+    //let lng = obj.lng ==="" ? "" : obj.lng.toFixed(7);
     let detailOutput =     
     `<ul>
         <li>

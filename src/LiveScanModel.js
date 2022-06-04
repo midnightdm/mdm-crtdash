@@ -39,6 +39,7 @@ export const LiveScanModel = {
   prevWaypoint: {},
   prevVpubID: 0,
   prevApubID: 0,
+  isReload: true,
   news: [ 
     {key: "00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
     {key: "01", text: "Welcome to the new <em>dashboard</em> page. It's optimized for HD wide screens."}
@@ -85,8 +86,8 @@ export const LiveScanModel = {
     const m2 = this.map2
     o.transponderTS  = parseInt(dat.transponderTS);
     o.position = new google.maps.LatLng(dat.liveLastLat, dat.liveLastLon);
-    o.lat  = dat.liveLastLat;
-    o.lng  = dat.liveLastLon;
+    o.lat  = parseFloat(dat.liveLastLat);
+    o.lng  = parseFloat(dat.liveLastLon);
     o.id   = parseInt(dat.liveVesselID);
     o.name = dat.liveName;
     o.liveLocation = dat.liveLocation || "Not Calculated";

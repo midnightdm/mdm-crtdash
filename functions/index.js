@@ -71,23 +71,110 @@ app.get('/detail/:vessID', async (req, res) => {
 
 app.post('/comment', async (req, res) => {
   const json = req.body
+  const now = new Date();
+  const when = now.toLocaleString('en-US', { timeZone: 'America/Chicago'});
+  //Inject timestamp into data
+  json.ts = Math.round(now.getTime()/1000)
+  json.created = when
+  functions.logger.log('Function livescans/comment msgType='+json.msgType);
   //If comment not set, create new
-  if(json.msgID=="newcomment") {
-    const doc = db.collection('Comments').doc();
-    const ret = await doc.set(json);
-    await doc.update({
-      ts: FieldValue.serverTimestamp()
+  if(json.msgType=="newcomment") { 
+    const ret = await db.collection('Comments').add(json);
+    const ref = db.collection('Comments').doc(ret.id)
+    //Update created document with generated id
+    json.msgID = ret.id
+    await ref.update({msgID: json.msgID})
+    res.status(200).json({ 
+      msgID: json.msgID,
+      msgType: json.msgType, 
+      msgTxt: json.msgTxt, 
+      created: when, 
+      ts: json.ts  
     });
-    res.end("Comment "+ret.id+" posted.");
-  } else {
-    const doc =  db.collection('Comments').doc(json.msgID);
-    const ret = await doc.set(json, {merge: true });
-    await doc.update({
-      ts: FieldValue.serverTimestamp()
-    });
-    res.end("Comment "+ret.id+" updated.")
-  }   
-})
+
+  } else if(json.msgType=="reply") {
+    functions.logger.log('Cloud functon livescans/comment section = reply.')
+    const docRef =  db.collection('Comments').doc(json.msgID);
+    const theDoc = await docRef.get()
+    if(!theDoc.exists) {
+      res.status(500).json({error: 'No such document'})
+    } else {
+      const data = theDoc.data()
+      //Increment existing repliesCount by one
+      const repliesCount = data.repliesData.length+1
+      //Get current repliesData array & add new obj to it
+      const repliesData = data.repliesData
+      repliesData.push(json)
+      functions.logger.log('Obj repliesCount: '+repliesCount)
+      const ret = await docRef.update({
+        repliesCount: repliesCount,
+        repliesData: repliesData
+      });
+      res.status(200).json({ 
+        msgID: ret.id, msgType: json.msgType, 
+        msgTxt: json.msgTxt, created: when, 
+        ts: when, repliesCount: repliesCount 
+      }); 
+    }
+
+  } else if(json.msgType=="thumbs") {
+    const docRef =  db.collection('Comments').doc(json.msgID);
+    const theDoc = await docRef.get()
+    
+    if(!theDoc.exists) {
+      res.status(500).json({error: 'No such document'})
+    } else {
+      const data = theDoc.data()
+      //thumbTarget "msg" is the main message
+      if(json.thumbTarget == "msg") {
+        //thumbDir will be "up" or "dn
+        if(json.thumbDir == "up") {
+          let pos = data.likes.indexOf(json.userID)
+          if(pos>-1) {
+            data.likes.splice(pos, 1)
+          } else {
+            data.likes.push(json.userID);
+          }
+        }
+        if(json.thumbDir == "dn") {
+          let pos = data.dislikes.indexOf(json.userID)
+          if(pos>-1) {
+            data.dislikes.splice(pos,1)
+          } else {
+            data.dislikes.push(json.userID)
+          }
+        }  
+      } else {
+        //thumbTarget is a reply TS 
+        for(let key in data.repliesData) {
+          if(json.thumbTarget==data.repliesData[key].ts) {
+            //thumbDir will be "up" or "dn
+            if(json.thumbDir == "up") {
+              let pos = data.repliesData[key]?.likes.indexOf(json.userID)
+              if(pos>-1) {
+                data.repliesData[key].likes.splice(pos,1)
+              } else {
+                data.repliesData[key].likes.push(json.userID)
+              }  
+            }
+            if(json.thumbDir == "dn") {
+              let pos = data.repliesData[key]?.dislikes.indexOf(json.userID)
+              if(pos>-1) {
+                data.repliesData[key].dislikes.splice(pos,1)
+              } else {
+                data.repliesData[key].dislikes.push(json.userID)
+              }
+            }            
+          }
+        }
+      } 
+      //Reintegrate the updated data
+      const ret = await docRef.update(data);
+      res.status(200).json({ msgID: ret.id, ts: when}); 
+    }
+  }  
+});
+
 
 exports.livescans = functions.https.onRequest(app);
 
