@@ -137,8 +137,8 @@ async function outputSelVessel() {
   );
   let vesselID = liveScans[live].id
   let passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
-  let passageDate = liveScanModel.passagesList[passageIdx].date
-  
+  //let passageDate = liveScanModel.passagesList[passageIdx].date
+  let passageDate = liveScans[live].lastPassageTS
   
   //Build output for selected vessel
   selVesselOutput += 
@@ -159,7 +159,7 @@ async function outputSelVessel() {
   <li class="dataPoint"><span class="th">LOCATION:</span> <span class="td">
   ${liveScans[live].liveLocation}</span></li>
   <li class="dataPoint"><span class="th">LAST PASSAGE:</span> <span class="td">
-  ${passageDate}
+  ${passageDate.toDateString()}
   </span></li>`;
   selVessel.innerHTML  = selVesselOutput;      //Selected Vessel's Data
   dataTitle.innerHTML  = liveScans[live].name;
@@ -537,10 +537,10 @@ function fetchWaypoint() {
     .then( (document) => {
       if(document.exists()) {
         liveScanModel.waypoint = document.data()
-        //let dt = new Date()
-        //let ts = Math.round(dt.getTime()/1000)
-        //let diff = ts - liveScanModel.waypoint.apubTS
-        if(apubID > liveScanModel.prevApubID) {
+        let dt = new Date()
+        let ts = Math.round(dt.getTime()/1000)
+        let diff = ts - liveScanModel.waypoint.apubTS
+        if(apubID > liveScanModel.prevApubID ) {
           if(liveScanModel.prevApubID == 0) {
             liveScanModel.prevApubID = apubID
           }
@@ -562,7 +562,8 @@ function fetchWaypoint() {
       let dir = liveScanModel.waypoint.apubDir.includes('wn') ? "down" : "up"
       //Strip waypoint basename as event name
       let event = liveScanModel.waypoint.apubEvent.substr(0, liveScanModel.waypoint.apubEvent.length-2)
-      let str = event + "-" + dir + "-map.png"
+      let str = event + "-" + dir + "-map-v2.jpg"
+      //let str = event + "-" + dir + "-map.png"
       liveScanModel.waypoint.bgMap = "https://storage.googleapis.com/www.clintonrivertraffic.com/images/"+str
       //Prevent audio play on reload
       if(liveScanModel.isReload) {
@@ -575,12 +576,12 @@ function fetchWaypoint() {
       if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[19].apubID) {
         const li = document.getElementById("pass19")
         li.classList.add('isNew')      
-        console.log("waypoint match found to passenger event -> playSound()")
+        console.log("waypoint match found to passenger event "+diff+" seconds ago -> playSound()")
         playSound()
       } else if(liveScanModel.waypoint.apubID===liveScanModel.alertsAll[19].apubID) {
         const li = document.getElementById("all19")
         li.classList.add('isNew')
-        console.log("waypoint match found to other event -> playSound()")
+        console.log("waypoint match found to 'any' event "+diff+" seconds ago -> playSound()")
         playSound()
       } else {
         console.log("no waypoint match to an event was found")

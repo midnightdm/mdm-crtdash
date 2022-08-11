@@ -39,6 +39,7 @@ export default class LiveScan {
     this.liveMarkerDeltaTS         = null
     this.expandedViewOn            = false
     this.lastMovementTS            = new Date()
+    this.lastPassageTS             = null
     this.dataAge                   = "age-green"
     this.prevLat                   = null
     this.prevLng                   = null

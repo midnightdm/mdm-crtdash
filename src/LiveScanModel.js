@@ -138,6 +138,7 @@ export const LiveScanModel = {
       o.map2marker.setPosition(o.position); 
       o.lastMovementTS = new Date();
       o.liveLastScanTS = new Date(dat.liveLastTS*1000);
+      o.lastPassageTS = new Date(parseInt(dat.liveLastTS)*1000);
      } else {
       //If this is update
       o.map1marker.setPosition(o.position)
@@ -229,20 +230,89 @@ export const LiveScanModel = {
           path: [{lat: 41.800704, lng: -90.212768}, {lat: 41.800704, lng: -90.188677}],
           strokeColor: this.red,
           strokeWeight: 2
-        })  
+        }),
+        echoLine1: new google.maps.Polyline({
+          path: [{lat: 41.58310275323378, lng: -90.36677353590355}, {lat: 41.57629641814284, lng:-90.36254991982065}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        foxtrotLine1: new google.maps.Polyline({
+          path: [{lat: 41.57492966222924, lng: -90.40039721024752}, {lat: 41.56850859244365, lng: -90.39515284223624}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        golfLine1: new google.maps.Polyline({
+          path: [{lat: 41.52074085192975, lng: -90.56802136170397}, {lat: 41.51703649263295, lng:-90.56551022558392}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        hotelLine1: new google.maps.Polyline({
+          path: [{lat: 41.48119810486006, lng: -90.63505053819344}, {lat: 41.47654281869356, lng: -90.62901461235137}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        echoLine2: new google.maps.Polyline({
+          path: [{lat: 41.58310275323378, lng: -90.36677353590355}, {lat: 41.57629641814284, lng:-90.36254991982065}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        foxtrotLine2: new google.maps.Polyline({
+          path: [{lat: 41.57492966222924, lng: -90.40039721024752}, {lat: 41.56850859244365, lng: -90.39515284223624}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        golfLine2: new google.maps.Polyline({
+          path: [{lat: 41.52074085192975, lng: -90.56802136170397}, {lat: 41.51703649263295, lng:-90.56551022558392}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        }),
+        hotelLine2: new google.maps.Polyline({
+          path: [{lat: 41.48119810486006, lng: -90.63505053819344}, {lat: 41.47654281869356, lng: -90.62901461235137}],
+          strokeColor: this.red,
+          strokeWeight: 2
+        })                          
     };
     this.polylines.alphaLine1.setMap(this.map1);
     this.polylines.bravoLine1.setMap(this.map1);
     this.polylines.charlieLine1.setMap(this.map1);
     this.polylines.deltaLine1.setMap(this.map1);
+    this.polylines.echoLine1.setMap(this.map1);
+    this.polylines.foxtrotLine1.setMap(this.map1);
+    this.polylines.golfLine1.setMap(this.map1);
+    this.polylines.hotelLine1.setMap(this.map1);
     this.polylines.alphaLine2.setMap(this.map2);
     this.polylines.bravoLine2.setMap(this.map2);
     this.polylines.charlieLine2.setMap(this.map2);
-    this.polylines.deltaLine2.setMap(this.map2);     
+    this.polylines.deltaLine2.setMap(this.map2);
+    this.polylines.echoLine2.setMap(this.map2); 
+    this.polylines.foxtrotLine2.setMap(this.map2); 
+    this.polylines.golfLine2.setMap(this.map2); 
+    this.polylines.hotelLine2.setMap(this.map2);      
   
     //Add mile marker lines
     const dat = [
-      {id:486, lngA:-90.50971806363766, latA:41.52215220467504, lngB:-90.5092203536731, latB:41.51372097487243}, 
+      {id:465,lngA:-90.87394086670139,latA:41.44768419634712,lngB:-90.86125193962113,latB:41.43255666090475},
+      {id:466,lngA:-90.85686544012165,latA:41.45571761713665,lngB:-90.85296756533776,latB:41.43482091056742},
+      {id:467,lngA:-90.83612580206753,latA:41.45842029555808,lngB:-90.83850707891371,latB:41.43775316892549},
+      {id:468,lngA:-90.81579578160753,latA:41.45812364409113,lngB:-90.81910778473805,latB:41.44023906213188},
+      {id:469,lngA:-90.79677900949125,latA:41.45821571235599,lngB:-90.79970003179358,latB:41.44135211519289},
+      {id:470,lngA:-90.77923021773982,latA:41.45480028536314,lngB:-90.78295723318516,latB:41.43937988586635},
+      {id:471,lngA:-90.75857797069449,latA:41.45526673208312,lngB:-90.76228125151724,latB:41.43848056222637},
+      {id:472,lngA:-90.74129986697304,latA:41.45392873207133,lngB:-90.74155812873529,latB:41.43841293014096},
+      {id:473,lngA:-90.72410622464567,latA:41.45527364822565,lngB:-90.72160661849664,latB:41.44463759905712},
+      {id:474,lngA:-90.7041274333198,latA:41.45786933125446,lngB:-90.70364472745545,latB:41.446415668045},
+      {id:475,lngA:-90.68759802242619,latA:41.46032658481339,lngB:-90.68031730188827,latB:41.44567946835805},
+      {id:476,lngA:-90.66702910960484,latA:41.46514508917074,lngB:-90.66699979606632,latB:41.45681519842793},
+      {id:477,lngA:-90.65657718563965,latA:41.46949488984797,lngB:-90.63344843995473,latB:41.45221935165051},
+      {id:478,lngA:-90.64034645199828,latA:41.4774154619168,lngB:-90.63509744573608,latB:41.47303945911423},
+      {id:479,lngA:-90.62425550599895,latA:41.48662487870652,lngB:-90.617486830184,latB:41.48088370542879},
+      {id:480,lngA:-90.61073943780512,latA:41.49459057955315,lngB:-90.60404311701011,latB:41.49180558200741},
+      {id:481,lngA:-90.60571003154891,latA:41.51055979390778,lngB:-90.59755934315619,latB:41.50443881426396},
+      {id:482,lngA:-90.58403075588232,latA:41.51763670388024,lngB:-90.58113556831556,latB:41.51200304813109},
+      {id:483,lngA:-90.56692264476122,latA:41.52129897352564,lngB:-90.55951551882352,latB:41.51032618297966},
+      {id:484,lngA:-90.54808920603612,latA:41.52939278853504,lngB:-90.54552841799722,latB:41.50964503103194},
+      {id:485,lngA:-90.52892484428197,latA:41.52601736034169,lngB:-90.53372071448936,latB:41.51035784153727},
+      {id:486,lngA:-90.50971806363766,latA:41.52215220467504,lngB:-90.5092203536731,latB:41.51372097487243}, 
       {id:487, lngA:-90.48875678287305, latA:41.521402024002950, lngB:-90.48856266269104, latB:41.5145424556308},
       {id:488, lngA:-90.47251555885472, latA:41.52437816051497, lngB:-90.47036467716465, latB:41.51537456609466},
       {id:489, lngA:-90.45698288389242, latA:41.53057735758976, lngB:-90.45000250745086, latB:41.52480546208061},

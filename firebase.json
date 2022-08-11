@@ -6,13 +6,5 @@
       "**/.*",
       "**/node_modules/**"
     ]
-  },
-  "functions": {
-    "predeploy": [
-    ],
-    "source": "functions"
-  },
-  "storage": {
-    "rules": "storage.rules"
   }
 }
