@@ -3,6 +3,7 @@ import {
   getFirestore, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc
 } from 'firebase/firestore'
 import { LiveScanModel } from './LiveScanModel'
+import { Environment } from './environment'
 import LiveScan from './LiveScan'
 //UNCOMMENT BELOW FOR TEST DATA (& Set line 365 to true)
 //import { fakeLiveScan } from './fakeLiveScan.js'
@@ -54,14 +55,7 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
   });
 }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA6KlSt8IQBSm7TiDszs29bhKaVev-e1Tw",
-  authDomain: "mdm-qcrt-demo-1.firebaseapp.com",
-  projectId: "mdm-qcrt-demo-1",
-  storageBucket: "mdm-qcrt-demo-1.appspot.com",
-  messagingSenderId: "1055119004226",
-  appId: "1:1055119004226:web:1d17187e816f794b5713db"
-}
+const firebaseConfig = Environment.firebaseConfig
 initializeApp(firebaseConfig)
 
 const db = getFirestore();
