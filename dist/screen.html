@@ -79,7 +79,6 @@
           <div class="date"></div> 
           <div class="time"></div> 
           <h4>Screen Height: <span id="height"></span>, Width: <span id="width"></span> </h4>
-          <p><button id="soundBtn">PLAY SOUND</button></p>
         </div>
         
         <script type="text/javascript"> 
@@ -92,11 +91,6 @@
         $(document).ready(function() { 
           $("div#clock").simpleClock(-6);
           window.addEventListener('resize', displaySize); 
-          $("#soundBtn").click( function() {
-            let audio = new Audio('https://storage.googleapis.com/www.clintonrivertraffic.com/voice/so-proud-notification.mp3');
-            audio.loop = false;
-            audio.play(); 
-          })
           displaySize();
         }); 
         (function ($) { 
