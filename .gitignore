@@ -34,3 +34,9 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 /tests/results/
 .firebaserc
 firebase.json
+.gitignore
+readme.rst
+cors.json
+
+.firebase
+.vscode
