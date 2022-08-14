@@ -9,6 +9,7 @@ application/logs/*
 !application/*/.htaccess
 
 environmnet.js
+
 composer.lock
 node_modules/
 
@@ -31,3 +32,5 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 *.sublime-project
 /tests/tests/
 /tests/results/
+.firebaserc
+firebase.json

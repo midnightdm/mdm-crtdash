@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "crtdash",
     "public": "dist",
     "ignore": [
       "firebase.json",

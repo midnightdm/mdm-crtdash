@@ -1,12 +1,12 @@
-{ 
+{
   "projects": {
     "default": "mdm-qcrt-demo-1"
   },
   "targets": {
     "mdm-qcrt-demo-1": {
       "hosting": {
-        "dashboard": [
-          "mdm-qcrt-demo-1"
+        "crtdash": [
+          "mdm-crtdash"
         ]
       }
     }

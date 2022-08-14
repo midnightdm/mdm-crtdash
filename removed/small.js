@@ -541,34 +541,34 @@ class LiveScan {
         case "downriver"   : return "https://storage.googleapis.com/www.clintonrivertraffic.com/images/dwnarr.png"; break;
       }
     }
-    this.alphaTime = () => {
-      if(this.liveMarkerAlphaTS===null) {
-        return "Not Yet Reached";
-      } else {
-      return formatTime(this.liveMarkerAlphaTS);
-      }
-    } 
-    this.bravoTime = ()=> {
-      if(this.liveMarkerBravoTS===null) {
-        return "Not Yet Reached";
-      } else {
-        return formatTime(this.liveMarkerBravoTS);
-      }       
-    } 
-    this.charlieTime = ()=> {
-      if(this.liveMarkerCharlieTS===null) {
-        return "Not Yet Reached";
-      } else {
-        return formatTime(this.liveMarkerCharlieTS);
-      }      
-    } 
-    this.deltaTime = ()=> {
-      if(this.liveMarkerDeltaTS===null) {
-        return "Not Yet Reached";
-      } else {
-        return formatTime(this.liveMarkerDeltaTS);
-      }     
-    } 
+    // this.alphaTime = () => {
+    //   if(this.liveMarkerAlphaTS===null) {
+    //     return "Not Yet Reached";
+    //   } else {
+    //   return formatTime(this.liveMarkerAlphaTS);
+    //   }
+    // } 
+    // this.bravoTime = ()=> {
+    //   if(this.liveMarkerBravoTS===null) {
+    //     return "Not Yet Reached";
+    //   } else {
+    //     return formatTime(this.liveMarkerBravoTS);
+    //   }       
+    // } 
+    // this.charlieTime = ()=> {
+    //   if(this.liveMarkerCharlieTS===null) {
+    //     return "Not Yet Reached";
+    //   } else {
+    //     return formatTime(this.liveMarkerCharlieTS);
+    //   }      
+    // } 
+    // this.deltaTime = ()=> {
+    //   if(this.liveMarkerDeltaTS===null) {
+    //     return "Not Yet Reached";
+    //   } else {
+    //     return formatTime(this.liveMarkerDeltaTS);
+    //   }     
+    // } 
   }
 }
 
@@ -582,6 +582,7 @@ function initLiveScan() {
   setInterval( async ()=> {
 
     //Reset clock to 0 every 1 min (& increment minute)
+    // [Is dependent on liveScanModel already initiated]
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
     }

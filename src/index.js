@@ -55,12 +55,16 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
   });
 }
 
-const firebaseConfig = Environment.firebaseConfig
+window.env = Environment
+const firebaseConfig = env.firebaseConfig
 initializeApp(firebaseConfig)
 
 const db = getFirestore();
 const liveScanModel = LiveScanModel;
+liveScanModel.initRegion();
 const liveScans     = [];
+const siteLabel     = document.getElementById("site-label");
+siteLabel.innerText = env.region;
 const selVessel     = document.getElementById("selected-vessel");
 const dataTitle     = document.getElementById("data-title");
 const dataImage     = document.getElementById("data-image");
@@ -345,6 +349,11 @@ async function initLiveScan(rotateTransponders=true) {
         
         for(i=0; i<data.length; i++){
           dat = data[i];
+          //Skip out-of-region data objects
+          if(dat.liveRegion != env.region) {
+            console.log("Skipping out-of-region vessel",dat.liveName);
+            continue;
+          }
           if(!liveScans.length){
             key = -1;
           } else {
@@ -422,7 +431,7 @@ function updateTimes() {
 function fetchPassagesList() {
   return new Promise(async (resolve, reject )=>{
     if(liveScanModel.passagesList[0].type==="default") {
-      const passagesAllRef = doc(db, 'Passages', 'All');
+      const passagesAllRef = doc(db, liveScanModel.passagesCollection, 'All');
       let plObj, key, listArr = [], tmpArr = {},  nameArr = [], idx = 0, nKey, nObj, i;
       //const document;
       await getDoc(passagesAllRef).then(
@@ -456,7 +465,7 @@ function fetchPassagesList() {
 
 async function fetchAllAlerts() {
   if(liveScanModel.alertsAll[0].apubID == "loading") {
-    const apubSnapshot = onSnapshot(doc(db, "Alertpublish", "all"), (querySnapshot) => {
+    const apubSnapshot = onSnapshot(doc(db, liveScanModel.alertpublishCollection, "all"), (querySnapshot) => {
       let tempAlertsAll = []
       let dataSet = querySnapshot.data()
       let i = 0
@@ -481,7 +490,7 @@ async function fetchAllAlerts() {
 
 async function fetchPassengerAlerts() {
   if(liveScanModel.alertsPassenger[0].apubID == "loading") {
-    const apubSnapshot = onSnapshot(doc(db, "Alertpublish", "passenger"), (querySnapshot) => {
+    const apubSnapshot = onSnapshot(doc(db, liveScanModel.alertpublishCollection, "passenger"), (querySnapshot) => {
       let tempAlertsPassenger = []
       let dataSet = querySnapshot.data()
       let i = 0
@@ -527,7 +536,7 @@ function fetchWaypoint() {
       liveScanModel.prevVpubID = vpubID
     }
 
-    getDoc(doc(db, "Alertpublish",  apubID))
+    getDoc(doc(db, liveScanModel.alertpublishCollection,  apubID))
     .then( (document) => {
       if(document.exists()) {
         liveScanModel.waypoint = document.data()
@@ -583,7 +592,7 @@ function fetchWaypoint() {
       outputWaypoint()
     })
 
-    getDoc(doc(db, "Voicepublish", vpubID))
+    getDoc(doc(db, liveScanModel.voicepublishCollection, vpubID))
     .then( (document) => {
       if(document.exists()) {
         //let announcement = document.data()
@@ -817,32 +826,33 @@ function stepTransponderView() {
 //   })  
 // }
 
-function initLiveScanSnapshot() {
-  //Initiate liveScans db snapshot
-  const q = query(collection(db, 'LiveScan'), where('liveVesselID', '!=', false));
-  const liveScanSnapshot = onSnapshot(q, (querySnapshot) => {
-    let dat, key, o, marker, coords, course, snapIDs = [];
-    querySnapshot.forEach( async (doc) => {
-      dat = doc.data();
-      snapIDs.push(dat.liveVesselID)
-      key = getKeyOfId(liveScans, dat.liveVesselID);
-      //Create & Push
-      if(key==-1) {
-        let obj = await liveScanModel.mapper(new LiveScan(liveScanModel), dat, true)
-        liveScans.push(obj);
-        let len = await fetchPassagesList()
-        await outputSelVessel(); // LET CLOCK DO ALL UPDATES
-        outputAllVessels();
-      }
-      //Find & Update
-      else {
-        liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false)
-        //Has num of vessels changed?
-        if(liveScans.length != liveScanModel.numVessels) {
-          //Store new vessels quantity
-          liveScanModel.numVessels = liveScans.length;              
-        }
-      }  
-    })
-  }) 
-}
+// function initLiveScanSnapshot() {
+//   //FUNCTION NOT USED 
+//   //Initiate liveScans db snapshot
+//   const q = query(collection(db, 'LiveScan'), where('liveVesselID', '!=', false));
+//   const liveScanSnapshot = onSnapshot(q, (querySnapshot) => {
+//     let dat, key, o, marker, coords, course, snapIDs = [];
+//     querySnapshot.forEach( async (doc) => {
+//       dat = doc.data();
+//       snapIDs.push(dat.liveVesselID)
+//       key = getKeyOfId(liveScans, dat.liveVesselID);
+//       //Create & Push
+//       if(key==-1) {
+//         let obj = await liveScanModel.mapper(new LiveScan(liveScanModel), dat, true)
+//         liveScans.push(obj);
+//         let len = await fetchPassagesList()
+//         await outputSelVessel(); // LET CLOCK DO ALL UPDATES
+//         outputAllVessels();
+//       }
+//       //Find & Update
+//       else {
+//         liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false)
+//         //Has num of vessels changed?
+//         if(liveScans.length != liveScanModel.numVessels) {
+//           //Store new vessels quantity
+//           liveScanModel.numVessels = liveScans.length;              
+//         }
+//       }  
+//     })
+//   }) 
+// }

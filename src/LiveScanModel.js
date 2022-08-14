@@ -2,6 +2,7 @@
 
 export const LiveScanModel = {   
   clinton: {lat: 41.857202, lng:-90.184084},
+  qc:      {lat:  41.5350474, lng:-90.4997822},
   interval: 20000,
   fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/json",
   tock: 0,
@@ -9,7 +10,12 @@ export const LiveScanModel = {
   labelIndex:0,
   lab:"_ABCDEFGHIJKLMNOPQRSTUVWXYZ*#@&~1234567890abcdefghijklmnopqrstuvwxyz",
   red:"#ff0000",
-  focusPosition:{lat: 41.857202, lng:-90.184084},
+  region: null,
+  focusPosition:null,
+  map1ZoomLevel: 12,
+  passagesCollection: null,
+  alertpublishCollection: null,
+  voicepublishCollection: null,
   map1: {},
   map2: {},
   polylines: {},
@@ -42,13 +48,39 @@ export const LiveScanModel = {
   isReload: true,
   news: [ 
     {key: "00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
-    {key: "01", text: "Welcome to the new <em>dashboard</em> page. It's optimized for HD wide screens."}
+    {key: "01", text: "Welcome to the <em>dashboard</em> page. It's optimized for HD wide screens."}
   ],
   newsKey: 0,
   transponder: {
     step: 0,
     stepMax: 7,
     viewList: []
+  },
+
+  //Method to set region data in environment
+  initRegion() {
+    console.log("initRegion()");
+    //Is dependant on env obj being set on window
+    this.region = env.region
+    switch(env.region) {
+      case "clinton": {
+        this.focusPosition = this.clinton; 
+        this.map1ZoomLevel = 12;
+        this.passagesCollection = "Passages";
+        this.alertpublishCollection = "Alertpublish";
+        this.voicepublishCollection = "Voicepublish";
+        break;
+      }
+      case "qc": {
+        this.focusPosition = this.qc;
+        this.map1ZoomLevel = 11;
+        this.passagesCollection = "PassagesQC";
+        this.alertpublishCollection = "AlertpublishQC";
+        this.voicepublishCollection = "VoicepublishQC";
+        break;
+      }
+    }
+    console.log("this.region is", this.region)
   },
 
   //Method used by mapper()
@@ -174,7 +206,7 @@ export const LiveScanModel = {
     this.map1 = new google.maps.Map(
       document.getElementById("map1"), 
       {
-        zoom: 12, 
+        zoom: this.map1ZoomLevel, 
         center: {lat: 41.85002, lng:-90.184084}, 
         mapTypeId: "hybrid",
         disableDefaultUI: true
@@ -287,7 +319,8 @@ export const LiveScanModel = {
     this.polylines.echoLine2.setMap(this.map2); 
     this.polylines.foxtrotLine2.setMap(this.map2); 
     this.polylines.golfLine2.setMap(this.map2); 
-    this.polylines.hotelLine2.setMap(this.map2);      
+    this.polylines.hotelLine2.setMap(this.map2); 
+    this.map1.setCenter(this.focusPosition);     
   
     //Add mile marker lines
     const dat = [
@@ -399,7 +432,7 @@ export const LiveScanModel = {
             title: "Mile "+dat[i].id, 
             label: String(dat[i].id),
             icon: {
-              url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/green.png" ,
+              url: "https://storage.googleapis.com/www.clintonrivertraffic.com/imagendow.s/green.png" ,
               labelOrigin: {x: 24, y: 15},
               scaledSize: {width: 50, height: 50}
             },
