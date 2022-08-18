@@ -48,8 +48,8 @@ export const LiveScanModel = {
   prevApubID: 0,
   isReload: true,
   news: [ 
-    {key: "00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
-    {key: "01", text: "Welcome to the <em>dashboard</em> page. It's optimized for HD wide screens."}
+    {key: "f00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
+    {key: "f01", text: "Welcome to the <em>dashboard</em> page. It's optimized for HD wide screens."}
   ],
   newsKey: 0,
   transponder: {
