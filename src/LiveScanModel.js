@@ -16,6 +16,7 @@ export const LiveScanModel = {
   passagesCollection: null,
   alertpublishCollection: null,
   voicepublishCollection: null,
+  announcementsCollection: null,
   map1: {},
   map2: {},
   polylines: {},
@@ -69,6 +70,7 @@ export const LiveScanModel = {
         this.passagesCollection = "Passages";
         this.alertpublishCollection = "Alertpublish";
         this.voicepublishCollection = "Voicepublish";
+        this.announcementsCollection = "Announcements";
         break;
       }
       case "qc": {
@@ -77,6 +79,7 @@ export const LiveScanModel = {
         this.passagesCollection = "PassagesQC";
         this.alertpublishCollection = "AlertpublishQC";
         this.voicepublishCollection = "VoicepublishQC";
+        this.announcementsCollection = "AnnouncementsQC";
         break;
       }
     }

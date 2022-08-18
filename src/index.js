@@ -630,29 +630,29 @@ function fetchWaypoint() {
 
 function fetchNews() {
   const dow = ["sunday", "monday", "tuesday", "wednesday","thursday","friday","saturday"]
-  const keys = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "16", "17", "18","20", "21", "22", "23", "24", "25"]
-  const newsSnapshot = onSnapshot(doc(db, "Announcements", "dashboard"), (querySnapshot) => {
+  const keys = ["f01", "f02", "f03", "f04", "f05", "f06", "f07", "f08", "f09", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25"]
+  const newsSnapshot = onSnapshot(doc(db, liveScanModel.announcementsCollection, "dashboard"), (querySnapshot) => {
     var dataSet = querySnapshot.data()
     let ts      = new Date()
     let day     = ts.getDay()
-    var item, news = [], i = 0, nkey    
+    let item, news = [], i = 0, nkey, now = ts.getTime()    
     for(item in dataSet) {
       //Put in array if not date excluded
-      let now = ts.getTime()/1000
-      if(now < dataSet[item].startTS || now > dataSet[item].endTS) {
+      let start = new Date(dataSet[item].startTS)
+      let end   = new Date(dataSet[item].endTS)
+      if(now < start.getTime() || now > end.getTime()) {
         console.log("news outside date range", dataSet[item])
+        i++
         continue
       }
       if(dataSet[item].hasOnlyDay==true && dataSet[item].onlyDay!=dow[day]) {
         console.log("news onlyday fail", dataSet[item])
+        i++
         continue
       }
-      if(i>25) { 
-        nkey = i.toString()
-      } else {
-        nkey = keys[i]
-      }
+      nkey = keys[i]
       news.push({key: nkey, text: dataSet[item].text })
+      i++
     }
     //After building array replace liveScanModel version
     liveScanModel.news = [...news]
