@@ -61,9 +61,9 @@ export const LiveScanModel = {
   //Method to set region data in environment
   initRegion() {
     console.log("initRegion()");
-    //Is dependant on env obj being set on window
-    this.region = env.region
-    switch(env.region) {
+    //Is dependant on region variable being set on window
+    this.region = region
+    switch(region) {
       case "clinton": {
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 12;

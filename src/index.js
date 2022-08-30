@@ -55,7 +55,8 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
   });
 }
 
-window.env = Environment
+window.env    = Environment
+window.region = process.env.DASH_REGION;
 const firebaseConfig = env.firebaseConfig
 initializeApp(firebaseConfig)
 
