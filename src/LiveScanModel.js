@@ -17,6 +17,13 @@ export const LiveScanModel = {
   alertpublishCollection: null,
   voicepublishCollection: null,
   announcementsCollection: null,
+  apubFieldName: null,
+  vpubFieldName: null,
+  lsLenField: null,
+  showVideoField: null,
+  showVideoOnField: null,
+  webcamNumField: null,
+  videoSource: null,
   map1: {},
   map2: {},
   polylines: {},
@@ -43,6 +50,7 @@ export const LiveScanModel = {
   ],
   announcement: {},
   waypoint: {},
+  prevWebcamNum: 0,
   prevWaypoint: {},
   prevVpubID: 0,
   prevApubID: 0,
@@ -71,6 +79,12 @@ export const LiveScanModel = {
         this.alertpublishCollection = "Alertpublish";
         this.voicepublishCollection = "Voicepublish";
         this.announcementsCollection = "Announcements";
+        this.apubFieldName = "lastApubID";
+        this.vpubFieldName = "lastVpubID";
+        this.lsLenField    = "liveScanLength";
+        this.showVideoField = "showClVideo";
+        this.showVideoOnField = "showClVideoOn";
+        this.webcamNumField = "webcamNumCl";
         break;
       }
       case "qc": {
@@ -80,10 +94,15 @@ export const LiveScanModel = {
         this.alertpublishCollection = "AlertpublishQC";
         this.voicepublishCollection = "VoicepublishQC";
         this.announcementsCollection = "AnnouncementsQC";
+        this.apubFieldName = "lastQcApubID";
+        this.vpubFieldName = "lastQcVpubID";
+        this.lsLenField    = "liveScanLengthQC";
+        this.showVideoField = "showQcVideo";
+        this.showVideoOnField = "showQcVideoOn";
+        this.webcamNumField = "webcamNumQc";
         break;
       }
     }
-    console.log("this.region is", this.region)
   },
 
   //Method used by mapper()

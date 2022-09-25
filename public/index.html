@@ -1,89 +1,104 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  
+</head>
+<body>
+  <div class="grid-container">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/9.6.7/firebase-app.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/9.6.7/firebase-auth.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-database.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-firestore.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-functions.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-messaging.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-storage.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-analytics.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-remote-config.js"></script>
-    <script defer src="/__/firebase/9.6.7/firebase-performance.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <header class="grid-item" id="titlebar">
+      <img id="logo-img" src="https://storage.googleapis.com/www.clintonrivertraffic.com/images/logo-towboat2.png">
+      <div class="logo">
+        <h1><span class="title" id="site-label"></span><span class="river" style="background-image: url(https://storage.googleapis.com/www.clintonrivertraffic.com/images/crushpixel-1625816-ID1625816-640x427.jpg)">river</span><span class="title">traffic</span></h1>
+      </div>
+      <h1>LIVE DATA</h1>
+      <div style="text-align:center;padding:0 0; margin: 0px;"> <iframe id="clock" src="clock.html" width="300" height="240" frameborder="0" seamless></iframe> </div>
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+
+    </header>
+
+    <div class="grid-item" id="map1"></div>
+
+    <div class="grid-item" id="vesslist"><h2 id="total-vessels">0 Vessels</h2>
+      <section class="listMode">
+        <ul id="all-vessels"></ul>
+      </section>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+    
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    <div class="grid-item" id="vessdata">
+      <h2 id="data-title">DATA</h2>
+      <div class="data-cont grid2-container">
+        <div id="data-table">
+          <ul id="selected-vessel"></ul>
+        </div>
+        <div id="img-frame"><img id="data-image" src="https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366917160.jpg"></div><br>
+        <div id="map2"></div>
+      </div>
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
+    </div>
+    
+
+    <div class="grid-item" id="vessevnt"><h2>EVENTS</h2>
+      <div class="grid3-container">
+        <div id="event-passenger">
+          <ul id="passenger-ul">
+            <!-- Block Updated by JavaScript -->
+          </ul>  
+        </div>
+        <div id="event-other">
+          <ul id="other-ul">
+            <!-- Block Updated by JavaScript -->
+          </ul> 
+        </div>
+      </div>
+ 
+    </div>
+    
+
+    <div class="grid-item" id="waypoint"><h2 id="waypoint-label">WAYPOINT</h2>
+      <video id="video" autoplay="true" preload="auto" muted >
+        <source id="video-source" src="clintonWebcamA.m3u8" type="application/vnd.apple.mpegurl" >
+      </video>
+      <div id="waypoint-inner"></div>
+    </div>
+    
+
+    <footer class="grid-item" id="newsbar"><p id="newstext">Welcome to the new "Dashboard" page. Perfect for your waiting room TV.</p>
+    </footer>  
+
+  </div>
+  
+  <h2 id="overlay">MAP</h2>      
+  <script src="bundle.js"></script>
+
+  <script async="async" defer="defer"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCrKHbtV_gnPMAbXAHtOPRl-H3M0OG6sY&callback=initMap">
+  </script>
+  <script type="text/JavaScript">
+    //Detect screen resolution and adjust clock size
+    const iframe = document.getElementById("clock");
+    function resizeClock() {
+
+      if(window.innerWidth < 1900) {
+        iframe.attributes["src"].nodeValue = "clock720.html";
+      } else if(window.innerWidth > 2200) {
+        iframe.attributes["src"].nodeValue = "clock4k.html";
+        iframe.attributes["width"].nodeValue = "400";
+      } else {
+        iframe.attributes["src"].nodeValue = "clock.html";
+      }
+      
+    }
+    window.addEventListener('resize', resizeClock);
+    resizeClock();
+  </script>
+</body>
 </html>

@@ -1,20 +1,25 @@
 {
-  "name": "mdm-crt-phplite",
-  "version": "1.0.0",
+  "name": "mdm-crtdash",
+  "version": "1.1.0",
   "description": "Widescreen dashboard of CRT live data in vanilla JS",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "build-cl": "webpack --env region=clinton",
-    "build-qc": "webpack --env region=qc"
+    "build-cl": "webpack --config .config/webpack.config.js --env region=clinton",
+    "build-qc": "webpack --config .config/webpack.config.js --env region=qc",
+    "build-wcc": "webpack ./src/wcc.js --output-path ./dist/wcc/",
+    "deploy-cl": "firebase deploy --only hosting:crtdash ",
+    "deploy-qc": "firebase deploy --only hosting:qrtdash",
+    "deploy": "npm run build-cl && npm run deploy-cl && npm run build-qc && npm run deploy-qc"   
   },
   "keywords": [],
-  "author": "",
+  "author": "\"Brian Griffin\"",
   "license": "ISC",
   "devDependencies": {
     "dotenv-cli": "^6.0.0",
     "dotenv-webpack": "^8.0.1",
+    "html-webpack-plugin": "^5.5.0",
     "webpack": "^5.66.0",
     "webpack-cli": "^4.9.1"
   },
@@ -22,8 +27,16 @@
     "body-parser": "^1.20.0",
     "firebase": "^9.6.3",
     "firebase-functions": "^3.21.2",
-    "firebase-tools": "^10.2.1",
+    "firebase-tools": "^11.8.0",
     "javascript-time-ago": "^2.3.10",
     "remove-strict-webpack-plugin": "^0.1.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/midnightdm/mdm-crtdash.git"
+  },
+  "bugs": {
+    "url": "https://github.com/midnightdm/mdm-crtdash/issues"
+  },
+  "homepage": "https://github.com/midnightdm/mdm-crtdash#readme"
 }

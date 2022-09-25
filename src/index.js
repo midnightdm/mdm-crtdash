@@ -1,10 +1,11 @@
 import { initializeApp } from 'firebase/app'
 import {
-  getFirestore, collection, query, where, orderBy, limit, onSnapshot, doc, getDoc
+  getFirestore, onSnapshot, doc, getDoc
 } from 'firebase/firestore'
 import { LiveScanModel } from './LiveScanModel'
 import { Environment } from './environment'
 import LiveScan from './LiveScan'
+import Hls from './hls.min.js'
 //UNCOMMENT BELOW FOR TEST DATA (& Set line 365 to true)
 //import { fakeLiveScan } from './fakeLiveScan.js'
 import TimeAgo from 'javascript-time-ago'
@@ -57,15 +58,19 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 
 window.env    = Environment
 window.region = process.env.DASH_REGION;
+
+const privateMode = true;
 const firebaseConfig = env.firebaseConfig
 initializeApp(firebaseConfig)
+//const hls = new Hls()
+//window.hls = hls
 
 const db = getFirestore();
 const liveScanModel = LiveScanModel;
 liveScanModel.initRegion();
 const liveScans     = [];
 const siteLabel     = document.getElementById("site-label");
-siteLabel.innerText = env.region;
+siteLabel.innerText = region;
 const selVessel     = document.getElementById("selected-vessel");
 const dataTitle     = document.getElementById("data-title");
 const dataImage     = document.getElementById("data-image");
@@ -75,7 +80,11 @@ const ulPass        = document.getElementById("passenger-ul");
 const ulOther       = document.getElementById("other-ul"); 
 const waypoint      = document.getElementById("waypoint");
 const waypointDiv   = document.getElementById("waypoint-inner"); 
+const waypointLabel = document.getElementById("waypoint-label");
 const news          = document.getElementById("newstext");
+const videoTag         = document.getElementById('video');
+const videoSource  = document.getElementById("video-source");
+
 
 function initMap() {
   liveScanModel.initalizeMap();
@@ -83,6 +92,7 @@ function initMap() {
 window.initMap = initMap;
 window.initLiveScan = initLiveScan;
 testHeight()
+//hls.attachMedia(videoTag)
 
 /* * * * * * * * *
 * Functions  
@@ -99,6 +109,35 @@ function getPassageFor(liveKey) {
     }
     resolve(passage)
   })
+}
+
+function outputWaypoint(showVideoOn, showVideo, webcamNum) {  
+  if(privateMode==true) { 
+    showVideoOn=false;
+  }
+  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum), videoSource", showVideoOn, showVideo, webcamNum, liveScanModel.videoSource);
+  if(showVideoOn==true && showVideo==true) {
+    waypointDiv.style = `display: none`;
+    videoTag.style = `display: block; z-index: 0`;
+    waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+    console.log("webcamNum is", webcamNum);
+    if(webcamNum != liveScanModel.prevWebcamNum) {
+      liveScanModel.videoSource = location.protocol +'//' + location.host + '/'+ region + 'Webcam' + webcamNum + '.m3u8';
+      console.log("video source", liveScanModel.videoSource);
+      //hls.loadSource(liveScanModel.videoSource);
+      videoSource.setAttribute("src", liveScanModel.videoSource);
+      liveScanModel.prevWebcamNum = webcamNum;
+      console.log("outputWaypoint(showVideoOn, showVideo, webcamNum), videoSource", showVideoOn, showVideo, webcamNum, liveScanModel.videoSource);
+    } 
+    waypointLabel.style = `z-index: 1`;
+  } else {
+    videoTag.style = `display: none`;
+    waypoint.style = `background-image: url(${liveScanModel.waypoint.bgMap})`;
+    waypointLabel.innerHTML = "WAYPOINT";
+    waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
+    waypointDiv.style.display = "block";
+    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum)", showVideoOn, showVideo, webcamNum);
+  } 
 }
 
 
@@ -215,8 +254,6 @@ async function outputAllVessels() {
   allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
 }
 
-
-
 function outputNews() {
   //News section
   animateCSS('#newstext', 'fadeIn');
@@ -289,11 +326,6 @@ function outputOtherAlerts() {
   ulOther.innerHTML    = alertsOutputOther;
 }
 
-function outputWaypoint() {  
-  waypoint.style = `background-image: url(${liveScanModel.waypoint.bgMap})`;
-  waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
-}
-
 
 async function initLiveScan(rotateTransponders=true) {  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
@@ -351,7 +383,7 @@ async function initLiveScan(rotateTransponders=true) {
         for(i=0; i<data.length; i++){
           dat = data[i];
           //Skip out-of-region data objects
-          if(dat.liveRegion != env.region) {
+          if(dat.liveRegion != region) {
             console.log("Skipping out-of-region vessel",dat.liveName);
             continue;
           }
@@ -515,16 +547,27 @@ async function fetchPassengerAlerts() {
   })
 }
 
-function fetchWaypoint() {
+async function fetchWaypoint() {
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
-    let dataSet = querySnapshot.data()
-    let apubID  = dataSet.lastApubID.toString() 
-    let vpubID  = dataSet.lastVpubID.toString()
-    let lsLen   = dataSet.livescanLength //Number   
+    let dataSet = querySnapshot.data();
+    let apubID, vpubID, lsLen, showVideo, showVideoOn, webcamNum, apublishCollection, vpublishCollection, waypoint; 
+    let wasOutput = false; //Resets when screen updates
     
+    console.log("snapshotUpdate", liveScanModel.waypoint.bgMap);
+
+
+    apubID = dataSet[liveScanModel.apubFieldName].toString();
+    vpubID = dataSet[liveScanModel.vpubFieldName].toString();
+    lsLen   = dataSet[liveScanModel.lsLenField]
+    showVideo   = dataSet[liveScanModel.showVideoField]
+    showVideoOn = dataSet[liveScanModel.showVideoOnField]
+    webcamNum   = dataSet[liveScanModel.webcamNumField]   
+    apublishCollection = liveScanModel.alertpublishCollection;
+    vpublishCollection = liveScanModel.voicepublishCollection;
+
     //Compare lsLen to liveScan array size
     if(lsLen < liveScans.length) {
-      //Reset array and maps if update is less
+      //Reset array and maps if update array size is less
       liveScans.forEach( o => {
         o.map1marker.setMap(null)
         o.map2marker.setMap(null)
@@ -537,32 +580,36 @@ function fetchWaypoint() {
       liveScanModel.prevVpubID = vpubID
     }
 
-    getDoc(doc(db, liveScanModel.alertpublishCollection,  apubID))
+    //Check for new waypoint on each snapshot update
+    getDoc(doc(db, apublishCollection,  apubID))
     .then( (document) => {
       if(document.exists()) {
-        liveScanModel.waypoint = document.data()
+        waypoint = document.data()
         let dt = new Date()
         let ts = Math.round(dt.getTime()/1000)
-        let diff = ts - liveScanModel.waypoint.apubTS
+        let diff = ts - waypoint.apubTS
+        //Is apubID (waypoint) new?
         if(apubID > liveScanModel.prevApubID ) {
+          //Is model 0 default?
           if(liveScanModel.prevApubID == 0) {
+            //Yes. Update stored obj and save new apubID
+            liveScanModel.waypoint   = waypoint
             liveScanModel.prevApubID = apubID
           }
+          //Yes. Output true to report it.
           return true
         }       
       } else {
-        liveScanModel.waypoint = {
-          apubText: "Waypoint update is unavailable",
-          bgMap: "url"
-        }
-        outputWaypoint()
+        outputWaypoint(showVideoOn, showVideo, webcamNum)
+        wasOutput = true
         return false
       }
     })
+
     .then( (isNew) => {
       if(!isNew) return
-
-      //Calculate waypoint by event and direction data
+      //Waypoint is new, so continue
+      //   Calculate waypoint by event and direction data
       let dir = liveScanModel.waypoint.apubDir.includes('wn') ? "down" : "up"
       //Strip waypoint basename as event name
       let event = liveScanModel.waypoint.apubEvent.substr(0, liveScanModel.waypoint.apubEvent.length-2)
@@ -572,8 +619,9 @@ function fetchWaypoint() {
       //Prevent audio play on reload
       if(liveScanModel.isReload) {
         liveScanModel.isReload = false 
-        outputWaypoint()
-        console.log("waypoint output skipping play on browser reload.")
+        outputWaypoint(showVideoOn, showVideo, webcamNum);
+        wasOutput = true
+        console.log("waypoint output skipping audio play on browser reload.")
         return
       }
       //Change class of event with matching apubID
@@ -590,10 +638,11 @@ function fetchWaypoint() {
       } else {
         console.log("no waypoint match to an event was found")
       }
-      outputWaypoint()
+      outputWaypoint(showVideoOn, showVideo, webcamNum)
     })
 
-    getDoc(doc(db, liveScanModel.voicepublishCollection, vpubID))
+    //Also check for new voice annoucement on each snapshot update
+    getDoc(doc(db, vpublishCollection, vpubID))
     .then( (document) => {
       if(document.exists()) {
         //let announcement = document.data()
@@ -620,8 +669,14 @@ function fetchWaypoint() {
         playAnnouncement()
       }
     })
+    if(!wasOutput) {
+      //Ensure view update for showVideo boolean changes
+      outputWaypoint(showVideoOn, showVideo, webcamNum)
+    }
+
 
   })
+
   return new Promise((resolve, reject )=>{
     resolve()
     reject()
@@ -803,57 +858,4 @@ function stepTransponderView() {
   liveScanModel.transponder.step++
 }
 
-// function initDeleteSnapshot() {
-//   //Initiate Deletes db snapshot
-//   const q = query(collection(db, 'Deletes'), orderBy("ts", "desc"), limit(5));
-//   const liveScanSnapshot = onSnapshot(q, (querySnapshot) => {
-//     let dat, key, o, i=0, marker, coords, course, snapIDs = [];
-//     querySnapshot.forEach( async (doc) => {
-//       dat = doc.data();
-//       if(liveScans==undefined) {
-//         console.log("initDeleteSnapshot() found empty liveScans.")
-//         return
-//       }
-//       key = getKeyOfId(liveScans, dat.id)
-//       if(key==-1) { return }
-//       //Test if delete time is newer than last transponder update
-//       console.log("Test "+i+",\n for id: "+dat.id+"\n dat.ts: "+dat.ts+" > liveScans["+key+"].transponderTS: "+liveScans[key]);
-//       i++;
-//       if(dat.ts > liveScans[key].transponderTS)
-//         liveScans.splice(key, 1)
-//         outputAllVessels();
-//         console.log("1 Vessel was deleted.");
-//     })         
-//   })  
-// }
 
-// function initLiveScanSnapshot() {
-//   //FUNCTION NOT USED 
-//   //Initiate liveScans db snapshot
-//   const q = query(collection(db, 'LiveScan'), where('liveVesselID', '!=', false));
-//   const liveScanSnapshot = onSnapshot(q, (querySnapshot) => {
-//     let dat, key, o, marker, coords, course, snapIDs = [];
-//     querySnapshot.forEach( async (doc) => {
-//       dat = doc.data();
-//       snapIDs.push(dat.liveVesselID)
-//       key = getKeyOfId(liveScans, dat.liveVesselID);
-//       //Create & Push
-//       if(key==-1) {
-//         let obj = await liveScanModel.mapper(new LiveScan(liveScanModel), dat, true)
-//         liveScans.push(obj);
-//         let len = await fetchPassagesList()
-//         await outputSelVessel(); // LET CLOCK DO ALL UPDATES
-//         outputAllVessels();
-//       }
-//       //Find & Update
-//       else {
-//         liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false)
-//         //Has num of vessels changed?
-//         if(liveScans.length != liveScanModel.numVessels) {
-//           //Store new vessels quantity
-//           liveScanModel.numVessels = liveScans.length;              
-//         }
-//       }  
-//     })
-//   }) 
-// }

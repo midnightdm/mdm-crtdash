@@ -66,6 +66,12 @@ h4.map-label {
   position: relative;
 }
 
+#waypoint-label {
+  position: relative;
+  z-index: 100;
+}
+
+
 #waypoint-inner h3 {
   font-size: 0.6rem;
 }
@@ -406,8 +412,9 @@ li.card p {
 
 /* Waypoint section styling */
 #waypoint-inner {
+  display:none;
   background-color: rgba(81, 186, 190, 0.897);
-  position: absolute;
+  position: absolute;  
   width: 40%;
   padding: 3px;
   border: black solid 2px;
@@ -415,6 +422,19 @@ li.card p {
   right: 25px;
   margin: auto auto;
   text-align: left;
+ 
+}
+
+
+video#video {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  z-index: 0; 
 }
 
 em {

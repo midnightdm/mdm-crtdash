@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <title>CRT Dashboard</title>
   
-</head>
+<script defer src="bundle.js"></script></head>
 <body>
   <div class="grid-container">
 
@@ -63,7 +63,10 @@
     </div>
     
 
-    <div class="grid-item" id="waypoint"><h2>WAYPOINT</h2>
+    <div class="grid-item" id="waypoint"><h2 id="waypoint-label">WAYPOINT</h2>
+      <video id="video" autoplay="true" preload="auto" muted >
+        <source id="video-source" src="clintonWebcamA.m3u8" type="application/vnd.apple.mpegurl" >
+      </video>
       <div id="waypoint-inner"></div>
     </div>
     
@@ -73,8 +76,9 @@
 
   </div>
   
-  <h2 id="overlay">MAP</h2>
+  <h2 id="overlay">MAP</h2>      
   <script src="bundle.js"></script>
+
   <script async="async" defer="defer"
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCrKHbtV_gnPMAbXAHtOPRl-H3M0OG6sY&callback=initMap">
   </script>

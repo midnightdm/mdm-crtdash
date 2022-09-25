@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+  <script src="https://unpkg.com/video.js/dist/video.js"></script>
+  <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js">
+  </script>
+  <link rel="stylesheet" href="wcc/wcc.css">
+  <title>Webcam Control</title>
+  
+<script defer src="wcc/main.js"></script></head>
+<body>
+  <main class="local">  
+    <div id="AdminWebcam" class="AdminWebcam">
+
+      <div class="flex-container">
+        <div class="flex-item">
+          <h1>Webcam Control</h1>
+          
+          <h3 id="control-label">DATA LOADING...</h3>
+          <p id="control-text"></p>
+
+          <button id="video-button" class="example_b">
+            <span id="video-button-text">Disable</span>
+          </button>
+
+          <h3 id="audio-label"></h3>
+          <p id="audio-text"></p>
+
+          <button id="audio-button" class="example_b">
+            <span id="audio-button-text">Disable</span>
+          </button>
+          
+          <h3 id="trigger-label"></h3>
+          <p id="trigger-text"></p>
+
+            
+        </div>
+        <div class="flex-item">
+          <div class="flex-item thumbnail-container slotb">
+            <div class="thumbnail">
+              <iframe src="index.html" frameborder="0"></iframe>
+            </div>
+          </div>
+        </div>
+        <div class="flex-item">
+          <video id="cameraA" class="video-js vjs-fluid vjs-default-skin" preload="auto" autoplay="true" muted>
+            <source src="clintonWebcamA.m3u8" type="application/vnd.apple.mpegurl" >
+          </video>
+          </div>
+        <div class="flex-item">
+          <video id="cameraB" class="video-js vjs-fluid vjs-default-skin" autoplay="true" muted>
+            <source src="clintonWebcamB.m3u8" type="application/vnd.apple.mpegurl" >
+          </video>
+        </div>
+      </div>
+      <button type="submit" id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>&nbsp;&nbsp;
+      <button type="submit" id="logout-btn" class="btn yellow darken-2 z-depth-0">Logout</button>
+    </div>
+
+  </main>
+
+<!-- div id="modal-login" class="modal">
+  <div class="modal-content">
+    <h4>Login</h4><br />
+    <form id="login-form">
+      <div class="input-field">
+        <input type="email" id="login-email" required size="40"/>
+        <label for="login-email">Email</label>
+      </div>
+      <div class="input-field">
+        <input type="password" id="login-password" required size="40" />
+        <label for="login-password">Password</label>
+      </div>
+      <button type="submit" id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>
+    </form>
+  </div>
+</! -->
+</body>
+
+
+
+</html>
