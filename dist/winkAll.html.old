@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <style>
+    div.cam-container {
+      overflow: hidden;
+      position: relative; 
+      width: 100%; 
+      height: 25vh;
+      margin:0;
+      padding: 0;
+    }
+    video {
+      position:absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%); 
+      height: 100%;
+      width: 177.77777778vh; /* 100 * 16 / 9 */
+      min-width: 100%;
+      min-height: 20vw; /* 100 * 9 / 16 */
+      margin: 0;
+      padding: 0;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 41.64vw 41.64vw 16.72vw;
+  grid-gap: 0px;  
+}
+
+#cam1 {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start:2;
+  grid-row-end:3;
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw; 
+}
+#cam2 {
+  background-color: black;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start:2;
+  grid-row-end:3;
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw;
+  text-align: center;
+}
+
+#cam3 {
+  background-color: black;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start:3;
+  grid-row-end:4;
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw;
+  text-align: center;
+}
+
+/* Waypoint & Webcam section */
+
+#cam4 {
+  background-color: black;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start:3;
+  grid-row-end:4;
+  min-height: 41.66vh; max-height: 41.66vh;
+  min-width:  41.64vw; max-width:  41.64vw;
+  text-align: center;
+  position: relative;
+}
+  </style>
+
+
+  <title>Winkel Webcams All</title>
+  
+</head>
+<body>
+  <main class="grid-container">  
+    <div id="cam1" class="cam-container">
+        <video id="cameraA">
+          <source src="winkel1Webcam.m3u8" type="application/x-mpegURL">
+        </video>
+    </div>
+    <div id="cam2"  class="cam-container">
+      <video id="cameraB">
+        <source src="winkel2Webcam.m3u8" type="application/x-mpegURL">
+      </video>
+  </div>
+  <div id="cam3" class="cam-container">
+    <video id="cameraC">
+      <source src="winkel3Webcam.m3u8" type="application/x-mpegURL">
+    </video>
+</div>
+<div id="cam4"  class="cam-container">
+  <video id="cameraD">
+    <source src="winkel4Webcam.m3u8" type="application/x-mpegURL">
+  </video>
+</div>
+  </main>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+
+<script>
+  const cameraA      = document.getElementById('cameraA');
+  const cameraB      = document.getElementById('cameraB');
+  const cameraC      = document.getElementById('cameraC');
+  const cameraD      = document.getElementById('cameraD');
+  let playerA = videojs("cameraA", {
+    autoplay: "muted",
+    preload: "auto",
+    responsive: true,
+  });
+  let playerB = videojs("cameraB", {
+    autoplay: "muted",
+    preload: "auto",
+    responsive: true,
+  });
+  let playerC = videojs("cameraC", {
+    autoplay: "muted",
+    preload: "auto",
+    responsive: true,
+  });
+  let playerD = videojs("cameraD", {
+    autoplay: "muted",
+    preload: "auto",
+    responsive: true,
+  });
+playerA.requestFullScreen();
+</script>
+</body>
+</html>

@@ -1,18 +1,36 @@
 
 
 export const LiveScanModel = {   
-  clinton: {lat: 41.857202, lng:-90.184084},
+  clinton: {lat: 41.8709102, lng:-90.184084},
   qc:      {lat:  41.5350474, lng:-90.4997822},
   interval: 20000,
   fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/json",
   tock: 0,
   minute: 0,
+  resetTime: [
+    { min: 30, sec: 45}
+  ],
+  idTime: [
+    { min: 59, sec: 45}
+  ],
+  idPlus15: {
+    min: 0,
+    sec: 0
+  },
+  cameraStatus: {
+    showVideo: null,
+    showVideoOn: null,
+    webcamNum: null,
+    videoIsFull: false
+  },
+  promoSources: [],
+  promoIsOn: false,
   labelIndex:0,
   lab:"_ABCDEFGHIJKLMNOPQRSTUVWXYZ*#@&~1234567890abcdefghijklmnopqrstuvwxyz",
   red:"#ff0000",
   region: null,
   focusPosition:null,
-  map1ZoomLevel: 12,
+  map1ZoomLevel: 10,
   passagesCollection: null,
   alertpublishCollection: null,
   voicepublishCollection: null,
@@ -24,6 +42,10 @@ export const LiveScanModel = {
   showVideoOnField: null,
   webcamNumField: null,
   videoSource: null,
+  videoIsOn: false,
+  videoProgram: null,
+  videoProgramIsOn: false,
+  vesselsInCamera: [],
   map1: {},
   map2: {},
   polylines: {},
@@ -74,7 +96,7 @@ export const LiveScanModel = {
     switch(region) {
       case "clinton": {
         this.focusPosition = this.clinton; 
-        this.map1ZoomLevel = 12;
+        this.map1ZoomLevel = 11;
         this.passagesCollection = "Passages";
         this.alertpublishCollection = "Alertpublish";
         this.voicepublishCollection = "Voicepublish";
@@ -152,6 +174,7 @@ export const LiveScanModel = {
     o.imageUrl = dat.imageUrl;
     o.type   = dat.type;
     o.otherDataLabel = "od"+dat.liveVesselID;
+    o.inCameraRange = dat.inCameraRange;
         
     //FOR SHIP ICON MOVEMENT
     let coords = this.getShipSpriteCoords(o.course), icon;
@@ -230,7 +253,7 @@ export const LiveScanModel = {
       {
         zoom: this.map1ZoomLevel, 
         center: {lat: 41.85002, lng:-90.184084}, 
-        mapTypeId: "hybrid",
+        mapTypeId: "roadmap",
         disableDefaultUI: true
       }
     );

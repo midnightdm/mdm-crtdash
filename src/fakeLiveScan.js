@@ -2,6 +2,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 250.9,
       liveDirection: "upriver",
       liveDraft: null,
@@ -37,6 +38,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/no-image-placard.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 360,
       liveDirection: "undetermined",
       liveDraft: null,
@@ -57,6 +59,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 32.2,
       liveDirection: "upriver",
       liveDraft: null,
@@ -81,17 +84,18 @@ export const fakeLiveScan =  [
       liveMarkerCharlieWasReached: false,
       liveMarkerDeltaTS: null,
       liveMarkerDeltaWasReached: false,
-      liveName: "Terrebonne",
+      liveName: "Huge Friggin' Boat",
       livePassageWasSaved: false,
       liveSpeed: 0,
       liveVesselID: 366970820,
       liveWidth: null,
-      type: "Towing" 
+      type: "Passenger" 
     },
     
     {
     imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366986460.jpg",
     liveCallSign: null,
+    liveRegion: "clinton",
     liveCourse: 331.5,
     liveDirection: "downriver",
     liveDraft: null,
@@ -128,6 +132,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 250.9,
       liveDirection: "upriver",
       liveDraft: null,
@@ -163,6 +168,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 250.9,
       liveDirection: "upriver",
       liveDraft: null,
@@ -198,6 +204,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/no-image-placard.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 360,
       liveDirection: "undetermined",
       liveDraft: null,
@@ -218,6 +225,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 32.2,
       liveDirection: "upriver",
       liveDraft: null,
@@ -253,6 +261,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 250.9,
       liveDirection: "upriver",
       liveDraft: null,
@@ -289,6 +298,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 250.9,
       liveDirection: "upriver",
       liveDraft: null,
@@ -321,9 +331,10 @@ export const fakeLiveScan =  [
       type: "Towing" 
     },
 
-        {
+    {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/no-image-placard.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 360,
       liveDirection: "undetermined",
       liveDraft: null,
@@ -344,6 +355,7 @@ export const fakeLiveScan =  [
     {
       imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
       liveCallSign: null,
+      liveRegion: "clinton",
       liveCourse: 32.2,
       liveDirection: "upriver",
       liveDraft: null,

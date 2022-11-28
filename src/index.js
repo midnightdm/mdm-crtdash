@@ -5,7 +5,7 @@ import {
 import { LiveScanModel } from './LiveScanModel'
 import { Environment } from './environment'
 import LiveScan from './LiveScan'
-import Hls from './hls.min.js'
+//import Hls from './hls.min.js'
 //UNCOMMENT BELOW FOR TEST DATA (& Set line 365 to true)
 //import { fakeLiveScan } from './fakeLiveScan.js'
 import TimeAgo from 'javascript-time-ago'
@@ -62,8 +62,8 @@ window.region = process.env.DASH_REGION;
 const privateMode = true;
 const firebaseConfig = env.firebaseConfig
 initializeApp(firebaseConfig)
-//const hls = new Hls()
-//window.hls = hls
+// const hls = new Hls()
+// window.hls = hls
 
 const db = getFirestore();
 const liveScanModel = LiveScanModel;
@@ -82,9 +82,13 @@ const waypoint      = document.getElementById("waypoint");
 const waypointDiv   = document.getElementById("waypoint-inner"); 
 const waypointLabel = document.getElementById("waypoint-label");
 const news          = document.getElementById("newstext");
-const videoTag         = document.getElementById('video');
-const videoSource  = document.getElementById("video-source");
-
+const videoTag      = document.getElementById('video');
+const mapTag        = document.getElementById("overlay");
+const logoImg       = document.getElementById("logo-img");
+const videoSource   = document.getElementById("video-source");
+const overlay2      = document.getElementById("overlay2");
+const overlayList   = document.getElementById("overlay-list");
+let player = null;   
 
 function initMap() {
   liveScanModel.initalizeMap();
@@ -97,6 +101,27 @@ testHeight()
 /* * * * * * * * *
 * Functions  
 */
+function getTime() { 
+  var date = new Date(); 
+  return { 
+    month: (date.getMonth()+1),
+    date: date.getDate(),
+    hour: date.getHours(), 
+    min: date.getMinutes(), 
+    sec: date.getSeconds() 
+  }; 
+} 
+
+function fifteenSecondsLater(time) {
+  let sec = time.sec + 15;
+  let min = time.min;
+  if(sec>59) { 
+    sec = 60-sec; 
+    min = min+1;
+  }
+  return {sec, min };
+}
+
 function getPassageFor(liveKey) {
   return new Promise(async (resolve, reject)=>{
     var vesselID = liveScans[liveKey].id
@@ -111,35 +136,135 @@ function getPassageFor(liveKey) {
   })
 }
 
-function outputWaypoint(showVideoOn, showVideo, webcamNum) {  
+async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram) {  
   if(privateMode==true) { 
     showVideoOn=false;
   }
-  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum), videoSource", showVideoOn, showVideo, webcamNum, liveScanModel.videoSource);
+  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
   if(showVideoOn==true && showVideo==true) {
+    liveScanModel.videoIsOn = true;
     waypointDiv.style = `display: none`;
     videoTag.style = `display: block; z-index: 0`;
-    waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+    const options = {
+      autoplay: true,
+      preload: "auto",
+      fluid: true,
+      loadingSpinner: false
+    };
     console.log("webcamNum is", webcamNum);
-    if(webcamNum != liveScanModel.prevWebcamNum) {
-      liveScanModel.videoSource = location.protocol +'//' + location.host + '/'+ region + 'Webcam' + webcamNum + '.m3u8';
-      console.log("video source", liveScanModel.videoSource);
-      //hls.loadSource(liveScanModel.videoSource);
-      videoSource.setAttribute("src", liveScanModel.videoSource);
-      liveScanModel.prevWebcamNum = webcamNum;
-      console.log("outputWaypoint(showVideoOn, showVideo, webcamNum), videoSource", showVideoOn, showVideo, webcamNum, liveScanModel.videoSource);
-    } 
+    if(videoIsFull) {
+      videoTag.classList.add("full")
+      waypointLabel.classList.add("full")
+      mapTag.classList.add("full")
+      logoImg.classList.add("full")
+      news.classList.add("full")
+      overlay2.classList.add("full")
+    } else if(videoTag.classList.contains("full")) {
+      videoTag.classList.remove("full")
+      waypointLabel.classList.remove("full")
+      mapTag.classList.remove("full")
+      logoImg.classList.remove("full")
+      news.classList.remove("full")
+      overlay2.classList.remove("full")
+    }
+    if(playPromo) {
+      // Play promo from rotation at random
+      let sk = Math.floor(Math.random() * liveScanModel.promoSources.length)
+      let promoSource = location.protocol + '//' + location.host + '/' + liveScanModel.promoSources[sk];
+      console.log("promo source", promoSource);
+      waypointLabel.innerHTML = "Thank You For Watching";
+      if(overlay2.classList.contains("active")) {
+        liveScanModel.promoIsOn = true;
+        overlay2.classList.remove("active");
+      }
+      player = videojs("video", options, function onPlayerReady() {
+        this.on('ended', function() {
+          this.src({ src: liveScanModel.videoSource });
+          this.play();
+          liveScanModel.promoIsOn = false;
+          waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+        });
+        this.src({ src: promoSource });
+        this.play();
+      });
+    }
+    if(playProgram) {  
+      //Play scheduled video program
+      waypointLabel.innerHTML = liveScanModel.videoProgram.dataTitle;
+      if(overlay2.classList.contains("active")) {
+        liveScanModel.videoProgramIsOn = true;
+        overlay2.classList.remove("active");
+      }
+      player = videojs("video", options, function onPlayerReady() {
+        this.on('ended', function() {
+          this.src({ src: liveScanModel.videoSource });
+          this.play();
+          liveScanModel.videoProgramIsOn = false;
+          waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+        })
+        this.src({ src: liveScanModel.videoProgram.source });
+        this.play();
+      });
+    } else {
+      if(webcamNum != liveScanModel.prevWebcamNum) {
+        waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+        liveScanModel.videoSource = location.protocol +'//' + location.host + '/'+ region + 'Webcam' + webcamNum + '.m3u8';
+        //"https://webcam.carifenzel.cf/"+ region+ 'Webcam' + webcamNum + '.m3u8';
+        console.log("video source", liveScanModel.videoSource);
+        //hls.loadSource(liveScanModel.videoSource);
+        //videoSource.setAttribute("src", liveScanModel.videoSource);
+        if(player==null) {
+          player = videojs("video", options);
+        }
+        player.ready(function() {
+          player.src({ src: liveScanModel.videoSource })
+          player.play()
+        });
+        liveScanModel.prevWebcamNum = webcamNum;      
+        console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+      }
+    }   
     waypointLabel.style = `z-index: 1`;
   } else {
+    liveScanModel.videoIsOn = false;
     videoTag.style = `display: none`;
     waypoint.style = `background-image: url(${liveScanModel.waypoint.bgMap})`;
     waypointLabel.innerHTML = "WAYPOINT";
     waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
     waypointDiv.style.display = "block";
-    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum)", showVideoOn, showVideo, webcamNum);
-  } 
+    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull)", showVideoOn, showVideo, webcamNum, videoIsFull);
+  }
+  return new Promise((resolve, reject )=>{
+    resolve()
+    reject()
+  })  
 }
 
+function outputVideoOverlay() {
+  //Superimpose list of vessels in camera range
+  if(liveScanModel.videoIsOn && liveScanModel.vesselsInCamera.length>0) {
+    let v, vlist = "";
+    for(v in liveScanModel.vesselsInCamera) {
+      vlist += `<li class="crv-list">${liveScanModel.vesselsInCamera[v]}</li>`;
+    }
+    overlayList.innerHTML = vlist;
+    if(!overlay2.classList.contains("active")) {
+      const patterns = ['zoomInDown','zoomIn','zoomInLeft','zoomInRight','zoomInUp','rotateIn','rootateInDownLeft', 'rotateInDownRight', 'rotateInUpLeft', 'rotateInUpRight','fadeIn',
+      'fadeInDown','fadeInDownBig', 'fadeInLeft', 'fadeInLeftBig','fadeInRight','fadeInRightBig','fadeInUp','fadeInUpBig','fadeInTopLeft','fadeInTopRight',
+      'fadeInBottomLeft', 'fadeInBottomRight'
+      ];
+      let r = Math.floor((Math.random() * patterns.length)+1)
+      animateCSS('#overlay2', patterns[r]);
+      overlay2.classList.add("active");
+    }
+    //See initLiveScan() for the camera in view test
+  } else {
+    if(overlay2.classList.contains("active")) {
+      //animateCSS('#overlay2', 'fadeOut');
+      overlay2.classList.remove("active");
+    }
+  }
+}
 
 async function outputSelVessel() {
   let selVesselOutput = "";
@@ -175,8 +300,8 @@ async function outputSelVessel() {
   );
   let vesselID = liveScans[live].id
   let passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
-  //let passageDate = liveScanModel.passagesList[passageIdx].date
-  let passageDate = liveScans[live].lastPassageTS
+  let passageDate = liveScanModel.passagesList[passageIdx].date
+  //let passageDate = new Date(liveScans[live].lastDetectedTS);
   
   //Build output for selected vessel
   selVesselOutput += 
@@ -195,10 +320,12 @@ async function outputSelVessel() {
   <li class="dataPoint"><span class="th">COORDINATES:</span> <span class="td dir">
   ${liveScans[live].lat.toFixed(7)}, ${liveScans[live].lng.toFixed(7)}</span>  </li>
   <li class="dataPoint"><span class="th">LOCATION:</span> <span class="td">
-  ${liveScans[live].liveLocation}</span></li>
+  ${liveScans[live].liveLocation}</span></li>`;
+  /*
   <li class="dataPoint"><span class="th">LAST PASSAGE:</span> <span class="td">
   ${passageDate.toDateString()}
   </span></li>`;
+  */
   selVessel.innerHTML  = selVesselOutput;      //Selected Vessel's Data
   dataTitle.innerHTML  = liveScans[live].name;
   dataImage.setAttribute('src', liveScans[live].imageUrl);
@@ -209,10 +336,11 @@ async function outputSelVessel() {
 }
 
 async function outputAllVessels() {
-  let allVesselsOutput = "";
+  let allVesselsOutput = "", vesselsInCamera = [];
   //Build output for transponder list (from viewList if used)
   if(liveScanModel.transponder.viewList.length> 0){
     let c = 0;
+    
     for(let vessel in liveScanModel.transponder.viewList) {
       let obj = liveScanModel.transponder.viewList[vessel]
       allVesselsOutput+= c==liveScanModel.transponder.stepMax-1 ? `<li class="animate__animated animate__slideInLeft">` : `<li class="animate__animated animate__slideInUp">`;
@@ -227,6 +355,7 @@ async function outputAllVessels() {
         </div>
         <h5>${obj.liveLocation}</h5>
       </li>`;
+      //Test for vessels in camera view
       c++;
     }
   } else {
@@ -248,8 +377,11 @@ async function outputAllVessels() {
         </div>
         <h5>${obj.liveLocation}</h5>
       </li>`;
+
     }
   }
+  liveScanModel.vesselsInCamera = vesselsInCamera;
+  //console.log("Content of liveScanModel:", liveScanModel);
   totVessels.innerHTML = liveScans.length+" Vessels"; //Total Vessels Title
   allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
 }
@@ -328,14 +460,16 @@ function outputOtherAlerts() {
 
 
 async function initLiveScan(rotateTransponders=true) {  
+  
   /*   *   *   *   *   *   *   *   *   *   *  *  *   *
-   * Begin a 60 sec master clock for loop control    */
-  setInterval( async ()=> {
+   * Begin a 60 sec master clock for loop control    *
+   *   *   *   *   *   *   *   *   *   *   *  *   *  */
 
+  setInterval( async ()=> {
+    let now;
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
-
       //Also refresh time element views
       updateTimes()
     }
@@ -378,7 +512,7 @@ async function initLiveScan(rotateTransponders=true) {
       });
       if(response.status===200) {
         const data = await response.json();
-        let key, obj, len, dat, i;
+        let key, obj, len, dat, i, vesselsInCamera=[];
         
         for(i=0; i<data.length; i++){
           dat = data[i];
@@ -398,6 +532,11 @@ async function initLiveScan(rotateTransponders=true) {
             obj = await liveScanModel.mapper(new LiveScan(), dat, true);
             obj.key = liveScans.length;
             liveScans.push(obj);
+            //Test for vessels in camera view
+            if(obj.inCameraRange==true) {
+              vesselsInCamera.push(obj.name);
+              //console.log(`Adding ${obj.name} to vesselsInCamera`);
+            }
           }
           //Find & Update
           else {
@@ -409,14 +548,60 @@ async function initLiveScan(rotateTransponders=true) {
               //Reset rotating key to avoid desynch
               liveScanModel.rotatingKey = liveScanModel.numVessels;              
             }
-          }  
-        };
+            //Test for vessels in camera view
+            if(liveScans[key].inCameraRange==true) {
+              vesselsInCamera.push(liveScans[key].name);
+              //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
+            }
+          }
+        }
+        liveScanModel.vesselsInCamera = vesselsInCamera;
+        if(!liveScanModel.promoIsOn || !liveScanModel.videoProgramIsOn) {
+          outputVideoOverlay(); 
+        }
       }  
     }
     //Every 1 sec advance clock 
     liveScanModel.tock++;
     //Advance moving vessel icons predictively
-    predictMovement() 
+    predictMovement()
+    //Test for time triggers
+    now = getTime()
+    liveScanModel.resetTime.forEach((rt)=>{
+      if(now.min==rt.min && now.sec==rt.sec) {
+        location.reload();
+      }
+    })
+    liveScanModel.idTime.forEach(async (idt) => {
+      if(now.min==idt.min && now.sec==idt.sec) {
+        await outputWaypoint(
+          liveScanModel.cameraStatus.showVideoOn,
+          liveScanModel.cameraStatus.showVideo,
+          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.videoIsFull,
+          true,
+          false
+        )
+      }
+      if(
+        now.month==liveScanModel.videoProgram.month &&
+        now.date ==liveScanModel.videoProgram.date  &&
+        now.hour ==liveScanModel.videoProgram.hour  &&
+        now.min  ==liveScanModel.videoProgram.min   &&
+        now.sec  ==liveScanModel.videoProgram.sec) {
+          await outputWaypoint(
+            liveScanModel.cameraStatus.showVideoOn,
+            liveScanModel.cameraStatus.showVideo,
+            liveScanModel.cameraStatus.webcamNum,
+            liveScanModel.videoProgram.videoIsFull,
+            false,
+            true
+            
+          )
+        }
+    })
+
+
   }, 1000);
   /*  END OF CLOCK LOOP   */
 
@@ -427,15 +612,8 @@ async function initLiveScan(rotateTransponders=true) {
       liveScans.push(obj)
       let len = await fetchPassagesList()
       //outputVessels()
-    })
-    
-  } else {
-    //Initiate liveScans db snapshot
-    //  initLiveScanSnapshot() DISABLED
-    //And its deletion manager
-    //initDeleteSnapshot()
-  }
-
+    })    
+  } 
   await fetchAllAlerts();
   await fetchPassengerAlerts();
   await fetchWaypoint();
@@ -444,7 +622,8 @@ async function initLiveScan(rotateTransponders=true) {
   //Do first outputs
   outputOtherAlerts();
   outputPassengerAlerts();
-  outputSelVessel();  
+  outputSelVessel();
+  outputVideoOverlay();  
 }
 
 function updateTimes() {
@@ -550,20 +729,25 @@ async function fetchPassengerAlerts() {
 async function fetchWaypoint() {
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
-    let apubID, vpubID, lsLen, showVideo, showVideoOn, webcamNum, apublishCollection, vpublishCollection, waypoint; 
+    let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint; 
     let wasOutput = false; //Resets when screen updates
-    
-    console.log("snapshotUpdate", liveScanModel.waypoint.bgMap);
-
-
     apubID = dataSet[liveScanModel.apubFieldName].toString();
     vpubID = dataSet[liveScanModel.vpubFieldName].toString();
     lsLen   = dataSet[liveScanModel.lsLenField]
-    showVideo   = dataSet[liveScanModel.showVideoField]
-    showVideoOn = dataSet[liveScanModel.showVideoOnField]
-    webcamNum   = dataSet[liveScanModel.webcamNumField]   
+    liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
+    liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
+    liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
+    liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull   
     apublishCollection = liveScanModel.alertpublishCollection;
     vpublishCollection = liveScanModel.voicepublishCollection;
+    liveScanModel.resetTime = dataSet.resetTime;
+    liveScanModel.idTime    = dataSet.idTime;
+    liveScanModel.promoSources  = dataSet.promoSources;
+    liveScanModel.videoProgram  = dataSet.videoProgram;
+    
+    console.log("snapshotUpdate reset time:", liveScanModel.resetTime);
+    console.log("snapshotUpdate id time:", liveScanModel.idTime);
+    //console.log("snapshotYodate idPlus15:", liveScanModel.idPlus15);
 
     //Compare lsLen to liveScan array size
     if(lsLen < liveScans.length) {
@@ -600,7 +784,14 @@ async function fetchWaypoint() {
           return true
         }       
       } else {
-        outputWaypoint(showVideoOn, showVideo, webcamNum)
+        outputWaypoint(
+          liveScanModel.cameraStatus.showVideoOn, 
+          liveScanModel.cameraStatus.showVideo, 
+          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.videoIsFull, 
+          liveScanModel.promoIsOn,
+          liveScanModel.videoProgramIsOn
+        )
         wasOutput = true
         return false
       }
@@ -619,7 +810,14 @@ async function fetchWaypoint() {
       //Prevent audio play on reload
       if(liveScanModel.isReload) {
         liveScanModel.isReload = false 
-        outputWaypoint(showVideoOn, showVideo, webcamNum);
+        outputWaypoint(
+          liveScanModel.cameraStatus.showVideoOn, 
+          liveScanModel.cameraStatus.showVideo, 
+          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.videoIsFull, 
+          liveScanModel.promoIsOn,
+          liveScanModel.videoProgramIsOn
+        );
         wasOutput = true
         console.log("waypoint output skipping audio play on browser reload.")
         return
@@ -638,7 +836,14 @@ async function fetchWaypoint() {
       } else {
         console.log("no waypoint match to an event was found")
       }
-      outputWaypoint(showVideoOn, showVideo, webcamNum)
+      outputWaypoint(
+        liveScanModel.cameraStatus.showVideoOn, 
+        liveScanModel.cameraStatus.showVideo, 
+        liveScanModel.cameraStatus.webcamNum,
+        liveScanModel.cameraStatus.videoIsFull, 
+        liveScanModel.promoIsOn,
+        liveScanModel.videoProgramIsOn
+      )
     })
 
     //Also check for new voice annoucement on each snapshot update
@@ -671,10 +876,15 @@ async function fetchWaypoint() {
     })
     if(!wasOutput) {
       //Ensure view update for showVideo boolean changes
-      outputWaypoint(showVideoOn, showVideo, webcamNum)
+      outputWaypoint(
+        liveScanModel.cameraStatus.showVideoOn, 
+        liveScanModel.cameraStatus.showVideo, 
+        liveScanModel.cameraStatus.webcamNum,
+        liveScanModel.cameraStatus.videoIsFull, 
+        liveScanModel.promoIsOn,
+        liveScanModel.videoProgramIsOn
+      )
     }
-
-
   })
 
   return new Promise((resolve, reject )=>{
@@ -821,10 +1031,10 @@ function testHeight() {
     //console.log("A height is ", window.innerHeight," step max is ",liveScanModel.transponder.stepMax)
   } else if(window.innerHeight > 720 && window.innerHeight < 1081) {
 
-    liveScanModel.transponder.stepMax = 7;
+    liveScanModel.transponder.stepMax = 6;
     //console.log("B height is ", window.innerHeight," step max is ",liveScanModel.transponder.stepMax)
   } else if(window.innerHeight > 1080) {
-    liveScanModel.transponder.stepMax = 9;
+    liveScanModel.transponder.stepMax = 8;
     //console.log("C height is ", window.innerHeight," step max is ",liveScanModel.transponder.stepMax)
   }
 }

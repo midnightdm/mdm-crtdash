@@ -33348,9 +33348,9 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
-/*!********************!*\
-  !*** ./src/wcc.js ***!
-  \********************/
+/*!*********************!*\
+  !*** ./src/fenz.js ***!
+  \*********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.esm.js");
 /* harmony import */ var firebase_firestore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/firestore */ "./node_modules/firebase/firestore/dist/index.esm.js");
@@ -33361,40 +33361,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-//CSS animation 
-const animateCSS = (element, animation, prefix = 'animate__') => {
-  // We create a Promise and return it
-  new Promise((resolve, reject) => {
-    const animationName = `${prefix}${animation}`;
-    const node = document.querySelector(element);
-    node.classList.add(`${prefix}animated`, animationName);
-    // When the animation ends, we clean the classes and resolve the Promise
-    function handleAnimationEnd(event) {
-      event.stopPropagation();
-      node.classList.remove(`${prefix}animated`, animationName);
-      resolve('Animation ended');
-    }
-    node.addEventListener('animationend', handleAnimationEnd, {once: true});
-  });
-}
 
 /* State Management*/
 let adminMsg = {};
 let user     = {};
 let userIsLogged = false;
 let userIsAdmin = false;
-
-
-/* Helper objects */
-let playerA = videojs("cameraA", {
-  autoplay: "muted",
-  preload: "auto"
-});
-let playerB = videojs("cameraB", {
-  autoplay: "muted",
-  preload: "auto"
-});
-
+let showVideo, showVideoOn, webcamNum; 
 
 window.env    = _environment__WEBPACK_IMPORTED_MODULE_3__.Environment
 const firebaseConfig = window.env.firebaseConfig
@@ -33403,6 +33376,39 @@ const db = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.getFirestore)(fire
 const adminMsgRef = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.doc)(db, 'Passages', 'Admin');
 const auth   = (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.getAuth)(firebaseApp);
 
+const cameraA      = document.getElementById('cameraA');
+const cameraB      = document.getElementById('cameraB');
+const cameraC      = document.getElementById('cameraC');
+const cameraD      = document.getElementById('cameraD');
+
+const holderA      = document.getElementById('cam1');
+const holderB      = document.getElementById('cam2');
+
+const cam3         = document.getElementById('cam3');
+const iframeBtn    = document.getElementById('iframe-btn');
+const loginCntr    = document.getElementById('login-container');
+const gridCntr     = document.querySelector('main.grid-container');
+
+const loginEmail   = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
+const buttonLogout = document.getElementById("logout-btn");
+const buttonLogin  = document.getElementById("login-btn");
+
+const buttonVideo  = document.getElementById("video-button");
+const buttonVText  = document.getElementById("video-button-text");
+
+const controlLabel = document.getElementById("control-label");
+const controlText  = document.getElementById("control-text");
+
+const refreshLabel   = document.getElementById("refresh-label");
+const refreshBtn     = document.getElementById("refresh-button");
+const refreshBtnTxt  = document.getElementById("refresh-button-text");
+const refreshCtrlTxt = document.getElementById("refresh-control-text");
+
+const resetLabel   = document.getElementById("reset-label");
+const resetBtn     = document.getElementById("reset-button");
+const resetBtnTxt  = document.getElementById("reset-button-text");
+const resetCtrlTxt = document.getElementById("reset-control-text");
 
 /* Content values */
 const taLabel = "Trigger Activated";
@@ -33410,91 +33416,134 @@ const toLabel = "Trigger Off";
 const taText  = "A near-by vessel has triggered the cabin webcams to broadcast live.";
 const toText  = "The cabin webcams are not currently triggered by any vessels.";
 const ccLabelOn = "Enabled";
-const ccTextOn  = "The cabin webcams are enabled to go live if triggered by a server event. Press the button below to override server control.";
+const ccTextOn  = "Cabin webcams are enabled for live streaming. Press the button above to override server control.";
 const ccLabelOff = "Disabled";
 const ccTextOff  = "The cabin webcams are disabled from server control. No video broadcasts will be allowed until you enable them.";
-const auTextOn = "Cabin microphones are enabld. Audio will broadcast whenever the camera is streaming unless you press the button below.";
-const auTextOff = "Cabin microphones are disabled from server contorl. No audio will broadcast until you enable it.";
 
 
 
-/* DOM references */
-const cameraA      = document.getElementById('cameraA');
-const cameraB      = document.getElementById('cameraB');
-const holderA      = document.getElementById('cameraA-container');
-const holderB      = document.getElementById('cameraB-container');
+const options      = {
+  autoplay: "muted",
+  preload: "auto",
+  responsive: true,
+}
 
-const controlLabel = document.getElementById("control-label");
-const controlText  = document.getElementById("control-text");
+//Event Listeners
+buttonLogin.addEventListener('click', function() {
+  console.log("handleLogin for",loginEmail.value);
+  handleLogin();
+})
 
-const audioLabel   = document.getElementById("audio-label");
-const audioText    = document.getElementById("audio-text");
 
-const triggerLabel = document.getElementById("trigger-label");
-const triggerText  = document.getElementById("trigger-text");
+buttonLogout.addEventListener('click', function() {
+  handleLogout();
+})
 
-const buttonVideo  = document.getElementById("video-button");
-const buttonAudio  = document.getElementById("audio-button");
-const buttonVText  = document.getElementById("video-button-text");
-const buttonAText  = document.getElementById("audio-button-text");
-const buttonLogin  = document.getElementById("login-btn");
-const buttonLogout = document.getElementById("logout-btn");
+cam3.addEventListener('mouseenter', function() {
+  iframeBtn.classList.add('show');
+  console.log("hover");
+  setTimeout(()=>iframeBtn.classList.remove('show'),5000);
+});
+
+cam3.addEventListener('click', function() {
+  window.location = "index.html"
+})
+let playerA = videojs("cameraA", options);
+let playerB = videojs("cameraB", options);
+//let playerC = videojs("cameraC", options);
+//let playerD = videojs("cameraD", options);
+//playerA.requestFullScreen();
 
 
 /* * * * * * * * *
 * Functions  
 */
-function initWcc() {  
+async function initWcc() {  
   //Setup data model
+  monitorAuthState();
   fetchAdminMessages();
-
+  
   //Add event listeners
+
+  
   buttonVideo.addEventListener("click", toggleWebcam);
-  buttonAudio.addEventListener("click", toggleWebaudio);
-  buttonLogin.addEventListener("click", handleLogin);
-  buttonLogout.addEventListener("click", handleLogout);
+  //buttonAudio.addEventListener("click", toggleWebaudio);
+  //buttonLogin.addEventListener("click", handleLogin);
+  //buttonLogout.addEventListener("click", handleLogout);
   cameraA.addEventListener("click", switchToCamA);
   cameraB.addEventListener("click", switchToCamB);
-  (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.onAuthStateChanged)(auth, (u) => {
-    console.log("onAuthStateChanged u", u);
+  
+  
+  
+}
+
+function monitorAuthState() {
+  (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.onAuthStateChanged)(auth, async (u) => {
+    console.log("onAuthStateChanged", u);
     if(u) {
+      //write to state management object
       user = u;
-      if(testLoggeduserIsAdmin(u.uid)) {
-        buttonLogout.style = `display: block`;
-      }
+      console.log(u.uid+" is logged");
+      let adminUsers = await getAdminUsers();
+      console.log("adminUsers:", adminUsers);
+      if(adminUsers.includes(u.uid)) {
+        console.log(u.email+" is admin");
+        userIsLogged = true;
+        userIsAdmin  = true;
+        buttonLogout.classList.add("logged");
+        gridCntr.classList.add("logged");
+        loginCntr.classList.add("logged");
+      } else if (adminUsers[0]=="No admin users") {
+        userIsLogged = false;
+        userIsAdmin  = false;
+        buttonLogout.classList.remove("logged");
+        gridCntr.classList.remove("logged");
+        loginCntr.classList.remove("logged");
+        console.log("User is NOT admin.");
+      } 
     } else {
       userIsLogged = false;
       userIsAdmin  = false;
-      buttonLogout.style = `visibility: hidden`;
-      console.log("User is logged out.");
-    }
-    console.log("user state changed", user);
+      buttonLogout.classList.remove("logged");
+      gridCntr.classList.remove("logged");
+      loginCntr.classList.remove("logged");
+      console.log("No User data found.");
+    }     
   });
 }
 
-async function fetchAdminMessages() {
+function fetchAdminMessages() {
   const adminSnapshot = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.onSnapshot)((0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.doc)(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
-    adminMsg =  Object.assign({}, dataSet);
-    let showVideo, showVideoOn, webcamNum, showAudioOn;    
+    //adminMsg =  Object.assign({}, dataSet);
+    
     showVideo   = dataSet.showClVideo;
     showVideoOn = dataSet.showClVideoOn;
     webcamNum   = dataSet.webcamNumCl;
-    showAudioOn = dataSet.showClAudioOn;
-    outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum);
-  })
-  return new Promise((resolve, reject )=>{
-    resolve()
-    reject()
+    
+    outputWebcamControl(showVideoOn, showVideo, webcamNum);
   });
 }         
 
-async function handleLogin() {
+async function getAdminUsers() {
+  const docRef = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.doc)(db, "Passages", "Admin");
+  const docSnap = await (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.getDoc)(docRef);
+  let adminUsers, msg
+  return new Promise((resolve, reject) => {
+    if(docSnap.exists()) {
+      msg = docSnap.data();
+      adminUsers = msg.adminUsers;
+      resolve(adminUsers);
+    } else {
+      reject(["No admin users"]);
+    }
+  })  
+}
 
-  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.signInWithEmailAndPassword)(auth, "admin@clintonrivertraffic.com", "SnoodleDog")
+async function handleLogin() {
+  await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.signInWithEmailAndPassword)(auth, loginEmail.value, loginPassword.value)
   .then((u) => {
     console.log("signInWithEmailAndPassword -> user", u);
-    
     if(testLoggeduserIsAdmin(u.user.uid)) {
       userIsLogged = true;
     }
@@ -33509,53 +33558,11 @@ async function handleLogin() {
 function handleLogout() {
   console.log("logging out now.");
   (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.signOut)(auth).then(()=>{}).catch((error)=>{alert("There was a problem signing out:"+error)})
+  buttonLogout.classList.remove("logged");
+  gridCntr.classList.remove("logged");
+  loginCntr.classList.remove("logged");
 }
 
-function outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum) {
-  if(showVideoOn==true) {
-    controlLabel.innerText = "Video "+ccLabelOn;
-    controlLabel.className = "green";
-    controlText.innerText  = ccTextOn;
-    buttonVText.innerText = "Disable";
-  } else if(showVideoOn==false) {
-    controlLabel.innerText = "Video "+ccLabelOff;
-    controlLabel.className = "red";
-    controlText.innerText = ccTextOff;
-    buttonVText.innerText = "Enable";
-  }
-  if(showAudioOn==true) {
-    audioLabel.innerText = "Audio "+ccLabelOn;
-    audioLabel.className = "green";
-    audioText.innerText  = auTextOn;
-    buttonAText.innerText = "Disable";
-  } else if(showAudioOn==false) {
-    audioLabel.innerText = "Audio "+ccLabelOff;
-    audioLabel.className = "red";
-    audioText.innerText = auTextOff;
-    buttonAText.innerText = "Enable";
-  }
-  if(showVideo==true) {
-    triggerLabel.innerText = taLabel;
-    triggerLabel.className = "green";
-    triggerText.innerText  = taText;
-  } else if(showVideo==false) {
-    triggerLabel.innerText = toLabel;
-    triggerLabel.className = "red";
-    triggerText.innerText  = toText;
-  }
-  if(showVideo==true && showVideoOn==true) {
-    if(webcamNum=="A") {
-      holderA.classList.add('active');
-      holderB.classList.remove('active');
-      console.log("A active")
-    }
-    if(webcamNum=="B") {
-      holderB.classList.add('active');
-      holderA.classList.remove('active');  
-      console.log("B active")
-    }
-  }
-}
 
 function toggleWebcam() {
   console.log("toggleWebcam()",adminMsg);
@@ -33569,20 +33576,6 @@ function toggleWebcam() {
   }
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }
-
-function toggleWebaudio() {
-  console.log("toggleWebaudio()",adminMsg);
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
-  }
-  if(adminMsg.showClAudioOn==true) {
-    adminMsg.showClAudioOn=false
-  } else {
-    adminMsg.showClAudioOn=true
-  }
-  (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
-}
-
 
 function switchToCamA() {
   if(!userIsAdmin && !userIsLogged) {
@@ -33602,21 +33595,40 @@ function switchToCamB() {
 }
 
 
-function testLoggeduserIsAdmin(uid) {
-  //Test that obj property is array
-  if(Array.isArray(adminMsg.adminUsers) && adminMsg.adminUsers.length) {
-    userIsAdmin = adminMsg.adminUsers.includes(uid);
-    return userIsAdmin;
-  } else {
-    userIsAdmin = false;
-    return userIsAdmin;
+function outputWebcamControl(showVideoOn, showVideo, webcamNum) {
+  
+  if(showVideoOn==true) {
+    controlLabel.innerText = "Video "+ccLabelOn;
+    controlLabel.className = "green";
+    controlText.innerText  = ccTextOn;
+    buttonVText.innerText = "Disable";
+  } else if(showVideoOn==false) {
+    controlLabel.innerText = "Video "+ccLabelOff;
+    controlLabel.className = "red";
+    controlText.innerText = ccTextOff;
+    buttonVText.innerText = "Enable";
   }
+  if(showVideo==true && showVideoOn==true) {
+    if(webcamNum=="A") {
+      holderA.classList.add('active');
+      holderB.classList.remove('active');
+      console.log("A active")
+    }
+    if(webcamNum=="B") {
+      holderB.classList.add('active');
+      holderA.classList.remove('active');  
+      console.log("B active")
+    }
+  }
+  
+  console.log("outputWebcamControl() "+showVideoOn+showvideo+webcamNum);
 }
 
-//Initiate the app
+
+//Activate
 initWcc();
 })();
 
 /******/ })()
 ;
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=fenz.js.map

@@ -7,9 +7,6 @@ import {
 } from 'firebase/firestore'
 import { getAuth, signOut, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 import { Environment } from './environment'
-import Hls from './hls.min.js'
-
-
 
 //CSS animation 
 const animateCSS = (element, animation, prefix = 'animate__') => {
@@ -36,10 +33,15 @@ let userIsAdmin = false;
 
 
 /* Helper objects */
-// const hlsA = new Hls()
-// const hlsB = new Hls()
-// window.hlsA = hlsA
-// window.hlsB = hlsB
+let playerA = videojs("cameraA", {
+  autoplay: "muted",
+  preload: "auto"
+});
+let playerB = videojs("cameraB", {
+  autoplay: "muted",
+  preload: "auto"
+});
+
 
 window.env    = Environment
 const firebaseConfig = window.env.firebaseConfig
@@ -66,6 +68,8 @@ const auTextOff = "Cabin microphones are disabled from server contorl. No audio 
 /* DOM references */
 const cameraA      = document.getElementById('cameraA');
 const cameraB      = document.getElementById('cameraB');
+const holderA      = document.getElementById('cameraA-container');
+const holderB      = document.getElementById('cameraB-container');
 
 const controlLabel = document.getElementById("control-label");
 const controlText  = document.getElementById("control-text");
@@ -89,13 +93,7 @@ const buttonLogout = document.getElementById("logout-btn");
 */
 function initWcc() {  
   //Setup data model
-  fetchAdminMessages()
-
-  //Load HLS video
-  // hlsA.attachMedia(cameraA)
-  // hlsB.attachMedia(cameraB)
-  // hlsA.loadSource("clintonWebcamA.m3u8")
-  // hlsB.loadSource("clintonWebcamB.m3u8");
+  fetchAdminMessages();
 
   //Add event listeners
   buttonVideo.addEventListener("click", toggleWebcam);
@@ -121,7 +119,7 @@ function initWcc() {
   });
 }
 
-function fetchAdminMessages() {
+async function fetchAdminMessages() {
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
     adminMsg =  Object.assign({}, dataSet);
@@ -132,6 +130,10 @@ function fetchAdminMessages() {
     showAudioOn = dataSet.showClAudioOn;
     outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum);
   })
+  return new Promise((resolve, reject )=>{
+    resolve()
+    reject()
+  });
 }         
 
 async function handleLogin() {
@@ -190,12 +192,14 @@ function outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum) {
   }
   if(showVideo==true && showVideoOn==true) {
     if(webcamNum=="A") {
-      cameraA.className = "active";
-      cameraB.className = "off";   
+      holderA.classList.add('active');
+      holderB.classList.remove('active');
+      console.log("A active")
     }
     if(webcamNum=="B") {
-      cameraA.className = "off";
-      cameraB.className = "active";  
+      holderB.classList.add('active');
+      holderA.classList.remove('active');  
+      console.log("B active")
     }
   }
 }
@@ -247,7 +251,7 @@ function switchToCamB() {
 
 function testLoggeduserIsAdmin(uid) {
   //Test that obj property is array
-  if(adminMsg.adminUsers.length) {
+  if(Array.isArray(adminMsg.adminUsers) && adminMsg.adminUsers.length) {
     userIsAdmin = adminMsg.adminUsers.includes(uid);
     return userIsAdmin;
   } else {

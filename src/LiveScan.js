@@ -29,6 +29,7 @@ export default class LiveScan {
     this.imageUrl       = null
     this.type           = null
     this.liveIsLocal    = false
+    this.inCameraRange  = false
     this.liveMarkerAlphaWasReached = false
     this.liveMarkerAlphaTS         = null
     this.liveMarkerBravoWasReached = false

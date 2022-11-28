@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <style>
+    html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: 'Merriweather Sans', sans-serif;
+  background-color: #000;
+}
+a {
+  text-decoration: none;
+}
+    div.cam-container {
+      overflow: hidden;
+      position: relative; 
+      width: 100%; 
+      height: 100vh;
+      margin:0;
+      padding: 0;
+    }
+    video {
+      position:absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      height: 100%;
+      width: 177.77777778vh; /* 100 * 16 / 9 */
+      min-width: 100%;
+      min-height: 56.25vw; /* 100 * 9 / 16 */
+      margin: 0;
+      padding: 0;
+}
+  </style>
+
+
+  <title>Winkel Webcam 4</title>
+  
+</head>
+<body>
+  <main class="local">  
+    <div class="cam-container">
+      <a href="winkAll.html">  
+        <video id="cameraA">
+          <source src="winkel4Webcam.m3u8" type="application/x-mpegURL">
+        </video>
+      </a>
+    </div>
+  </main>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+
+<script>
+  const cameraA      = document.getElementById('cameraA');
+  let playerA = videojs("cameraA", {
+  autoplay: "muted",
+  preload: "auto",
+  responsive: true,
+  
+});
+playerA.requestFullScreen();
+</script>
+</body>
+</html>

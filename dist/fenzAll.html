@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <link rel="stylesheet" href="wcc/fenzAll.css">
+  <title>Webcam Control</title>
+  
+<script defer src="wcc/fenz.js"></script></head>
+<body>
+  <navigaton >
+    <div id="login-container">  
+      <h1>Login for Webcam Controls</h4><br />
+      <form id="login-form">
+        <div class="input-field">
+          <input type="email" placeholder="Login Email" id="login-email" required size="40"/>
+          <label for="login-email">Email</label>
+        </div>
+        <div class="input-field">
+          <input type="password" placeholder="Login Password" id="login-password" required size="40" />
+          <label for="login-password">Password</label>
+        </div>
+        <button type="submit" id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>
+      </form>
+    </div>
+  </navigaton>
+  
+  <main class="grid-container">  
+    <div id="cam1" class="cam-container">
+      <a href="camA.html">  
+        <video id="cameraA">
+          <source src="clintonWebcamA.m3u8" type="application/x-mpegURL">
+        </video>
+      </a>
+    </div>
+    <div id="cam2"  class="cam-container">
+      <a href="camB.html">
+        <video id="cameraB">
+          <source src="clintonWebcamB.m3u8" type="application/x-mpegURL">
+        </video>
+      </a>
+    </div>
+    <div id="cam3" class="cam-container">
+      
+        <div id="cameraC" class="thumbnail">
+          <iframe src="index.html" frameborder="0"></iframe>
+        </div>
+        
+    </div>
+    <div id="cam4"  class="cam-container">
+
+      <div class="flex-container">
+        <div class="flex-item ctl">
+          
+          <div class="holder">
+            <h3 id="switch-label" class="clabels">Switch Cameras</h3>
+            &nbsp;&nbsp;<button id="switch-buttonA" class="example_b">
+              <span id="switch-button-text">Downriver</span>
+            </button>&nbsp;&nbsp;<button id="switch-buttonB" class="example_b">
+              <span id="switch-button-text">Upriver</span>
+            </button>
+            <p id="switch-control-text"></p>
+          </div>
+
+          <div class="holder">            
+            <h3 id="control-label" class="clabels">DATA LOADING...</h3>
+            &nbsp;&nbsp;<button id="video-button" class="example_b">
+              <span id="video-button-text">Disable</span>
+            </button>
+            <p id="control-text"></p>
+          </div>
+
+          <div class="holder">
+            <h3 id="refresh-label" class="clabels">Refresh Client</h3>
+            &nbsp;&nbsp;<button id="refresh-button" class="example_b">
+              <span id="refresh-button-text">Refresh</span>
+            </button>
+            <p id="refresh-control-text"></p>
+          </div>
+
+          <div class="holder">
+            <h3 id="reset-label" class="clabels">Reset Services</h3>
+            &nbsp;&nbsp;<button id="reset-button" class="example_b">
+              <span id="reset-button-text">Reset</span>
+            </button>
+            <p id="reset-control-text"></p>
+          </div>
+
+
+            
+        </div>
+
+    </div>
+  </main>
+  <a id="iframe-btn" href="index.html">CLICK FOR FULL SIZE</a>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<div class="nav-buttons">
+  <button type="submit" id="logout-btn" class="btn yellow darken-2 z-depth-0">Logout</button>
+</div>
+
+</body>
+</html>

@@ -1,10 +1,13 @@
+html,
 body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   font-family: 'Merriweather Sans', sans-serif;
+  background-color: #000;
 }
-
-
 
 h4.map-label {
   padding: 5px 8px;
@@ -51,6 +54,8 @@ h4.map-label {
   text-align: center;
 }
 
+/* Waypoint & Webcam section */
+
 #waypoint {
   background-color: black;
   background-repeat: no-repeat;
@@ -75,6 +80,71 @@ h4.map-label {
 #waypoint-inner h3 {
   font-size: 0.6rem;
 }
+
+video#video_html5_api {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  z-index: 0; 
+}
+
+video#video_html5_api.full {
+  position: fixed;
+}
+
+#waypoint-label.full {
+  visibility: hidden;
+}
+
+#overlay.full {
+  visibility: hidden;
+}
+
+#logo-img.full {
+  visibility:hidden;
+}
+
+#newstext.full {
+  visibility:hidden;
+}
+
+/* Occasional Label for vessels in camerea range */
+div#overlay2 {
+  visibility: hidden;
+  position: absolute;
+  bottom: 10vh;
+  right: 36.2vw;
+  text-align: center;
+  width: 21vw;
+  margin: 2px 6px;
+  background-color: rgba(81, 186, 190, 0.5);
+  border-radius: 8px;
+}
+
+div#overlay2.active {
+  visibility: visible;
+}
+
+div#overlay2.full.active {
+  position: absolute;
+  left: 10.5vw;
+  transition: cubic-bezier(0.075, 0.82, 0.165, 1)
+}
+
+
+
+ div#overlay2 ul li {
+  list-style: none;
+  transform: translateX(-18px);
+  color:rgba(255, 255, 0, 0.694);
+  font-size: 2rem;
+ }
+
+
+
 
 #vesslist {
   background-color: black;
@@ -122,6 +192,8 @@ h2#overlay {
   margin: 2px 6px;
   
 }
+
+
 
 
 /* Titlebar logo  */
@@ -185,6 +257,7 @@ h2 {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 17pt;
   color: white;
+  transform: translateY(-18px);
 }
 
 
@@ -426,16 +499,6 @@ li.card p {
 }
 
 
-video#video {
-  display: none;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  object-fit: cover; 
-  z-index: 0; 
-}
 
 em {
   color: rgb(255, 165, 56);

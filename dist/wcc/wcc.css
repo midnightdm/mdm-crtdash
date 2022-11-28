@@ -54,15 +54,29 @@ transition: all 0.4s ease 0s;
 width: 10em;
 }
 
-video {
+#cameraA_html5_api {
+  padding: 4px;
+  max-width: 40vw;
+  height: auto;  
+}
+
+div#cameraA-container,
+div#cameraB-container {
+  padding: 5px;
+  border: 5px black solid;
+  border-bottom: 0px;
+}
+
+#cameraB_html5_api {
   padding: 4px;
   max-width: 40vw;
   height: auto;
-  border: black solid 5px;
 }
 
-video.active {
-  border:red solid 5px;
+
+div#cameraA-container.active,
+div#cameraB-container.active {
+  border: 5px red solid; 
 }
 
 .red {
@@ -87,7 +101,7 @@ height: 1080px;
 
 .flex-item {
 max-width: 40vw;
-height: auto;
+height: 100%;
 }
 
 .slota, .slotb {
