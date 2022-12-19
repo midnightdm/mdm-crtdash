@@ -7,67 +7,97 @@
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" href="wcc/wcc.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
   <title>Webcam Control</title>
   
-<script defer src="wcc/main.js"></script></head>
+<script defer src="wcc/wcc.js"></script></head>
 <body>
-  <main class="local">  
-    <div id="AdminWebcam" class="AdminWebcam">
+  <navigaton >
+    <div id="login-container">  
+      <h1>Login for Webcam Controls</h4><br />
+        <div class="input-field">
+          <input type="email" placeholder="Login Email" id="login-email" required size="40"/>
+          <label for="login-email">Email</label>
+        </div>
+        <div class="input-field">
+          <input type="password" placeholder="Login Password" id="login-password" required size="40" />
+          <label for="login-password">Password</label>
+        </div>
+        <button id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>
+    </div>
+  </navigaton>
+  
+  <main class="grid-container">  
+    <div id="cam1" class="cam-container">
+      <a href="camA.html">  
+        <video id="cameraA">
+          <source src="stream/clintonWebcamA.m3u8" type="application/x-mpegURL">
+        </video>
+      </a>
+    </div>
+    <div id="cam2"  class="cam-container">
+      <a href="camB.html">
+        <video id="cameraB">
+          <source src="stream/clintonWebcamB.m3u8" type="application/x-mpegURL">
+        </video>
+      </a>
+    </div>
+    <div id="cam3" class="cam-container">
+      
+        <div id="cameraC" class="thumbnail">
+          <iframe src="index.html" frameborder="0"></iframe>
+        </div>
+        
+    </div>
+    <div id="cam4"  class="cam-container">
 
       <div class="flex-container">
-        <div class="flex-item">
-          <h1>Webcam Control</h1>
+        <div class="flex-item ctl">
           
-          <h3 id="control-label">DATA LOADING...</h3>
-          <p id="control-text"></p>
+          <div class="holder">
+            <h3 id="switch-label" class="clabels">Switch Cameras</h3>
+            &nbsp;&nbsp;<button id="switch-buttonA" class="example_b">
+              Downriver <span class="led"></span>
+            </button>&nbsp;&nbsp;<button id="switch-buttonB" class="example_b">
+              Upriver <span class="led"></span>
+            </button>
+            <p id="switch-control-text"></p>
+          </div>
 
-          <button id="video-button" class="example_b">
-            <span id="video-button-text">Disable</span>
-          </button>
+          <div class="holder">            
+            <h3 id="control-label" class="clabels">DATA LOADING...</h3>
+            &nbsp;&nbsp;<button id="video-button" class="example_b">
+              <span id="video-button-text">Disable</span>
+            </button>
+            <p id="control-text"></p>
+          </div>
 
-          <h3 id="audio-label"></h3>
-          <p id="audio-text"></p>
+          <div class="holder">
+            <h3 id="refresh-label" class="clabels">Refresh Clients</h3>
+            &nbsp;&nbsp;<button id="refresh-button" class="example_b">
+              <span id="refresh-button-text">Refresh</span>
+            </button>
+            <p id="refresh-control-text">Command all browsers viewing the webcam page to reload the page <span id="time-statement">15 seconds after pressing</span>.</p>
+          </div>
 
-          <button id="audio-button" class="example_b">
-            <span id="audio-button-text">Disable</span>
-          </button>
-          
-          <h3 id="trigger-label"></h3>
-          <p id="trigger-text"></p>
+          <div class="holder">
+            <h3 id="reset-label" class="clabels">Reset Services</h3>
+            &nbsp;&nbsp;<button id="reset-button" class="example_b">
+              <span id="reset-button-text">Reset</span>
+            </button>
+            <p id="reset-control-text">Resets the server side camera processing scripts. Press this when a camera stops streaming.</p>
+          </div>
+    
 
             
         </div>
-        <div class="flex-item">
-          <div class="flex-item thumbnail-container slotb">
-            <div class="thumbnail">
-              <iframe src="index.html" frameborder="0"></iframe>
-            </div>
-          </div>
-        </div>
-        <div id="cameraA-container" class="flex-item">
-          <video id="cameraA">
-            <source src="clintonWebcamA.m3u8" type="application/x-mpegURL">
-          </video>
-          </div>
-        <div id="cameraB-container" class="flex-item">
-          <video id="cameraB">
-            <source src="clintonWebcamB.m3u8" type="application/x-mpegURL">
-          </video>
-        </div>
-      </div>
-      <button type="submit" id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>&nbsp;&nbsp;
-      <button type="submit" id="logout-btn" class="btn yellow darken-2 z-depth-0">Logout</button>
+
     </div>
-
   </main>
-
-
+  <a id="iframe-btn" href="index.html">CLICK FOR FULL SIZE</a>
 <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<script src="wcc/main.js"></script>
+<div class="nav-buttons">
+  <button type="submit" id="logout-btn" class="btn yellow darken-2 z-depth-0">Logout</button>
+</div>
+
 </body>
-
-
-
 </html>

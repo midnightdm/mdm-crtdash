@@ -31642,8 +31642,12 @@ const Environment = {
     messagingSenderId: "1055119004226",
     appId: "1:1055119004226:web:1d17187e816f794b5713db"
   },
-  region: "clinton"
+  region: "clinton",
+  gcfUrl: "https://webcam.carifenzel.cf/stream/streamapi.php",
+  authUser: "gcfuser",
+  clientCode: "D*ll%sD0p3Dude"
 }
+//"https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/resetcams
 
 /***/ }),
 
@@ -33348,9 +33352,9 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
-/*!*********************!*\
-  !*** ./src/fenz.js ***!
-  \*********************/
+/*!********************!*\
+  !*** ./src/wcc.js ***!
+  \********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var firebase_app__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! firebase/app */ "./node_modules/firebase/app/dist/index.esm.js");
 /* harmony import */ var firebase_firestore__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! firebase/firestore */ "./node_modules/firebase/firestore/dist/index.esm.js");
@@ -33400,10 +33404,16 @@ const buttonVText  = document.getElementById("video-button-text");
 const controlLabel = document.getElementById("control-label");
 const controlText  = document.getElementById("control-text");
 
+const switchButtonA = document.getElementById("switch-buttonA");
+const switchButtonB = document.getElementById("switch-buttonB");
+const ledA = document.querySelector("#switch-buttonA span.led");
+const ledB = document.querySelector("#switch-buttonB span.led");
+
 const refreshLabel   = document.getElementById("refresh-label");
 const refreshBtn     = document.getElementById("refresh-button");
 const refreshBtnTxt  = document.getElementById("refresh-button-text");
 const refreshCtrlTxt = document.getElementById("refresh-control-text");
+const timeStatement  = document.getElementById("time-statement");
 
 const resetLabel   = document.getElementById("reset-label");
 const resetBtn     = document.getElementById("reset-button");
@@ -33426,33 +33436,21 @@ const options      = {
   autoplay: "muted",
   preload: "auto",
   responsive: true,
+  loadingSpinner: false
+
 }
 
-//Event Listeners
+//General Event Listeners
 buttonLogin.addEventListener('click', function() {
-  console.log("handleLogin for",loginEmail.value);
   handleLogin();
 })
 
 
-buttonLogout.addEventListener('click', function() {
-  handleLogout();
-})
+let playerA;
+let playerB;
 
-cam3.addEventListener('mouseenter', function() {
-  iframeBtn.classList.add('show');
-  console.log("hover");
-  setTimeout(()=>iframeBtn.classList.remove('show'),5000);
-});
 
-cam3.addEventListener('click', function() {
-  window.location = "index.html"
-})
-let playerA = videojs("cameraA", options);
-let playerB = videojs("cameraB", options);
-//let playerC = videojs("cameraC", options);
-//let playerD = videojs("cameraD", options);
-//playerA.requestFullScreen();
+
 
 
 /* * * * * * * * *
@@ -33460,22 +33458,10 @@ let playerB = videojs("cameraB", options);
 */
 async function initWcc() {  
   //Setup data model
-  monitorAuthState();
-  fetchAdminMessages();
-  
-  //Add event listeners
-
-  
-  buttonVideo.addEventListener("click", toggleWebcam);
-  //buttonAudio.addEventListener("click", toggleWebaudio);
-  //buttonLogin.addEventListener("click", handleLogin);
-  //buttonLogout.addEventListener("click", handleLogout);
-  cameraA.addEventListener("click", switchToCamA);
-  cameraB.addEventListener("click", switchToCamB);
-  
-  
-  
+  monitorAuthState();  
 }
+
+
 
 function monitorAuthState() {
   (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.onAuthStateChanged)(auth, async (u) => {
@@ -33493,13 +33479,15 @@ function monitorAuthState() {
         buttonLogout.classList.add("logged");
         gridCntr.classList.add("logged");
         loginCntr.classList.add("logged");
+        fetchAdminMessages();
+        addAdminEventListeners();
       } else if (adminUsers[0]=="No admin users") {
         userIsLogged = false;
         userIsAdmin  = false;
         buttonLogout.classList.remove("logged");
         gridCntr.classList.remove("logged");
         loginCntr.classList.remove("logged");
-        console.log("User is NOT admin.");
+        console.log("User "+loginEmail.value+"is NOT admin.");
       } 
     } else {
       userIsLogged = false;
@@ -33507,20 +33495,43 @@ function monitorAuthState() {
       buttonLogout.classList.remove("logged");
       gridCntr.classList.remove("logged");
       loginCntr.classList.remove("logged");
-      console.log("No User data found.");
+      console.log("No User data found for "+loginEmail.value+".");
     }     
   });
+}
+
+function addAdminEventListeners() {
+  switchButtonA.addEventListener('click', switchToCamA);
+  switchButtonB.addEventListener('click', switchToCamB);
+  buttonVideo.addEventListener("click", toggleWebcam);
+  buttonLogout.addEventListener('click', function() {
+    handleLogout();
+  })
+  
+  cam3.addEventListener('mouseenter', function() {
+    iframeBtn.classList.add('show');
+    console.log("hover");
+    setTimeout(()=>iframeBtn.classList.remove('show'),5000);
+  });
+  
+  cam3.addEventListener('click', function() {
+    window.location = "index.html"
+  })
+  playerA = videojs("cameraA", options);
+  playerB = videojs("cameraB", options);
+  refreshBtn.addEventListener("click", refreshClients);
+  resetBtn.addEventListener("click", handleResetCams);
+
 }
 
 function fetchAdminMessages() {
   const adminSnapshot = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.onSnapshot)((0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.doc)(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
-    //adminMsg =  Object.assign({}, dataSet);
-    
+    adminMsg =  Object.assign({}, dataSet);
     showVideo   = dataSet.showClVideo;
     showVideoOn = dataSet.showClVideoOn;
     webcamNum   = dataSet.webcamNumCl;
-    
+    updateTallyLights()    
     outputWebcamControl(showVideoOn, showVideo, webcamNum);
   });
 }         
@@ -33541,6 +33552,7 @@ async function getAdminUsers() {
 }
 
 async function handleLogin() {
+  console.log("handleLogin for", loginEmail.value);
   await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.signInWithEmailAndPassword)(auth, loginEmail.value, loginPassword.value)
   .then((u) => {
     console.log("signInWithEmailAndPassword -> user", u);
@@ -33550,7 +33562,8 @@ async function handleLogin() {
     
     console.log("userIsAdmin =", userIsAdmin)
   }).catch((error) => {
-    console.log("Login error", error);
+    alert("Login error"+ error);
+   
   })
   
 }
@@ -33561,6 +33574,33 @@ function handleLogout() {
   buttonLogout.classList.remove("logged");
   gridCntr.classList.remove("logged");
   loginCntr.classList.remove("logged");
+}
+
+async function handleResetCams() {
+  let pkg = {
+    action: "resetWebcams",
+    authUser: window.env.authUser,
+    authToken: window.env.clientCode
+  }
+  const myHeaders = new Headers({
+    'Content-Type': 'application/json'
+    
+  });
+  const response = await fetch(window.env.gcfUrl, { 
+    method:'POST', 
+    headers: myHeaders,
+    body: JSON.stringify(pkg)
+  })
+  //.catch(function (error){
+  //  console.error(error);
+  //})
+
+  if(response.status===200) {
+    const data = await response.json();
+    console.log("handleResetCams response", data)
+  } else {
+    alert("handleResetCams response: "+response.status)
+  }
 }
 
 
@@ -33577,11 +33617,57 @@ function toggleWebcam() {
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }
 
+function getTime() { 
+  var date = new Date(); 
+  return { 
+    month: (date.getMonth()+1),
+    date: date.getDate(),
+    hour: date.getHours(), 
+    min: date.getMinutes(), 
+    sec: date.getSeconds() 
+  }; 
+} 
+
+function xSecondsLater(time, x) {
+  let sec = time.sec + x;
+  let min = time.min;
+  if(sec>59) { 
+    sec = 60-sec; 
+    min = min+1;
+  }
+  if(min>59) {
+    min = 0;
+  }
+  return {sec, min };
+}
+
+
+function refreshClients() {
+  const tsbase = "15 seconds after pressing"
+  if(!userIsAdmin && !userIsLogged) {
+    return alert("User not authorized for remote client refresh operation.")
+  }
+  let now = getTime()
+  let n15 = xSecondsLater(now, 15)
+  let tsmsg = "at "+n15.min+":"+n15.sec+" on the screen clock"
+  timeStatement.innerText = tsmsg
+  adminMsg.resetTime[4] = n15
+  ;(0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+  setTimeout(()=>{
+    adminMsg.resetTime.pop()
+    ;(0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+    timeStatement.innerText = tsbase
+  },30000)
+
+}
+
 function switchToCamA() {
   if(!userIsAdmin && !userIsLogged) {
     return alert("User not authorized for webcam operation.")
   }
   adminMsg.webcamNumCl = "A";
+  updateTallyLights();
+
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }
 
@@ -33591,7 +33677,32 @@ function switchToCamB() {
     return alert("User not authorized for webcam operation.")
   }
   adminMsg.webcamNumCl = "B";
+  updateTallyLights();
+
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+}
+
+function testLoggeduserIsAdmin(uid) {
+  //Test that obj property is array
+  if(Array.isArray(adminMsg.adminUsers) && adminMsg.adminUsers.length) {
+    userIsAdmin = adminMsg.adminUsers.includes(uid);
+    return userIsAdmin;
+  } else {
+    userIsAdmin = false;
+    return userIsAdmin;
+  }
+}
+
+
+function updateTallyLights() {
+  if(webcamNum=="A") {
+    ledA.classList.add("on")
+    ledB.classList.remove("on");
+  }
+  if(webcamNum=="B") {
+    ledB.classList.add("on")
+    ledA.classList.remove("on");
+  }
 }
 
 
@@ -33599,12 +33710,12 @@ function outputWebcamControl(showVideoOn, showVideo, webcamNum) {
   
   if(showVideoOn==true) {
     controlLabel.innerText = "Video "+ccLabelOn;
-    controlLabel.className = "green";
+    controlLabel.classList.add("green");
     controlText.innerText  = ccTextOn;
     buttonVText.innerText = "Disable";
   } else if(showVideoOn==false) {
     controlLabel.innerText = "Video "+ccLabelOff;
-    controlLabel.className = "red";
+    controlLabel.classList.add("red");
     controlText.innerText = ccTextOff;
     buttonVText.innerText = "Enable";
   }
@@ -33621,7 +33732,7 @@ function outputWebcamControl(showVideoOn, showVideo, webcamNum) {
     }
   }
   
-  console.log("outputWebcamControl() "+showVideoOn+showvideo+webcamNum);
+  console.log("outputWebcamControl() "+showVideoOn+showVideo+webcamNum);
 }
 
 
@@ -33631,4 +33742,4 @@ initWcc();
 
 /******/ })()
 ;
-//# sourceMappingURL=fenz.js.map
+//# sourceMappingURL=wcc.js.map

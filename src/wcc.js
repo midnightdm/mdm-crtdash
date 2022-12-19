@@ -3,45 +3,19 @@ import {
   getFirestore, 
   onSnapshot, 
   doc, 
+  getDoc,
   setDoc
 } from 'firebase/firestore'
 import { getAuth, signOut, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 import { Environment } from './environment'
 
-//CSS animation 
-const animateCSS = (element, animation, prefix = 'animate__') => {
-  // We create a Promise and return it
-  new Promise((resolve, reject) => {
-    const animationName = `${prefix}${animation}`;
-    const node = document.querySelector(element);
-    node.classList.add(`${prefix}animated`, animationName);
-    // When the animation ends, we clean the classes and resolve the Promise
-    function handleAnimationEnd(event) {
-      event.stopPropagation();
-      node.classList.remove(`${prefix}animated`, animationName);
-      resolve('Animation ended');
-    }
-    node.addEventListener('animationend', handleAnimationEnd, {once: true});
-  });
-}
 
 /* State Management*/
 let adminMsg = {};
 let user     = {};
 let userIsLogged = false;
 let userIsAdmin = false;
-
-
-/* Helper objects */
-let playerA = videojs("cameraA", {
-  autoplay: "muted",
-  preload: "auto"
-});
-let playerB = videojs("cameraB", {
-  autoplay: "muted",
-  preload: "auto"
-});
-
+let showVideo, showVideoOn, webcamNum; 
 
 window.env    = Environment
 const firebaseConfig = window.env.firebaseConfig
@@ -50,6 +24,45 @@ const db = getFirestore(firebaseApp);
 const adminMsgRef = doc(db, 'Passages', 'Admin');
 const auth   = getAuth(firebaseApp);
 
+const cameraA      = document.getElementById('cameraA');
+const cameraB      = document.getElementById('cameraB');
+const cameraC      = document.getElementById('cameraC');
+const cameraD      = document.getElementById('cameraD');
+
+const holderA      = document.getElementById('cam1');
+const holderB      = document.getElementById('cam2');
+
+const cam3         = document.getElementById('cam3');
+const iframeBtn    = document.getElementById('iframe-btn');
+const loginCntr    = document.getElementById('login-container');
+const gridCntr     = document.querySelector('main.grid-container');
+
+const loginEmail   = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
+const buttonLogout = document.getElementById("logout-btn");
+const buttonLogin  = document.getElementById("login-btn");
+
+const buttonVideo  = document.getElementById("video-button");
+const buttonVText  = document.getElementById("video-button-text");
+
+const controlLabel = document.getElementById("control-label");
+const controlText  = document.getElementById("control-text");
+
+const switchButtonA = document.getElementById("switch-buttonA");
+const switchButtonB = document.getElementById("switch-buttonB");
+const ledA = document.querySelector("#switch-buttonA span.led");
+const ledB = document.querySelector("#switch-buttonB span.led");
+
+const refreshLabel   = document.getElementById("refresh-label");
+const refreshBtn     = document.getElementById("refresh-button");
+const refreshBtnTxt  = document.getElementById("refresh-button-text");
+const refreshCtrlTxt = document.getElementById("refresh-control-text");
+const timeStatement  = document.getElementById("time-statement");
+
+const resetLabel   = document.getElementById("reset-label");
+const resetBtn     = document.getElementById("reset-button");
+const resetBtnTxt  = document.getElementById("reset-button-text");
+const resetCtrlTxt = document.getElementById("reset-control-text");
 
 /* Content values */
 const taLabel = "Trigger Activated";
@@ -57,98 +70,144 @@ const toLabel = "Trigger Off";
 const taText  = "A near-by vessel has triggered the cabin webcams to broadcast live.";
 const toText  = "The cabin webcams are not currently triggered by any vessels.";
 const ccLabelOn = "Enabled";
-const ccTextOn  = "The cabin webcams are enabled to go live if triggered by a server event. Press the button below to override server control.";
+const ccTextOn  = "Cabin webcams are enabled for live streaming. Press the button above to override server control.";
 const ccLabelOff = "Disabled";
 const ccTextOff  = "The cabin webcams are disabled from server control. No video broadcasts will be allowed until you enable them.";
-const auTextOn = "Cabin microphones are enabld. Audio will broadcast whenever the camera is streaming unless you press the button below.";
-const auTextOff = "Cabin microphones are disabled from server contorl. No audio will broadcast until you enable it.";
 
 
 
-/* DOM references */
-const cameraA      = document.getElementById('cameraA');
-const cameraB      = document.getElementById('cameraB');
-const holderA      = document.getElementById('cameraA-container');
-const holderB      = document.getElementById('cameraB-container');
+const options      = {
+  autoplay: "muted",
+  preload: "auto",
+  responsive: true,
+  loadingSpinner: false
 
-const controlLabel = document.getElementById("control-label");
-const controlText  = document.getElementById("control-text");
+}
 
-const audioLabel   = document.getElementById("audio-label");
-const audioText    = document.getElementById("audio-text");
+//General Event Listeners
+buttonLogin.addEventListener('click', function() {
+  handleLogin();
+})
 
-const triggerLabel = document.getElementById("trigger-label");
-const triggerText  = document.getElementById("trigger-text");
 
-const buttonVideo  = document.getElementById("video-button");
-const buttonAudio  = document.getElementById("audio-button");
-const buttonVText  = document.getElementById("video-button-text");
-const buttonAText  = document.getElementById("audio-button-text");
-const buttonLogin  = document.getElementById("login-btn");
-const buttonLogout = document.getElementById("logout-btn");
+let playerA;
+let playerB;
+
+
+
 
 
 /* * * * * * * * *
 * Functions  
 */
-function initWcc() {  
+async function initWcc() {  
   //Setup data model
-  fetchAdminMessages();
+  monitorAuthState();  
+}
 
-  //Add event listeners
-  buttonVideo.addEventListener("click", toggleWebcam);
-  buttonAudio.addEventListener("click", toggleWebaudio);
-  buttonLogin.addEventListener("click", handleLogin);
-  buttonLogout.addEventListener("click", handleLogout);
-  cameraA.addEventListener("click", switchToCamA);
-  cameraB.addEventListener("click", switchToCamB);
-  onAuthStateChanged(auth, (u) => {
-    console.log("onAuthStateChanged u", u);
+
+
+function monitorAuthState() {
+  onAuthStateChanged(auth, async (u) => {
+    console.log("onAuthStateChanged", u);
     if(u) {
+      //write to state management object
       user = u;
-      if(testLoggeduserIsAdmin(u.uid)) {
-        buttonLogout.style = `display: block`;
-      }
+      console.log(u.uid+" is logged");
+      let adminUsers = await getAdminUsers();
+      console.log("adminUsers:", adminUsers);
+      if(adminUsers.includes(u.uid)) {
+        console.log(u.email+" is admin");
+        userIsLogged = true;
+        userIsAdmin  = true;
+        buttonLogout.classList.add("logged");
+        gridCntr.classList.add("logged");
+        loginCntr.classList.add("logged");
+        fetchAdminMessages();
+        addAdminEventListeners();
+      } else if (adminUsers[0]=="No admin users") {
+        userIsLogged = false;
+        userIsAdmin  = false;
+        buttonLogout.classList.remove("logged");
+        gridCntr.classList.remove("logged");
+        loginCntr.classList.remove("logged");
+        console.log("User "+loginEmail.value+"is NOT admin.");
+      } 
     } else {
       userIsLogged = false;
       userIsAdmin  = false;
-      buttonLogout.style = `visibility: hidden`;
-      console.log("User is logged out.");
-    }
-    console.log("user state changed", user);
+      buttonLogout.classList.remove("logged");
+      gridCntr.classList.remove("logged");
+      loginCntr.classList.remove("logged");
+      console.log("No User data found for "+loginEmail.value+".");
+    }     
   });
 }
 
-async function fetchAdminMessages() {
+function addAdminEventListeners() {
+  switchButtonA.addEventListener('click', switchToCamA);
+  switchButtonB.addEventListener('click', switchToCamB);
+  buttonVideo.addEventListener("click", toggleWebcam);
+  buttonLogout.addEventListener('click', function() {
+    handleLogout();
+  })
+  
+  cam3.addEventListener('mouseenter', function() {
+    iframeBtn.classList.add('show');
+    console.log("hover");
+    setTimeout(()=>iframeBtn.classList.remove('show'),5000);
+  });
+  
+  cam3.addEventListener('click', function() {
+    window.location = "index.html"
+  })
+  playerA = videojs("cameraA", options);
+  playerB = videojs("cameraB", options);
+  refreshBtn.addEventListener("click", refreshClients);
+  resetBtn.addEventListener("click", handleResetCams);
+
+}
+
+function fetchAdminMessages() {
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
     adminMsg =  Object.assign({}, dataSet);
-    let showVideo, showVideoOn, webcamNum, showAudioOn;    
     showVideo   = dataSet.showClVideo;
     showVideoOn = dataSet.showClVideoOn;
     webcamNum   = dataSet.webcamNumCl;
-    showAudioOn = dataSet.showClAudioOn;
-    outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum);
-  })
-  return new Promise((resolve, reject )=>{
-    resolve()
-    reject()
+    updateTallyLights()    
+    outputWebcamControl(showVideoOn, showVideo, webcamNum);
   });
 }         
 
-async function handleLogin() {
+async function getAdminUsers() {
+  const docRef = doc(db, "Passages", "Admin");
+  const docSnap = await getDoc(docRef);
+  let adminUsers, msg
+  return new Promise((resolve, reject) => {
+    if(docSnap.exists()) {
+      msg = docSnap.data();
+      adminUsers = msg.adminUsers;
+      resolve(adminUsers);
+    } else {
+      reject(["No admin users"]);
+    }
+  })  
+}
 
-  await signInWithEmailAndPassword(auth, "admin@clintonrivertraffic.com", "SnoodleDog")
+async function handleLogin() {
+  console.log("handleLogin for", loginEmail.value);
+  await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
   .then((u) => {
     console.log("signInWithEmailAndPassword -> user", u);
-    
     if(testLoggeduserIsAdmin(u.user.uid)) {
       userIsLogged = true;
     }
     
     console.log("userIsAdmin =", userIsAdmin)
   }).catch((error) => {
-    console.log("Login error", error);
+    alert("Login error"+ error);
+   
   })
   
 }
@@ -156,53 +215,38 @@ async function handleLogin() {
 function handleLogout() {
   console.log("logging out now.");
   signOut(auth).then(()=>{}).catch((error)=>{alert("There was a problem signing out:"+error)})
+  buttonLogout.classList.remove("logged");
+  gridCntr.classList.remove("logged");
+  loginCntr.classList.remove("logged");
 }
 
-function outputWebcamControl(showVideoOn, showAudioOn, showVideo, webcamNum) {
-  if(showVideoOn==true) {
-    controlLabel.innerText = "Video "+ccLabelOn;
-    controlLabel.className = "green";
-    controlText.innerText  = ccTextOn;
-    buttonVText.innerText = "Disable";
-  } else if(showVideoOn==false) {
-    controlLabel.innerText = "Video "+ccLabelOff;
-    controlLabel.className = "red";
-    controlText.innerText = ccTextOff;
-    buttonVText.innerText = "Enable";
+async function handleResetCams() {
+  let pkg = {
+    action: "resetWebcams",
+    authUser: window.env.authUser,
+    authToken: window.env.clientCode
   }
-  if(showAudioOn==true) {
-    audioLabel.innerText = "Audio "+ccLabelOn;
-    audioLabel.className = "green";
-    audioText.innerText  = auTextOn;
-    buttonAText.innerText = "Disable";
-  } else if(showAudioOn==false) {
-    audioLabel.innerText = "Audio "+ccLabelOff;
-    audioLabel.className = "red";
-    audioText.innerText = auTextOff;
-    buttonAText.innerText = "Enable";
-  }
-  if(showVideo==true) {
-    triggerLabel.innerText = taLabel;
-    triggerLabel.className = "green";
-    triggerText.innerText  = taText;
-  } else if(showVideo==false) {
-    triggerLabel.innerText = toLabel;
-    triggerLabel.className = "red";
-    triggerText.innerText  = toText;
-  }
-  if(showVideo==true && showVideoOn==true) {
-    if(webcamNum=="A") {
-      holderA.classList.add('active');
-      holderB.classList.remove('active');
-      console.log("A active")
-    }
-    if(webcamNum=="B") {
-      holderB.classList.add('active');
-      holderA.classList.remove('active');  
-      console.log("B active")
-    }
+  const myHeaders = new Headers({
+    'Content-Type': 'application/json'
+    
+  });
+  const response = await fetch(window.env.gcfUrl, { 
+    method:'POST', 
+    headers: myHeaders,
+    body: JSON.stringify(pkg)
+  })
+  //.catch(function (error){
+  //  console.error(error);
+  //})
+
+  if(response.status===200) {
+    const data = await response.json();
+    console.log("handleResetCams response", data)
+  } else {
+    alert("handleResetCams response: "+response.status)
   }
 }
+
 
 function toggleWebcam() {
   console.log("toggleWebcam()",adminMsg);
@@ -217,25 +261,57 @@ function toggleWebcam() {
   setDoc(adminMsgRef, adminMsg, {merge: true})
 }
 
-function toggleWebaudio() {
-  console.log("toggleWebaudio()",adminMsg);
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
+function getTime() { 
+  var date = new Date(); 
+  return { 
+    month: (date.getMonth()+1),
+    date: date.getDate(),
+    hour: date.getHours(), 
+    min: date.getMinutes(), 
+    sec: date.getSeconds() 
+  }; 
+} 
+
+function xSecondsLater(time, x) {
+  let sec = time.sec + x;
+  let min = time.min;
+  if(sec>59) { 
+    sec = 60-sec; 
+    min = min+1;
   }
-  if(adminMsg.showClAudioOn==true) {
-    adminMsg.showClAudioOn=false
-  } else {
-    adminMsg.showClAudioOn=true
+  if(min>59) {
+    min = 0;
   }
-  setDoc(adminMsgRef, adminMsg, {merge: true})
+  return {sec, min };
 }
 
+
+function refreshClients() {
+  const tsbase = "15 seconds after pressing"
+  if(!userIsAdmin && !userIsLogged) {
+    return alert("User not authorized for remote client refresh operation.")
+  }
+  let now = getTime()
+  let n15 = xSecondsLater(now, 15)
+  let tsmsg = "at "+n15.min+":"+n15.sec+" on the screen clock"
+  timeStatement.innerText = tsmsg
+  adminMsg.resetTime[4] = n15
+  setDoc(adminMsgRef, adminMsg, {merge: true})
+  setTimeout(()=>{
+    adminMsg.resetTime.pop()
+    setDoc(adminMsgRef, adminMsg, {merge: true})
+    timeStatement.innerText = tsbase
+  },30000)
+
+}
 
 function switchToCamA() {
   if(!userIsAdmin && !userIsLogged) {
     return alert("User not authorized for webcam operation.")
   }
   adminMsg.webcamNumCl = "A";
+  updateTallyLights();
+
   setDoc(adminMsgRef, adminMsg, {merge: true})
 }
 
@@ -245,9 +321,10 @@ function switchToCamB() {
     return alert("User not authorized for webcam operation.")
   }
   adminMsg.webcamNumCl = "B";
+  updateTallyLights();
+
   setDoc(adminMsgRef, adminMsg, {merge: true})
 }
-
 
 function testLoggeduserIsAdmin(uid) {
   //Test that obj property is array
@@ -260,5 +337,48 @@ function testLoggeduserIsAdmin(uid) {
   }
 }
 
-//Initiate the app
+
+function updateTallyLights() {
+  if(webcamNum=="A") {
+    ledA.classList.add("on")
+    ledB.classList.remove("on");
+  }
+  if(webcamNum=="B") {
+    ledB.classList.add("on")
+    ledA.classList.remove("on");
+  }
+}
+
+
+function outputWebcamControl(showVideoOn, showVideo, webcamNum) {
+  
+  if(showVideoOn==true) {
+    controlLabel.innerText = "Video "+ccLabelOn;
+    controlLabel.classList.add("green");
+    controlText.innerText  = ccTextOn;
+    buttonVText.innerText = "Disable";
+  } else if(showVideoOn==false) {
+    controlLabel.innerText = "Video "+ccLabelOff;
+    controlLabel.classList.add("red");
+    controlText.innerText = ccTextOff;
+    buttonVText.innerText = "Enable";
+  }
+  if(showVideo==true && showVideoOn==true) {
+    if(webcamNum=="A") {
+      holderA.classList.add('active');
+      holderB.classList.remove('active');
+      console.log("A active")
+    }
+    if(webcamNum=="B") {
+      holderB.classList.add('active');
+      holderA.classList.remove('active');  
+      console.log("B active")
+    }
+  }
+  
+  console.log("outputWebcamControl() "+showVideoOn+showVideo+webcamNum);
+}
+
+
+//Activate
 initWcc();

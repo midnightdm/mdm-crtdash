@@ -11,7 +11,7 @@ export const LiveScanModel = {
     { min: 30, sec: 45}
   ],
   idTime: [
-    { min: 59, sec: 45}
+    { min: 59, sec: 45, videoIsFull: false }
   ],
   idPlus15: {
     min: 0,
@@ -41,6 +41,8 @@ export const LiveScanModel = {
   showVideoField: null,
   showVideoOnField: null,
   webcamNumField: null,
+  webcamSource: {"A":null, "B": null },
+  webcamName: null,
   videoSource: null,
   videoIsOn: false,
   videoProgram: null,

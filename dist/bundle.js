@@ -25471,7 +25471,7 @@ const LiveScanModel = {
     { min: 30, sec: 45}
   ],
   idTime: [
-    { min: 59, sec: 45}
+    { min: 59, sec: 45, videoIsFull: false }
   ],
   idPlus15: {
     min: 0,
@@ -25501,6 +25501,8 @@ const LiveScanModel = {
   showVideoField: null,
   showVideoOnField: null,
   webcamNumField: null,
+  webcamSource: {"A":null, "B": null },
+  webcamName: null,
   videoSource: null,
   videoIsOn: false,
   videoProgram: null,
@@ -25988,8 +25990,12 @@ const Environment = {
     messagingSenderId: "1055119004226",
     appId: "1:1055119004226:web:1d17187e816f794b5713db"
   },
-  region: "clinton"
+  region: "clinton",
+  gcfUrl: "https://webcam.carifenzel.cf/stream/streamapi.php",
+  authUser: "gcfuser",
+  clientCode: "D*ll%sD0p3Dude"
 }
+//"https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/resetcams
 
 /***/ }),
 
@@ -27776,6 +27782,7 @@ window.env    = _environment__WEBPACK_IMPORTED_MODULE_3__.Environment
 window.region = "clinton";
 
 const privateMode = false;
+const tvMode      = false;
 const firebaseConfig = env.firebaseConfig
 ;(0,firebase_app__WEBPACK_IMPORTED_MODULE_0__.initializeApp)(firebaseConfig)
 // const hls = new Hls()
@@ -27883,7 +27890,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       news.classList.remove("full")
       overlay2.classList.remove("full")
     }
-    if(playPromo) {
+    if(playPromo && tvMode) {
       // Play promo from rotation at random
       let sk = Math.floor(Math.random() * liveScanModel.promoSources.length)
       let promoSource = location.protocol + '//' + location.host + '/' + liveScanModel.promoSources[sk];
@@ -27898,13 +27905,13 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           this.src({ src: liveScanModel.videoSource });
           this.play();
           liveScanModel.promoIsOn = false;
-          waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
         });
         this.src({ src: promoSource });
         this.play();
       });
     }
-    if(playProgram) {  
+    if(playProgram && tvMode) {  
       //Play scheduled video program
       waypointLabel.innerHTML = liveScanModel.videoProgram.dataTitle;
       if(overlay2.classList.contains("active")) {
@@ -27916,15 +27923,16 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           this.src({ src: liveScanModel.videoSource });
           this.play();
           liveScanModel.videoProgramIsOn = false;
-          waypointLabel.innerHTML = "3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
         })
         this.src({ src: liveScanModel.videoProgram.source });
         this.play();
       });
     } else {
       if(webcamNum != liveScanModel.prevWebcamNum) {
-        waypointLabel.innerHTML = "3 Miles South of Drawbridge";
-        liveScanModel.videoSource = location.protocol +'//' + location.host + '/'+ region + 'Webcam' + webcamNum + '.m3u8';
+        waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";        
+        liveScanModel.videoSource = location.protocol +'//' + location.host + '/stream/'+ region + 'Webcam' + webcamNum + '.m3u8';
+        //liveScanModel.webcamSource[webcamNum]
         //"https://webcam.carifenzel.cf/"+ region+ 'Webcam' + webcamNum + '.m3u8';
         console.log("video source", liveScanModel.videoSource);
         //hls.loadSource(liveScanModel.videoSource);
@@ -28272,7 +28280,7 @@ async function initLiveScan(rotateTransponders=true) {
           }
         }
         liveScanModel.vesselsInCamera = vesselsInCamera;
-        if(!liveScanModel.promoIsOn || !liveScanModel.videoProgramIsOn) {
+        if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
           outputVideoOverlay(); 
         }
       }  
@@ -28294,7 +28302,7 @@ async function initLiveScan(rotateTransponders=true) {
           liveScanModel.cameraStatus.showVideoOn,
           liveScanModel.cameraStatus.showVideo,
           liveScanModel.cameraStatus.webcamNum,
-          liveScanModel.cameraStatus.videoIsFull,
+          idt.videoIsFull,
           true,
           false
         )
@@ -28436,12 +28444,16 @@ async function fetchPassengerAlerts() {
 
 async function fetchWaypoint() {
   const adminSnapshot = (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.onSnapshot)((0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.doc)(db, "Passages", "Admin"), (querySnapshot) => {  
-    let dataSet = querySnapshot.data();
-    let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint; 
+    let dataSet = querySnapshot.data()
+    let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint 
     let wasOutput = false; //Resets when screen updates
-    apubID = dataSet[liveScanModel.apubFieldName].toString();
-    vpubID = dataSet[liveScanModel.vpubFieldName].toString();
+    apubID = dataSet[liveScanModel.apubFieldName].toString()
+    vpubID = dataSet[liveScanModel.vpubFieldName].toString()
     lsLen   = dataSet[liveScanModel.lsLenField]
+    liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.region+"A"].src
+    liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.region+"B"].src
+    liveScanModel.webcamName = dataSet.webcamSources[liveScanModel.region+"A"].name
+    
     liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
     liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
     liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
@@ -28450,8 +28462,27 @@ async function fetchWaypoint() {
     vpublishCollection = liveScanModel.voicepublishCollection;
     liveScanModel.resetTime = dataSet.resetTime;
     liveScanModel.idTime    = dataSet.idTime;
+    /* DATA FORMAT
+      idTime [
+        {min:14 sec:50 videoIsFull:false },
+        {min:44 sec:50 videoIsFull:false },
+      ]
+     */
     liveScanModel.promoSources  = dataSet.promoSources;
     liveScanModel.videoProgram  = dataSet.videoProgram;
+    /* DATA FORMAT 
+      videoProgram {
+        date: 5,
+        hour: 3,
+        min : 0,
+        month: 11,
+        sec: 0
+        source: "waypoint-notifications.m3u8",
+        title: "Waypoint Notifications",
+        videoIsFull: true
+       }
+     *
+                                        */
     
     console.log("snapshotUpdate reset time:", liveScanModel.resetTime);
     console.log("snapshotUpdate id time:", liveScanModel.idTime);
