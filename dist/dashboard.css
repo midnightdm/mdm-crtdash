@@ -313,6 +313,10 @@ h4.map-label {
   font-size: 1.4vh; /* MEDIA OVER RIDE*/
   border: 2px solid black;  
 }
+
+h4.map-label.type-passenger {
+  background: rgba(255, 255, 0, 0.82);
+}
 .listMode .list-wrap h4.map-label {
   margin: 1vh;
 }

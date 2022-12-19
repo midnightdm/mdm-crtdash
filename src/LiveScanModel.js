@@ -181,12 +181,14 @@ export const LiveScanModel = {
     //FOR SHIP ICON MOVEMENT
     let coords = this.getShipSpriteCoords(o.course), icon;
     if(dat.type=="Passenger") {
+      o.typeIsPassenger = true;
       icon = {
         url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/ship-icon-sprite-yellow.png",
         origin: { x: coords[0], y: coords[1] }, 
         size: {width: 55, height: 55 }
       };
     } else {
+      o.typeIsPassenger = false;
       icon = {
         url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/ship-icon-sprite-cyan.png",
         origin: { x: coords[0], y: coords[1] }, 

@@ -30,6 +30,7 @@ export default class LiveScan {
     this.type           = null
     this.liveIsLocal    = false
     this.inCameraRange  = false
+    this.typeIsPassenger = false
     this.liveMarkerAlphaWasReached = false
     this.liveMarkerAlphaTS         = null
     this.liveMarkerBravoWasReached = false

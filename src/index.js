@@ -304,14 +304,17 @@ async function outputSelVessel() {
   let passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
   let passageDate = liveScanModel.passagesList[passageIdx].date
   //let passageDate = new Date(liveScans[live].lastDetectedTS);
-  
+
+  //Add special CSS class for passenger vessel
+  let mapPassengerClass = liveScans[live].typeIsPassenger ? 'type-passenger' : '';
+
   //Build output for selected vessel
   selVesselOutput += 
     `<li class="dataPoint"><span class="th">TYPE:</span> <span class="td">
     ${liveScans[live].type}</span></li>
     <li class="dataPoint"><span class="th">MMSI #:</span> <span class="td">
     ${liveScans[live].id}</span></li>
-    <li class="dataPoint"><span class="th">LABEL:</span> <span class="td"><h4 class="map-label">
+    <li class="dataPoint"><span class="th">LABEL:</span> <span class="td"><h4 class="map-label ${mapPassengerClass}">
     ${liveScans[live].mapLabel}</h4></span></li>
     <li class="dataPoint"><span class="th">COURSE:</span> <span class="td">
   ${liveScans[live].course}°</span></li>
@@ -345,10 +348,14 @@ async function outputAllVessels() {
     
     for(let vessel in liveScanModel.transponder.viewList) {
       let obj = liveScanModel.transponder.viewList[vessel]
+      //Add special CSS class for passenger vessel
+      let mapPassengerClass = obj.typeIsPassenger ? 'type-passenger' : '';
+
       allVesselsOutput+= c==liveScanModel.transponder.stepMax-1 ? `<li class="animate__animated animate__slideInLeft">` : `<li class="animate__animated animate__slideInUp">`;
+      
       allVesselsOutput+=
         `<div class="list-wrap">
-          <h4 class="map-label">${obj.mapLabel}</h4>
+          <h4 class="map-label ${mapPassengerClass}">${obj.mapLabel}</h4>
           <h4 class="tile-title">${obj.name}</h4> 
           <div class="dir-container">
             <img class="dir-img" src="${obj.dirImg}"/>          
