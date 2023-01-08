@@ -1,8 +1,7 @@
 /* LiveScan class  */
 //LiveScan Object class
 export default class LiveScan {
-  constructor(state) {
-    this.state          = state //callback
+  constructor() {
     this.liveLastScanTS = null
     this.transponderTS  = null
     this.plotTS         = null
@@ -25,6 +24,7 @@ export default class LiveScan {
     this.draft          = null
     this.map1marker     = null
     this.map2marker     = null
+    this.map3marker     = null
     this.hasImage       = null
     this.imageUrl       = null
     this.type           = null

@@ -21,7 +21,8 @@ export const LiveScanModel = {
     showVideo: null,
     showVideoOn: null,
     webcamNum: null,
-    videoIsFull: false
+    videoIsFull: false,
+    videoIsPassing: false
   },
   promoSources: [],
   promoIsOn: false,
@@ -47,16 +48,22 @@ export const LiveScanModel = {
   videoIsOn: false,
   videoProgram: null,
   videoProgramIsOn: false,
+  passengerTrackerIsOn: false,
+  vesselsAreInCameraRange: false,
   vesselsInCamera: [],
+  vesselsArePass: [],
   map1: {},
   map2: {},
+  map3: {},
   polylines: {},
   mileMarkersList1:[],
   mileMarkerLabels1:[],
   mileMarkersList2:[],
   mileMarkerLabels2:[],
   rotatingKey: 0,
+  passRotKey: 0,
   numVessels: 0,
+  fakeDataIterator: 0,
   passagesList: [{type:"default"}],
   alertsPassenger: [
     {apubVesselName: "loading", apubID:"loading", date: new Date()},
@@ -162,6 +169,7 @@ export const LiveScanModel = {
   mapper(o, dat, isNew) {
     const m1 = this.map1
     const m2 = this.map2
+    const m3 = this.map3
     o.transponderTS  = parseInt(dat.transponderTS);
     o.position = new google.maps.LatLng(dat.liveLastLat, dat.liveLastLon);
     o.lat  = parseFloat(dat.liveLastLat);
@@ -215,17 +223,27 @@ export const LiveScanModel = {
         icon: icon,
         map: m2
       });
+      o.map3marker = new google.maps.Marker({
+        position: new google.maps.LatLng(43.116055, -94.679274),
+        title: o.name, 
+        label: o.mapLabel, 
+        icon: icon,
+        map: m3
+      });
       o.map1marker.setPosition(o.position)
-      o.map2marker.setPosition(o.position); 
+      o.map2marker.setPosition(o.position) 
+      o.map3marker.setPosition(o.position)
       o.lastMovementTS = new Date();
       o.liveLastScanTS = new Date(dat.liveLastTS*1000);
       o.lastPassageTS = new Date(parseInt(dat.liveLastTS)*1000);
      } else {
       //If this is update
       o.map1marker.setPosition(o.position)
-      o.map2marker.setPosition(o.position);
-      o.map1marker.setIcon(icon);
-      o.map2marker.setIcon(icon);
+      o.map2marker.setPosition(o.position)
+      o.map3marker.setPosition(o.position)
+      o.map1marker.setIcon(icon)
+      o.map2marker.setIcon(icon)
+      o.map3marker.setIcon(icon)
       //o.map1marker.setMap(m1)
       //o.map2marker.setMap(m2)
 
@@ -263,6 +281,15 @@ export const LiveScanModel = {
     );
     this.map2 = new google.maps.Map(
       document.getElementById("map2"), 
+      {
+        zoom: 14, 
+        center: {lat: 41.841202, lng:-90.179084}, 
+        mapTypeId: "hybrid",
+        disableDefaultUI: true
+      }
+    )
+    this.map3 = new google.maps.Map(
+      document.getElementById("map3"), 
       {
         zoom: 14, 
         center: {lat: 41.841202, lng:-90.179084}, 
@@ -361,6 +388,7 @@ export const LiveScanModel = {
     this.polylines.foxtrotLine1.setMap(this.map1);
     this.polylines.golfLine1.setMap(this.map1);
     this.polylines.hotelLine1.setMap(this.map1);
+
     this.polylines.alphaLine2.setMap(this.map2);
     this.polylines.bravoLine2.setMap(this.map2);
     this.polylines.charlieLine2.setMap(this.map2);
@@ -369,6 +397,16 @@ export const LiveScanModel = {
     this.polylines.foxtrotLine2.setMap(this.map2); 
     this.polylines.golfLine2.setMap(this.map2); 
     this.polylines.hotelLine2.setMap(this.map2); 
+
+    this.polylines.alphaLine2.setMap(this.map3);
+    this.polylines.bravoLine2.setMap(this.map3);
+    this.polylines.charlieLine2.setMap(this.map3);
+    this.polylines.deltaLine2.setMap(this.map3);
+    this.polylines.echoLine2.setMap(this.map3); 
+    this.polylines.foxtrotLine2.setMap(this.map3); 
+    this.polylines.golfLine2.setMap(this.map3); 
+    this.polylines.hotelLine2.setMap(this.map3);
+
     this.map1.setCenter(this.focusPosition);     
   
     //Add mile marker lines
