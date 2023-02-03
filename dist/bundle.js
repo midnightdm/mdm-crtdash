@@ -26040,6 +26040,466 @@ const Environment = {
 
 /***/ }),
 
+/***/ "./src/fakeLiveScan.js":
+/*!*****************************!*\
+  !*** ./src/fakeLiveScan.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "fakeLiveScan": () => (/* binding */ fakeLiveScan)
+/* harmony export */ });
+const fakeLiveScan =  [
+  [
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 250.9,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "camanche",
+      liveEvents: [
+        {camanche: 1645582322}
+      ],
+      liveInitLat: 41.786653333333334,
+      liveInitLon: -90.24742,
+      liveInitTS: 1645582281,
+      liveIsLocal: false,
+      liveLastLat: 41.786665,
+      liveLastLon: -90.24739333333333,
+      liveLastTS: 1671933613,
+      liveLength: null,
+      liveLocation: "In Camanche Harbor",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Artco Innovation",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 368039740,
+      liveWidth: null,
+      type: "Towing" 
+    },
+           
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 32.2,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "m512ua",
+      liveEvents: [
+        {m512ua: 1645582285}
+      ],
+      liveInitLat: 41.78609333333333,
+      liveInitLon: -90.24452,
+      liveInitTS: 1645582264,
+      liveIsLocal: true,
+      liveLastLat: 41.78613166666667,
+      liveLastLon: -90.24451,
+      liveLastTS: 1671933613,
+      liveLength: null,
+      liveLocation: "At M-512 by Camanche marina 6 miles below Clinton drawbridge",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Huge Friggin' Boat",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 366970820,
+      liveWidth: null,
+      type: "Passenger" 
+    },
+    
+    {
+    imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366986460.jpg",
+    liveCallSign: null,
+    liveRegion: "clinton",
+    liveCourse: 331.5,
+    liveDirection: "downriver",
+    liveDraft: null,
+    liveEvent: "camanche",
+    liveEvents:[
+      {camanche: 1645582293}
+    ],
+    liveInitLat: 41.79203666666667,
+    liveInitLon: -90.24426666666666,
+    liveInitTS: 1645582271,
+    liveIsLocal: false,
+    liveLastLat: 41.79204333333333,
+    liveLastLon: -90.24426333333334,
+    liveLastTS: 1671933613,
+    liveLength: null,
+    liveLocation: "In Camanche Harbor",
+    liveMarkerAlphaTS: null,
+    liveMarkerAlphaWasReached: false,
+    liveMarkerBravoTS: null,
+    liveMarkerBravoWasReached: false,
+    liveMarkerCharlieTS: null,
+    liveMarkerCharlieWasReached: false,
+    liveMarkerDeltaTS: null,
+    liveMarkerDeltaWasReached: false,
+    liveName: "Lil Charley",
+    livePassageWasSaved: false,
+    liveSpeed: 0,
+    liveVesselID: 366986460,
+    liveWidth: null,
+    type: "Towing"
+    }
+  ],
+
+  [
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 250.9,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "camanche",
+      liveEvents: [
+        {camanche: 1645582322}
+      ],
+      liveInitLat: 41.786653333333334,
+      liveInitLon: -90.24742,
+      liveInitTS: 1645582281,
+      liveIsLocal: false,
+      liveLastLat: 41.786665,
+      liveLastLon: -90.24739333333333,
+      liveLastTS: 1671933793,
+      liveLength: null,
+      liveLocation: "In Camanche Harbor",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Artco Innovation",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 368039740,
+      liveWidth: null,
+      type: "Towing" 
+    },
+           
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 32.2,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "m512ua",
+      liveEvents: [
+        {m512ua: 1645582285}
+      ],
+      liveInitLat: 41.78609333333333,
+      liveInitLon: -90.24452,
+      liveInitTS: 1645582264,
+      liveIsLocal: true,
+      liveLastLat: 41.78613166666667,
+      liveLastLon: -90.24451,
+      liveLastTS: 1671933793,
+      liveLength: null,
+      liveLocation: "At M-512 by Camanche marina 6 miles below Clinton drawbridge",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Huge Friggin' Boat",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 366970820,
+      liveWidth: null,
+      type: "Passenger" 
+    },
+    
+    {
+    imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366986460.jpg",
+    liveCallSign: null,
+    liveRegion: "clinton",
+    liveCourse: 331.5,
+    liveDirection: "downriver",
+    liveDraft: null,
+    liveEvent: "camanche",
+    liveEvents:[
+      {camanche: 1645582293}
+    ],
+    liveInitLat: 41.79203666666667,
+    liveInitLon: -90.24426666666666,
+    liveInitTS: 1645582271,
+    liveIsLocal: false,
+    liveLastLat: 41.79204333333333,
+    liveLastLon: -90.24426333333334,
+    liveLastTS: 1671933793,
+    liveLength: null,
+    liveLocation: "In Camanche Harbor",
+    liveMarkerAlphaTS: null,
+    liveMarkerAlphaWasReached: false,
+    liveMarkerBravoTS: null,
+    liveMarkerBravoWasReached: false,
+    liveMarkerCharlieTS: null,
+    liveMarkerCharlieWasReached: false,
+    liveMarkerDeltaTS: null,
+    liveMarkerDeltaWasReached: false,
+    liveName: "Lil Charley",
+    livePassageWasSaved: false,
+    liveSpeed: 0,
+    liveVesselID: 366986460,
+    liveWidth: null,
+    type: "Towing"
+    }
+  ],
+
+  [
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 250.9,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "camanche",
+      liveEvents: [
+        {camanche: 1645582322}
+      ],
+      liveInitLat: 41.786653333333334,
+      liveInitLon: -90.24742,
+      liveInitTS: 1645582281,
+      liveIsLocal: false,
+      liveLastLat: 41.786665,
+      liveLastLon: -90.24739333333333,
+      liveLastTS: 1671934153,
+      liveLength: null,
+      liveLocation: "In Camanche Harbor",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Artco Innovation",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 368039740,
+      liveWidth: null,
+      type: "Towing" 
+    },
+           
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 32.2,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "m512ua",
+      liveEvents: [
+        {m512ua: 1645582285}
+      ],
+      liveInitLat: 41.78609333333333,
+      liveInitLon: -90.24452,
+      liveInitTS: 1645582264,
+      liveIsLocal: true,
+      liveLastLat: 41.78613166666667,
+      liveLastLon: -90.24451,
+      liveLastTS: 1671934153,
+      liveLength: null,
+      liveLocation: "At M-512 by Camanche marina 6 miles below Clinton drawbridge",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Huge Friggin' Boat",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 366970820,
+      liveWidth: null,
+      type: "Passenger" 
+    },
+    
+    {
+    imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366986460.jpg",
+    liveCallSign: null,
+    liveRegion: "clinton",
+    liveCourse: 331.5,
+    liveDirection: "downriver",
+    liveDraft: null,
+    liveEvent: "camanche",
+    liveEvents:[
+      {camanche: 1645582293}
+    ],
+    liveInitLat: 41.79203666666667,
+    liveInitLon: -90.24426666666666,
+    liveInitTS: 1645582271,
+    liveIsLocal: false,
+    liveLastLat: 41.79204333333333,
+    liveLastLon: -90.24426333333334,
+    liveLastTS: 1671934153,
+    liveLength: null,
+    liveLocation: "In Camanche Harbor",
+    liveMarkerAlphaTS: null,
+    liveMarkerAlphaWasReached: false,
+    liveMarkerBravoTS: null,
+    liveMarkerBravoWasReached: false,
+    liveMarkerCharlieTS: null,
+    liveMarkerCharlieWasReached: false,
+    liveMarkerDeltaTS: null,
+    liveMarkerDeltaWasReached: false,
+    liveName: "Lil Charley",
+    livePassageWasSaved: false,
+    liveSpeed: 0,
+    liveVesselID: 366986460,
+    liveWidth: null,
+    type: "Towing"
+    }
+  ],
+
+  [
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi368039740.jpg",
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 250.9,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "camanche",
+      liveEvents: [
+        {camanche: 1645582322}
+      ],
+      liveInitLat: 41.786653333333334,
+      liveInitLon: -90.24742,
+      liveInitTS: 1645582281,
+      liveIsLocal: false,
+      liveLastLat: 41.786665,
+      liveLastLon: -90.24739333333333,
+      liveLastTS: 1671934333,
+      liveLength: null,
+      liveLocation: "In Camanche Harbor",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Artco Innovation",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 368039740,
+      liveWidth: null,
+      type: "Towing" 
+    },
+           
+    {
+      imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366970820.jpg",
+      inCameraRange: true,
+      liveCallSign: null,
+      liveRegion: "clinton",
+      liveCourse: 32.2,
+      liveDirection: "upriver",
+      liveDraft: null,
+      liveEvent: "m512ua",
+      liveEvents: [
+        {m512ua: 1645582285}
+      ],
+      liveInitLat: 41.78609333333333,
+      liveInitLon: -90.24452,
+      liveInitTS: 1645582264,
+      liveIsLocal: true,
+      liveLastLat: 41.78613166666667,
+      liveLastLon: -90.24451,
+      liveLastTS: 1671934333,
+      liveLength: null,
+      liveLocation: "At M-512 by Camanche marina 6 miles below Clinton drawbridge",
+      liveMarkerAlphaTS: null,
+      liveMarkerAlphaWasReached: false,
+      liveMarkerBravoTS: null,
+      liveMarkerBravoWasReached: false,
+      liveMarkerCharlieTS: null,
+      liveMarkerCharlieWasReached: false,
+      liveMarkerDeltaTS: null,
+      liveMarkerDeltaWasReached: false,
+      liveName: "Huge Friggin' Boat",
+      livePassageWasSaved: false,
+      liveSpeed: 0,
+      liveVesselID: 366970820,
+      liveWidth: null,
+      type: "Passenger" 
+    },
+    
+    {
+    imageUrl: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366986460.jpg",
+    liveCallSign: null,
+    liveRegion: "clinton",
+    liveCourse: 331.5,
+    liveDirection: "downriver",
+    liveDraft: null,
+    liveEvent: "camanche",
+    liveEvents:[
+      {camanche: 1645582293}
+    ],
+    liveInitLat: 41.79203666666667,
+    liveInitLon: -90.24426666666666,
+    liveInitTS: 1645582271,
+    liveIsLocal: false,
+    liveLastLat: 41.79204333333333,
+    liveLastLon: -90.24426333333334,
+    liveLastTS: 1671934333,
+    liveLength: null,
+    liveLocation: "In Camanche Harbor",
+    liveMarkerAlphaTS: null,
+    liveMarkerAlphaWasReached: false,
+    liveMarkerBravoTS: null,
+    liveMarkerBravoWasReached: false,
+    liveMarkerCharlieTS: null,
+    liveMarkerCharlieWasReached: false,
+    liveMarkerDeltaTS: null,
+    liveMarkerDeltaWasReached: false,
+    liveName: "Lil Charley",
+    livePassageWasSaved: false,
+    liveSpeed: 0,
+    liveVesselID: 366986460,
+    liveWidth: null,
+    type: "Towing"
+    }
+  ]
+   
+    
+    
+   
+]
+
+/***/ }),
+
 /***/ "./node_modules/@firebase/app/dist/esm/index.esm2017.js":
 /*!**************************************************************!*\
   !*** ./node_modules/@firebase/app/dist/esm/index.esm2017.js ***!
@@ -27761,8 +28221,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LiveScanModel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./LiveScanModel */ "./src/LiveScanModel.js");
 /* harmony import */ var _environment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./environment */ "./src/environment.js");
 /* harmony import */ var _LiveScan__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./LiveScan */ "./src/LiveScan.js");
-/* harmony import */ var javascript_time_ago__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! javascript-time-ago */ "./node_modules/javascript-time-ago/modules/TimeAgo.js");
-/* harmony import */ var javascript_time_ago_locale_en_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! javascript-time-ago/locale/en.json */ "./node_modules/javascript-time-ago/locale/en.json");
+/* harmony import */ var _fakeLiveScan_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./fakeLiveScan.js */ "./src/fakeLiveScan.js");
+/* harmony import */ var javascript_time_ago__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! javascript-time-ago */ "./node_modules/javascript-time-ago/modules/TimeAgo.js");
+/* harmony import */ var javascript_time_ago_locale_en_json__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! javascript-time-ago/locale/en.json */ "./node_modules/javascript-time-ago/locale/en.json");
 
 
 
@@ -27770,13 +28231,13 @@ __webpack_require__.r(__webpack_exports__);
 
 //import Hls from './hls.min.js'
 //UNCOMMENT BELOW FOR TEST DATA (& Set line 365 to true)
-//import { fakeLiveScan } from './fakeLiveScan.js'
+
 
 
 // Timeago init
 
-javascript_time_ago__WEBPACK_IMPORTED_MODULE_5__["default"].addDefaultLocale(javascript_time_ago_locale_en_json__WEBPACK_IMPORTED_MODULE_6__)
-const timeAgo = new javascript_time_ago__WEBPACK_IMPORTED_MODULE_5__["default"]('en-US')
+javascript_time_ago__WEBPACK_IMPORTED_MODULE_6__["default"].addDefaultLocale(javascript_time_ago_locale_en_json__WEBPACK_IMPORTED_MODULE_7__)
+const timeAgo = new javascript_time_ago__WEBPACK_IMPORTED_MODULE_6__["default"]('en-US')
 
 //Keypress event listeners
 var keysPressed = {};
@@ -28534,10 +28995,10 @@ async function fetchLiveScanData() {
   let data = []
   //Get fake liveScan data from file...
   if(fakeDataMode) {
-    if(liveScanModel.fakeDataIterator > fakeLiveScan.length) {
+    if(liveScanModel.fakeDataIterator > _fakeLiveScan_js__WEBPACK_IMPORTED_MODULE_5__.fakeLiveScan.length) {
       liveScanModel.fakeDataIterator = 0
     }
-    data = fakeLiveScan[liveScanModel.fakeDataIterator]
+    data = _fakeLiveScan_js__WEBPACK_IMPORTED_MODULE_5__.fakeLiveScan[liveScanModel.fakeDataIterator]
     liveScanModel.fakeDataIterator++
   //Or get real liveScan data from API
   } else {

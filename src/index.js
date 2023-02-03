@@ -7,7 +7,7 @@ import { Environment } from './environment'
 import LiveScan from './LiveScan'
 //import Hls from './hls.min.js'
 //UNCOMMENT BELOW FOR TEST DATA (& Set line 365 to true)
-//import { fakeLiveScan } from './fakeLiveScan.js'
+import { fakeLiveScan } from './fakeLiveScan.js'
 import TimeAgo from 'javascript-time-ago'
 
 // Timeago init
@@ -59,9 +59,9 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 window.env    = Environment
 window.region = process.env.DASH_REGION;
 
-const privateMode = true;
-const tvMode      = false;
-const fakeDataMode= false;
+const privateMode = false;
+const tvMode      = true;
+const fakeDataMode= true;
 const firebaseConfig = env.firebaseConfig
 
 initializeApp(firebaseConfig)
