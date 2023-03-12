@@ -22,7 +22,7 @@ export const LiveScanModel = {
     showVideoOn: null,
     webcamNum: null,
     videoIsFull: false,
-    videoIsPassing: false
+    videoIsPassingCloseup: false
   },
   promoSources: [],
   promoIsOn: false,
