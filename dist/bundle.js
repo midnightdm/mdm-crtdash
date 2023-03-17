@@ -28283,8 +28283,8 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 window.env    = _environment__WEBPACK_IMPORTED_MODULE_3__.Environment
 window.region = "clinton";
 
-const privateMode = false;
-const tvMode      = true;
+const privateMode = true;
+const tvMode      = false;
 const fakeDataMode= false;
 const firebaseConfig = env.firebaseConfig
 
