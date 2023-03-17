@@ -25483,7 +25483,7 @@ const LiveScanModel = {
     showVideoOn: null,
     webcamNum: null,
     videoIsFull: false,
-    videoIsPassing: false
+    videoIsPassingCloseup: false
   },
   promoSources: [],
   promoIsOn: false,
@@ -28368,7 +28368,7 @@ function getPassageFor(liveKey) {
   })
 }
 
-async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram, videoIsPassing) {  
+async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram, videoIsPassingCloseup) {  
   if(privateMode==true) { 
     showVideoOn=false;
   }
@@ -28384,9 +28384,12 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       loadingSpinner: false
     };
     console.log("webcamNum is", webcamNum);
-    togglePassingVideo(videoIsPassing)
-    if(!videoIsPassing) {
-      toggleFullVideo(videoIsFull)
+    if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
+      //Turn on closeup if passing and not on already
+      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+    } else if(liveScanModel.cameraStatus.videoIsPassingCloseup && !videoIsPassingCloseup) {
+      //Turn off closeup if on and not passing
+      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
     }
     if(playPromo && tvMode) {
       // Play promo from rotation at random
@@ -28403,11 +28406,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           this.src({ src: liveScanModel.videoSource });
           this.play();
           liveScanModel.promoIsOn = false;
-          liveScanModel.cameraStatus.videoIsFull = liveScanModel.videoIsFull;
-          if(!liveScanModel.cameraStatus.videoIsPassing) {
-            toggleFullVideo(liveScanModel.cameraStatus.videoIsFull)
-          }
-          togglePassingVideo(liveScanModel.cameraStatus.videoIsPassing)
+          togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
         });
         this.src({ src: promoSource });
@@ -28426,11 +28425,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           this.src({ src: liveScanModel.videoSource });
           this.play();
           liveScanModel.videoProgramIsOn = false;
-          liveScanModel.cameraStatus.videoIsFull = liveScanModel.videoIsFull;
-          if(!liveScanModel.cameraStatus.videoIsPassing) {
-            toggleFullVideo(liveScanModel.cameraStatus.videoIsFull)
-          }
-          togglePassingVideo(liveScanModel.cameraStatus.videoIsPassing)
+          togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
         })
         this.src({ src: liveScanModel.videoProgram.source });
@@ -28473,7 +28468,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
 }
 
 function toggleFullVideo(videoIsFull) {
-  if(videoIsFull) {
+  if(videoIsFull && !liveScanModel.cameraStatus.videoIsFull) {
     videoTag.classList.add("full")
     waypointLabel.classList.add("full")
     quad3Label.classList.add("full")
@@ -28495,10 +28490,11 @@ function toggleFullVideo(videoIsFull) {
     overlay3.classList.remove("full")
     map3.classList.remove("full")
   }
+  liveScanModel.cameraStatus.videoIsFull = videoIsFull
 }
 
-function togglePassingVideo(videoIsPassing) {
-  if(videoIsPassing) {
+function togglePassingCloseup(videoIsPassingCloseup, videoIsFull) {
+  if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
     newsbar.classList.add("passing")
     map3.classList.add("passing")
     videoTag.classList.add("passing")
@@ -28513,6 +28509,8 @@ function togglePassingVideo(videoIsPassing) {
     quad3Label.classList.remove("passing")
     mapTag.classList.remove("passing")
   }
+  liveScanModel.cameraStatus.videoIsPassingCloseup = videoIsPassingCloseup
+  toggleFullVideo(videoIsFull)
 }
 
 function outputVideoOverlay() {
@@ -28845,7 +28843,7 @@ async function initLiveScan(rotateTransponders=true) {
           liveScanModel.newsKey = 0;
         }
         //Disable output news when pass vess passing camera
-        if(!liveScanModel.cameraStatus.videoIsPassing && !liveScanModel.vesselsArePass.length) {
+        if(!liveScanModel.cameraStatus.videoIsPassingCloseup && !liveScanModel.vesselsArePass.length) {
           outputNews();
           liveScanModel.newsKey++
         } else {
@@ -28970,7 +28968,7 @@ async function initLiveScan(rotateTransponders=true) {
   //Do first outputs
   outputOtherAlerts();
   outputPassengerAlerts();
-  outputTradkerAlerts();
+  outputTrackerAlerts();
   outputSelVessel();
   outputVideoOverlay();
   outputTrackerOverlay();  
@@ -29121,7 +29119,7 @@ async function fetchWaypoint() {
     liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
     liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
     liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
-    liveScanModel.cameraStatus.videoIsPassing = dataSet.videoIsPassing;
+    liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet.videoIsPassingCloseup;
     liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull   
     apublishCollection = liveScanModel.alertpublishCollection;
     vpublishCollection = liveScanModel.voicepublishCollection;
@@ -29195,7 +29193,7 @@ async function fetchWaypoint() {
           liveScanModel.cameraStatus.videoIsFull, 
           liveScanModel.promoIsOn,
           liveScanModel.videoProgramIsOn,
-          liveScanModel.cameraStatus.videoIsPassing
+          liveScanModel.cameraStatus.videoIsPassingCloseup
         )
         wasOutput = true
         return false
@@ -29222,7 +29220,7 @@ async function fetchWaypoint() {
           liveScanModel.cameraStatus.videoIsFull, 
           liveScanModel.promoIsOn,
           liveScanModel.videoProgramIsOn,
-          liveScanModel.cameraStatus.videoIsPassing
+          liveScanModel.cameraStatus.videoIsPassingCloseup
         );
         wasOutput = true
         console.log("waypoint output skipping audio play on browser reload.")
@@ -29249,7 +29247,7 @@ async function fetchWaypoint() {
         liveScanModel.cameraStatus.videoIsFull, 
         liveScanModel.promoIsOn,
         liveScanModel.videoProgramIsOn,
-        liveScanModel.cameraStatus.videoIsPassing
+        liveScanModel.cameraStatus.videoIsPassingCloseup
       )
     })
 
@@ -29290,7 +29288,7 @@ async function fetchWaypoint() {
         liveScanModel.cameraStatus.videoIsFull, 
         liveScanModel.promoIsOn,
         liveScanModel.videoProgramIsOn,
-        liveScanModel.cameraStatus.videoIsPassing
+        liveScanModel.cameraStatus.videoIsPassingCloseup
       )
     }
   })
