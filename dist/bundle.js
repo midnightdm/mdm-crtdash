@@ -28254,6 +28254,9 @@ document.addEventListener('keydown', (event) => {
     playAnnouncement();
 
   }
+  if (keysPressed['Shift'] && event.code == 'KeyT') {
+    toggleTvMode();
+  }
 });
 
 document.addEventListener('keyup', (event) => {
@@ -28281,10 +28284,10 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 }
 
 window.env    = _environment__WEBPACK_IMPORTED_MODULE_3__.Environment
-window.region = "clinton";
+window.region = "qc";
 
 const privateMode = true;
-const tvMode      = false;
+let   tvMode      = false; //User switchable with SHIFT+T
 const fakeDataMode= false;
 const firebaseConfig = env.firebaseConfig
 
@@ -28714,6 +28717,16 @@ function playAnnouncement() {
   let audio = new Audio(liveScanModel.announcement.vpubVoiceUrl);
   audio.loop = false;
   audio.play(); 
+}
+
+function toggleTvMode() {
+  if(tvMode == true) {
+    alert("TV Mode is off. No promos will play.");
+    tvMode = false;
+  } else {
+    alert("TV Mode is on.  Promos will play 4 times per hour.");
+    tvMode = true;
+  }
 }
 
 function outputPassengerAlerts() {
