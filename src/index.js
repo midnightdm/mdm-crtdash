@@ -62,8 +62,8 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 window.env    = Environment
 window.region = process.env.DASH_REGION;
 
-const privateMode = false;
-let   tvMode      = false; //switchable with 
+const privateMode = true;
+let   tvMode      = false; //User switchable with SHIFT+T
 const fakeDataMode= false;
 const firebaseConfig = env.firebaseConfig
 
