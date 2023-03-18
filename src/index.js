@@ -30,6 +30,9 @@ document.addEventListener('keydown', (event) => {
     playAnnouncement();
 
   }
+  if (keysPressed['Shift'] && event.code == 'KeyT') {
+    toggleTvMode();
+  }
 });
 
 document.addEventListener('keyup', (event) => {
@@ -60,8 +63,8 @@ window.env    = Environment
 window.region = process.env.DASH_REGION;
 
 const privateMode = false;
-const tvMode      = true;
-const fakeDataMode= true;
+let   tvMode      = false; //switchable with 
+const fakeDataMode= false;
 const firebaseConfig = env.firebaseConfig
 
 initializeApp(firebaseConfig)
@@ -490,6 +493,16 @@ function playAnnouncement() {
   let audio = new Audio(liveScanModel.announcement.vpubVoiceUrl);
   audio.loop = false;
   audio.play(); 
+}
+
+function toggleTvMode() {
+  if(tvMode == true) {
+    alert("TV Mode is off. No promos will play.");
+    tvMode = false;
+  } else {
+    alert("TV Mode is on.  Promos will play 4 times per hour.");
+    tvMode = true;
+  }
 }
 
 function outputPassengerAlerts() {
