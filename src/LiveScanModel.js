@@ -571,13 +571,13 @@ export const LiveScanModel = {
             ],
             strokeColor: "#34A16B",
             strokeWeight: 2,
-            map: null
+            map: this.map1
         });
-        rivMrk.map = this.map1
-        this.mileMarkersList1.push(rivMrk)
-        rivMrk.map = this.map2
+        //rivMrk.setMap(this.map1)
+        //this.mileMarkersList1.push(rivMrk)
+        rivMrk.setMap(this.map2)
         this.mileMarkersList2.push(rivMrk)
-        rivMrk.map - this.map3
+        rivMrk.setMap(this.map3)
         this.mileMarkersList3.push(rivMrk)
 
         mrkLabel = null
