@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="keywords" content="Mississippi River, Clinton IA, Clinton Iowa, Webcam, Transponder, Riverboat, Barge, Towing Vessel, Tow Boatd">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-  <link rel="stylesheet" href="dashboard2.css"> 
+  <link rel="stylesheet" href="dashboard.css"> 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <title><%= htmlWebpackPlugin.options.title %></title>
   
@@ -19,7 +20,7 @@
       <div class="logo">
         <h1><span class="title" id="site-label"></span><span class="river" style="background-image: url(https://storage.googleapis.com/www.clintonrivertraffic.com/images/crushpixel-1625816-ID1625816-640x427.jpg)">river</span><span class="title">traffic</span></h1>
       </div>
-      <h1>LIVE DATA</h1>
+      <h1 id="headlineBtn">LIVE DATA</h1>
       <div style="text-align:center;padding:0 0; margin: 0px;"> <iframe id="clock" src="clock.html" width="300" height="240" frameborder="0" seamless></iframe> </div>
 
 
@@ -41,8 +42,7 @@
         <div id="data-table">
           <ul id="selected-vessel"></ul>
         </div>
-        <div id="img-frame"><img id="data-image" src="https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366917160.jpg"></div><br>
-        <div id="map2" ></div>
+        <div id="img-frame"><img id="data-image" src="https://storage.googleapis.com/www.clintonrivertraffic.com/images/vessels/mmsi366917160.jpg"></div>&nbsp;&nbsp;&nbsp;<div id="map2" ></div>
       </div>
     </div>
     
@@ -87,7 +87,28 @@
     <ul id="overlay-list">
     </ul>
   </div>
-  <div id="overlay3"></div>      
+  <div id="overlay3"></div>
+  
+  
+  
+  <div id="popup1" class="popup">
+    <div class="content">
+      
+       
+      <h1>Tracker Mode</h1> 
+      <p>Enable to follow a single vessel of your choice on the map.</p>
+      <select id="tracker-options" class="input-field">
+        <option value="null"></option>
+      </select>
+      <div class="input-field"><input type="radio" id="tracker-on" name="tracker-mode-switch" value="on">On</div>
+      <div class="input-field"><input type="radio" id="tracker-off" name="tracker-mode-switch" default value="off">Off</div>
+      <button id="sb1" class="second-button">Close</button>
+      
+     </div>
+    </div>
+  </div>
+  
+
   <script src="bundle.js"></script>
   <script async="async" defer="defer"
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCrKHbtV_gnPMAbXAHtOPRl-H3M0OG6sY&callback=initMap">

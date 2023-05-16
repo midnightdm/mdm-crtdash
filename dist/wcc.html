@@ -8,7 +8,7 @@
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" href="wcc/wcc.css">
   <title>Webcam Control</title>
-  
+  <script defer src="wcc/main.js"></script>
 <script defer src="wcc/wcc.js"></script></head>
 <body>
   <navigaton >
@@ -59,16 +59,41 @@
               Downriver <span class="led"></span>
             </button>&nbsp;&nbsp;<button id="switch-buttonB" class="example_b">
               Upriver <span class="led"></span>
+            </button>&nbsp;&nbsp;<button id="switch-buttonCL" class="example_b">
+              Sawmill-L <span class="led"></span>
             </button>
+            </button>&nbsp;&nbsp;<button id="switch-buttonCC" class="example_b">
+            Sawmill-C <span class="led"></span>
+            </button>
+            </button>&nbsp;&nbsp;<button id="switch-buttonCR" class="example_b">
+            Sawmill-R <span class="led"></span>
+            </button>
+            
             <p id="switch-control-text"></p>
           </div>
 
           <div class="holder">            
-            <h3 id="control-label" class="clabels">DATA LOADING...</h3>
-            &nbsp;&nbsp;<button id="video-button" class="example_b">
-              <span id="video-button-text">Disable</span>
-            </button>
-            <p id="control-text"></p>
+            
+                <h3 id="control-label" class="clabels">DATA LOADING...</h3>
+                &nbsp;&nbsp;<button id="video-button" class="example_b">
+                <span id="video-button-text">Disable</span>
+                </button>
+                <p id="control-text"></p>
+            
+
+          </div>
+          
+            <div class="holder">
+                <button id="skip-downriver-button" class="example_b">Downriver
+                    <span id="skip-downriver-span" class="led green"></span>
+                </button> &nbsp;&nbsp;
+                <button id="skip-upriver-button" class="example_b">Upriver
+                    <span id="skip-upriver-span" class="led green"></span>
+                </button> &nbsp;&nbsp;
+                <button id="skip-sawmill-button" class="example_b">Sawmill
+                    <span id="skip-sawmill-span" class="led green"></span>
+                </button>
+            <p>Press a buttn to skip non-working a camera from automatic in-view switching (Green means its ON)</p>
           </div>
 
           <div class="holder">

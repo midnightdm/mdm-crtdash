@@ -21,8 +21,17 @@ export const LiveScanModel = {
     showVideo: null,
     showVideoOn: null,
     webcamNum: null,
+    webcamZoom: 0,
     videoIsFull: false,
-    videoIsPassingCloseup: false
+    videoIsPassingCloseup: false,
+    zoomArray: ["off", "left", "center", "right"],
+    zoomMode: 0
+  },
+  trackerStatus: {
+    popupOn: false,
+    enabled: null,
+    followingId: null,
+    obj: null
   },
   promoSources: [],
   promoIsOn: false,
@@ -30,6 +39,7 @@ export const LiveScanModel = {
   lab:"_ABCDEFGHIJKLMNOPQRSTUVWXYZ*#@&~1234567890abcdefghijklmnopqrstuvwxyz",
   red:"#ff0000",
   region: null,
+  title: null,
   focusPosition:null,
   map1ZoomLevel: 10,
   passagesCollection: null,
@@ -42,13 +52,15 @@ export const LiveScanModel = {
   showVideoField: null,
   showVideoOnField: null,
   webcamNumField: null,
-  webcamSource: {"A":null, "B": null },
-  webcamName: null,
+  webcamZoomField: null,
+  webcamSource: {"A":null, "B": null, "C": null },
+  webcamName: {"A": null, "B": null, "C": null},
   videoSource: null,
   videoIsOn: false,
   videoProgram: null,
   videoProgramIsOn: false,
   passengerTrackerIsOn: false,
+  manualTrackerIsOn: false,
   vesselsAreInCameraRange: false,
   vesselsInCamera: [],
   vesselsArePass: [],
@@ -60,6 +72,8 @@ export const LiveScanModel = {
   mileMarkerLabels1:[],
   mileMarkersList2:[],
   mileMarkerLabels2:[],
+  mileMarkersList3:[],
+  mileMarkerLabels3:[],
   rotatingKey: 0,
   passRotKey: 0,
   numVessels: 0,
@@ -99,11 +113,13 @@ export const LiveScanModel = {
 
   //Method to set region data in environment
   initRegion() {
-    console.log("initRegion()");
+    console.log("initRegion()/sitename ",region, sitename);
     //Is dependant on region variable being set on window
-    this.region = region
-    switch(region) {
-      case "clinton": {
+    this.region = region;
+    this.sitename = sitename;
+    switch(sitename) {
+      case "clinton":
+        this.title = "clinton";
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 11;
         this.passagesCollection = "Passages";
@@ -116,9 +132,27 @@ export const LiveScanModel = {
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
         this.webcamNumField = "webcamNumCl";
+        this.webcamZoomField = "webcamZoomCl";
         break;
-      }
-      case "qc": {
+      case "clintondash":
+        this.title = "clinton";
+        this.focusPosition = this.clinton; 
+        this.map1ZoomLevel = 11;
+        this.passagesCollection = "Passages";
+        this.alertpublishCollection = "Alertpublish";
+        this.voicepublishCollection = "Voicepublish";
+        this.announcementsCollection = "Announcements";
+        this.apubFieldName = "lastApubID";
+        this.vpubFieldName = "lastVpubID";
+        this.lsLenField    = "liveScanLength";
+        this.showVideoField = "showClVideo";
+        this.showVideoOnField = "showClVideoOn";
+        this.webcamNumField = "webcamNumCl";
+        this.webcamZoomField = "webcamZoomCl";
+        break;
+      
+      case "qc":
+        this.title = "qc";
         this.focusPosition = this.qc;
         this.map1ZoomLevel = 11;
         this.passagesCollection = "PassagesQC";
@@ -131,8 +165,42 @@ export const LiveScanModel = {
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
         this.webcamNumField = "webcamNumQc";
+        this.webcamZoomField = "webcamZoomQc";
         break;
-      }
+      case "qcdash":
+        this.title = "qc";
+        this.focusPosition = this.qc;
+        this.map1ZoomLevel = 11;
+        this.passagesCollection = "PassagesQC";
+        this.alertpublishCollection = "AlertpublishQC";
+        this.voicepublishCollection = "VoicepublishQC";
+        this.announcementsCollection = "AnnouncementsQC";
+        this.apubFieldName = "lastQcApubID";
+        this.vpubFieldName = "lastQcVpubID";
+        this.lsLenField    = "liveScanLengthQC";
+        this.showVideoField = "showQcVideo";
+        this.showVideoOnField = "showQcVideoOn";
+        this.webcamNumField = "webcamNumQc";
+        this.webcamZoomField = "webcamZoomQc";
+        break;
+      
+      case "clintoncf":
+        this.title = "clinton"; 
+        this.focusPosition = this.clinton; 
+        this.map1ZoomLevel = 11;
+        this.passagesCollection = "Passages";
+        this.alertpublishCollection = "Alertpublish";
+        this.voicepublishCollection = "Voicepublish";
+        this.announcementsCollection = "Announcements";
+        this.apubFieldName = "lastApubID";
+        this.vpubFieldName = "lastVpubID";
+        this.lsLenField    = "liveScanLength";
+        this.showVideoField = "showClVideo";
+        this.showVideoOnField = "showClVideoOn";
+        this.webcamNumField = "webcamNumCl";
+        this.webcamZoomField = "webcamZoomCl";
+        break;
+      
     }
   },
 
@@ -491,9 +559,11 @@ export const LiveScanModel = {
       {id:520, lngA:-90.17610039282224, latA:41.86515500754595, lngB:-90.17058699252856, latB:41.86429560522607}  
     ];
   
+    //Reworked 5/15/23 to create marker obj once then modify push 3 times
     if(this.mileMarkersList1.length == 0) {
+      let rivMrk, mrkLabel  
       for(let i=0, len=dat.length; i<len; i++) {
-        this.mileMarkersList1.push(new google.maps.Polyline({
+        rivMrk = new google.maps.Polyline({
             name: "Mile "+dat[i].id,            
             path: [
                 {lat: dat[i].latA, lng: dat[i].lngA},
@@ -501,18 +571,16 @@ export const LiveScanModel = {
             ],
             strokeColor: "#34A16B",
             strokeWeight: 2,
-            map: this.map1
-        }))
-        this.mileMarkersList2.push(new google.maps.Polyline({
-          name: "Mile "+dat[i].id,            
-          path: [
-              {lat: dat[i].latA, lng: dat[i].lngA},
-              {lat: dat[i].latB, lng: dat[i].lngB}
-          ],
-          strokeColor: "#34A16B",
-          strokeWeight: 2,
-          map: this.map2
-        }))
+            map: null
+        });
+        rivMrk.map = this.map1
+        this.mileMarkersList1.push(rivMrk)
+        rivMrk.map = this.map2
+        this.mileMarkersList2.push(rivMrk)
+        rivMrk.map - this.map3
+        this.mileMarkersList3.push(rivMrk)
+
+        mrkLabel = null
         /* Mile Labels Disabled on Map 1
         this.mileMarkerLabels1.push(new google.maps.Marker({
             position: {lat: dat[i].latA, lng: dat[i].lngA },
@@ -536,6 +604,18 @@ export const LiveScanModel = {
             scaledSize: {width: 50, height: 50}
           },
           map: this.map2
+        }))
+
+        this.mileMarkerLabels3.push(new google.maps.Marker({
+          position: {lat: dat[i].latA, lng: dat[i].lngA },
+          title: "Mile "+dat[i].id, 
+          label: String(dat[i].id),
+          icon: {
+            url: "https://storage.googleapis.com/www.clintonrivertraffic.com/imagendow.s/green.png" ,
+            labelOrigin: {x: 24, y: 15},
+            scaledSize: {width: 50, height: 50}
+          },
+          map: this.map3
         }))
            
       }

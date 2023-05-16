@@ -32,7 +32,21 @@ document.addEventListener('keydown', (event) => {
   }
   if (keysPressed['Shift'] && event.code == 'KeyT') {
     toggleTvMode();
+  };
+  if (keysPressed['Shift'] && event.code == 'KeyL') {
+    zoomControl("L");
   }
+  if (keysPressed['Shift'] && event.code == 'KeyR') {
+    zoomControl("R");
+  }
+  if (keysPressed['Shift'] && event.code == 'KeyC') {
+    zoomControl("C");
+  }
+  if (keysPressed['Shift'] && event.code == 'KeyO') {
+    zoomControl("O");
+  }
+
+
 });
 
 document.addEventListener('keyup', (event) => {
@@ -61,22 +75,36 @@ const animateCSS = (element, animation, prefix = 'animate__') => {
 
 window.env    = Environment
 window.region = process.env.DASH_REGION;
+window.sitename = process.env.SITE_NAME;
+let privateMode, tvMode;
 
-const privateMode = true;
-let   tvMode      = false; //User switchable with SHIFT+T
+switch(sitename) {
+  case 'clintondash':
+  case 'qcdash':      privateMode = true;  tvMode = false; break;
+  case 'clintoncf':   privateMode = false; tvMode = false;  break;
+  case 'clinton':
+  case 'qc':          privateMode = false; tvMode = true; break;
+}
+
+console.log("privateMode = ", privateMode);
 const fakeDataMode= false;
 const firebaseConfig = env.firebaseConfig
 
 initializeApp(firebaseConfig)
-// const hls = new Hls()
-// window.hls = hls
+//initializeLiveScan
 
 const db = getFirestore();
 const liveScanModel = LiveScanModel;
 liveScanModel.initRegion();
+
+
 const liveScans     = [];
+  //Load initial liveScans data
+  updateLiveScanData();
+  fetchWaypoint();
+  
 const siteLabel     = document.getElementById("site-label");
-siteLabel.innerText = region;
+siteLabel.innerText = liveScanModel.title;
 const selVessel     = document.getElementById("selected-vessel");
 const dataTitle     = document.getElementById("data-title");
 const dataImage     = document.getElementById("data-image");
@@ -99,6 +127,50 @@ const overlay2      = document.getElementById("overlay2");
 const overlayList   = document.getElementById("overlay-list");
 const map2          = document.getElementById("map2");
 const map3          = document.getElementById("map3");
+const popup1        = document.getElementById("popup1");
+const hb            = document.getElementById("headlineBtn");
+const secondBtn     = document.getElementById('sb1');
+const trOn  = document.getElementById('tracker-on');
+const trOff = document.getElementById('tracker-off');
+const trRb  = document.querySelectorAll('input[name="tracker-mode-switch"]');
+
+
+
+
+//Event Listeners
+hb.addEventListener('click', togglePopup);
+
+secondBtn.addEventListener('click', togglePopup);
+
+popup1.addEventListener('click', ()=> {
+  //Record radio button choice
+  let mode;
+  for(const rb of trRb) {
+    if(rb.checked) {
+      //mode will be on or off
+      mode = rb.value;
+    }
+  }
+  liveScanModel.trackerStatus.enabled = mode==="on" ? true : false;
+  window.localStorage.setItem('crtTrackerStatusEnabled', LiveScanModel.trackerStatus.enabled);
+  //Record select box choice
+  
+  if(liveScanModel.trackerStatus.enabled) {
+    const trOp  = document.getElementById('tracker-options')
+    liveScanModel.trackerStatus.followingId = parseInt(trOp.value);
+    let key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
+    if(key>-1) {
+      window.localStorage.setItem('crtTrackerStatusFollowingId', liveScanModel.trackerStatus.followingId);
+      liveScanModel.trackerStatus.obj = liveScans[key]; 
+      console.log("User selected to track "+trOp.options[trOp.selectedIndex].text);
+    }
+  }
+  outputManualTrackerOverlay()
+})
+
+
+
+
 let player = null;   
 
 function initMap() {
@@ -107,11 +179,30 @@ function initMap() {
 window.initMap = initMap;
 window.initLiveScan = initLiveScan;
 testHeight()
-//hls.attachMedia(videoTag)
 
-/* * * * * * * * *
-* Functions  
-*/
+
+setTimeout(loadSavedTracker, 25000);
+
+
+
+
+
+
+
+
+
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+/* * * * * * * * * * * *
+ *  GENERAL FUNCTIONS  *  
+ * * * * * * * * * * * */
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+
+
+
 function getTime() { 
   var date = new Date(); 
   return { 
@@ -145,105 +236,6 @@ function getPassageFor(liveKey) {
     }
     resolve(passage)
   })
-}
-
-async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram, videoIsPassingCloseup) {  
-  if(privateMode==true) { 
-    showVideoOn=false;
-  }
-  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
-  if(showVideoOn==true && showVideo==true) {
-    liveScanModel.videoIsOn = true;
-    waypointDiv.style = `display: none`;
-    videoTag.style = `display: block; z-index: 0`;
-    const options = {
-      autoplay: true,
-      preload: "auto",
-      fluid: true,
-      loadingSpinner: false
-    };
-    console.log("webcamNum is", webcamNum);
-    if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
-      //Turn on closeup if passing and not on already
-      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
-    } else if(liveScanModel.cameraStatus.videoIsPassingCloseup && !videoIsPassingCloseup) {
-      //Turn off closeup if on and not passing
-      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
-    }
-    if(playPromo && tvMode) {
-      // Play promo from rotation at random
-      let sk = Math.floor(Math.random() * liveScanModel.promoSources.length)
-      let promoSource = location.protocol + '//' + location.host + '/' + liveScanModel.promoSources[sk];
-      console.log("promo source", promoSource);
-      waypointLabel.innerHTML = "Thank You For Watching";
-      if(overlay2.classList.contains("active")) {
-        liveScanModel.promoIsOn = true;
-        overlay2.classList.remove("active");
-      }
-      player = videojs("video", options, function onPlayerReady() {
-        this.on('ended', function() {
-          this.src({ src: liveScanModel.videoSource });
-          this.play();
-          liveScanModel.promoIsOn = false;
-          togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
-          waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
-        });
-        this.src({ src: promoSource });
-        this.play();
-      });
-    }
-    if(playProgram && tvMode) {  
-      //Play scheduled video program
-      waypointLabel.innerHTML = liveScanModel.videoProgram.dataTitle;
-      if(overlay2.classList.contains("active")) {
-        liveScanModel.videoProgramIsOn = true;
-        overlay2.classList.remove("active");
-      }
-      player = videojs("video", options, function onPlayerReady() {
-        this.on('ended', function() {
-          this.src({ src: liveScanModel.videoSource });
-          this.play();
-          liveScanModel.videoProgramIsOn = false;
-          togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
-          waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";
-        })
-        this.src({ src: liveScanModel.videoProgram.source });
-        this.play();
-      });
-    } else {
-      if(webcamNum != liveScanModel.prevWebcamNum) {
-        waypointLabel.innerHTML = liveScanModel.webcamName; //"3 Miles South of Drawbridge";        
-        liveScanModel.videoSource = location.protocol +'//' + location.host + '/stream/'+ region + 'Webcam' + webcamNum + '.m3u8';
-        //liveScanModel.webcamSource[webcamNum]
-        //"https://webcam.carifenzel.cf/"+ region+ 'Webcam' + webcamNum + '.m3u8';
-        console.log("video source", liveScanModel.videoSource);
-        //hls.loadSource(liveScanModel.videoSource);
-        //videoSource.setAttribute("src", liveScanModel.videoSource);
-        if(player==null) {
-          player = videojs("video", options);
-        }
-        player.ready(function() {
-          player.src({ src: liveScanModel.videoSource })
-          player.play()
-        });
-        liveScanModel.prevWebcamNum = webcamNum;      
-        console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
-      }
-    }   
-    waypointLabel.style = `z-index: 1`;
-  } else {
-    liveScanModel.videoIsOn = false;
-    videoTag.style = `display: none`;
-    waypoint.style = `background-image: url(${liveScanModel.waypoint.bgMap})`;
-    waypointLabel.innerHTML = "WAYPOINT";
-    waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
-    waypointDiv.style.display = "block";
-    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull)", showVideoOn, showVideo, webcamNum, videoIsFull);
-  }
-  return new Promise((resolve, reject )=>{
-    resolve()
-    reject()
-  })  
 }
 
 function toggleFullVideo(videoIsFull) {
@@ -292,6 +284,233 @@ function togglePassingCloseup(videoIsPassingCloseup, videoIsFull) {
   toggleFullVideo(videoIsFull)
 }
 
+function togglePopup(event) {
+  event.stopPropagation();
+  if(LiveScanModel.trackerStatus.popupOn) {
+    LiveScanModel.trackerStatus.popupOn = false;
+    popup1.classList.remove("sawmill");
+  } else {
+    LiveScanModel.trackerStatus.popupOn = true;
+    popup1.classList.add("sawmill");
+  }
+  console.log("popup1 state is "+popup1.classList);
+}
+
+function playSound() {
+  let audio = new Audio(liveScanModel.waypoint.apubVoiceUrl);
+  audio.loop = false;
+  audio.play(); 
+}
+
+function playAnnouncement() {
+  let audio = new Audio(liveScanModel.announcement.vpubVoiceUrl);
+  audio.loop = false;
+  audio.play(); 
+}
+
+function toggleTvMode() {
+  if(tvMode == true) {
+    alert("TV Mode is off. No promos will play.");
+    tvMode = false;
+  } else {
+    alert("TV Mode is on.  Promos will play 4 times per hour.");
+    tvMode = true;
+  }
+}
+
+function zoomControl(state) {
+  videoTag.classList.remove("smz");
+  videoTag.classList.remove(liveScanModel.cameraStatus.zoomArray[liveScanModel.cameraStatus.zoomMode]);
+  if(liveScanModel.promoIsOn || liveScanModel.playProgram || liveScanModel.cameraStatus.webcamNum != 'C') {
+    console.log("Sawmill Zoom off, webcamNum/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamNum, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
+    return;
+  }
+  console.log("zoomControl -> webcamNum/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamNum, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
+  videoTag.classList.add("smz");
+  switch(state) {
+    case "L":
+    case 1: 
+      videoTag.classList.add(liveScanModel.cameraStatus.zoomArray[1]);
+      liveScanModel.cameraStatus.zoomMode = 1;
+      break;
+    
+    case "C":
+    case 2: 
+      videoTag.classList.add(liveScanModel.cameraStatus.zoomArray[2]);
+      liveScanModel.cameraStatus.zoomMode = 2;
+      break;
+    
+    case "R":
+    case 3: 
+      videoTag.classList.add(liveScanModel.cameraStatus.zoomArray[3]);
+      liveScanModel.cameraStatus.zoomMode = 3;
+      break;
+    
+    default :{
+      liveScanModel.cameraStatus.zoomMode = 0;
+      
+    }
+  }
+}
+
+
+function clearZoom() {
+  console.log("------------------------> clearZoom()");
+  const v = document.getElementById('video');
+  if(v.classList.contains("smz")) {
+    v.classList.remove("smz");
+  }
+  if(v.classList.contains("center")) {
+    v.classList.remove("center");
+  }
+  if(v.classList.contains("right")) {
+    v.classList.remove("right");
+  }
+  if(v.classList.contains("left")) {
+    v.classList.remove("left");
+  }
+}
+
+
+
+
+
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+/* * * * * * * * * * * * * * 
+ *  OUTPUT VIEW FUNCTIONS  *
+ * * * * * * * * * * * * * */
+
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+
+
+
+
+
+
+async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram, videoIsPassingCloseup) {  
+  if(privateMode==true) { 
+    showVideoOn=false;
+  }
+  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+  if(showVideoOn==true && showVideo==true) {
+    liveScanModel.videoIsOn = true;
+    waypointDiv.style = `display: none`;
+    videoTag.style = `display: block; z-index: 0`;
+    const options = {
+      autoplay: true,
+      preload: "auto",
+      fluid: true,
+      loadingSpinner: false
+    };
+    console.log("webcamNum is", webcamNum);
+    if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
+      //Turn on closeup if passing and not on already
+      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+    } else if(liveScanModel.cameraStatus.videoIsPassingCloseup && !videoIsPassingCloseup) {
+      //Turn off closeup if on and not passing
+      togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+    }
+    // Play promo from rotation at random
+    if(playPromo && tvMode) {
+      let sk = Math.floor(Math.random() * liveScanModel.promoSources.length)
+      let promoSource = location.protocol + '//' + location.host + '/' + liveScanModel.promoSources[sk];
+      console.log("promo source", promoSource);
+      //clearZoom();
+      waypointLabel.innerHTML = "Thank You For Watching";
+      liveScanModel.promoIsOn = true;
+      zoomControl(liveScanModel.cameraStatus.webcamZoom)
+      //Turn off vessel name overlay when promo running
+      if(overlay2.classList.contains("active")) {
+        overlay2.classList.remove("active");
+      }
+
+      player = videojs("video", options, function onPlayerReady() {
+        this.on('ended', function() {
+          this.src({ src: liveScanModel.videoSource });
+          this.play();
+          liveScanModel.promoIsOn = false;
+          //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
+            //Turn on closeup if passing and not on already
+            togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          } else if(liveScanModel.cameraStatus.videoIsPassingCloseup && !videoIsPassingCloseup) {
+            //Turn off closeup if on and not passing
+            togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          }
+          zoomControl(liveScanModel.cameraStatus.webcamZoom);
+          waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
+        });
+        this.src({ src: promoSource });
+        this.play();
+      });
+    }
+    //Play scheduled video program
+    if(playProgram && tvMode) {  
+      waypointLabel.innerHTML = liveScanModel.videoProgram.dataTitle;
+      liveScanModel.videoProgramIsOn = true;
+      zoomControl(liveScanModel.cameraStatus.webcamZoom)
+      //Turn off vessel overlay when program playing
+      if(overlay2.classList.contains("active")) {
+        overlay2.classList.remove("active");
+      }
+      player = videojs("video", options, function onPlayerReady() {
+        this.on('ended', function() {
+          this.src({ src: liveScanModel.videoSource });
+          this.play();
+          liveScanModel.videoProgramIsOn = false;
+          //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
+            //Turn on closeup if passing and not on already
+            togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          } else if(liveScanModel.cameraStatus.videoIsPassingCloseup && !videoIsPassingCloseup) {
+            //Turn off closeup if on and not passing
+            togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
+          }
+          zoomControl(liveScanModel.cameraStatus.webcamZoom)
+          waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
+        })
+        
+        this.src({ src: liveScanModel.videoProgram.source });
+        
+        this.play();
+      });
+    } else {
+      zoomControl(liveScanModel.cameraStatus.webcamZoom);
+      if(webcamNum != liveScanModel.prevWebcamNum) {
+        waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge"
+        liveScanModel.videoSource = liveScanModel.webcamSource[webcamNum];
+        console.log("video source", liveScanModel.videoSource);
+
+        if(player==null) {
+          player = videojs("video", options);
+        }
+        player.ready(function() {
+          player.src({ src: liveScanModel.videoSource })
+          player.play()
+        });
+        liveScanModel.prevWebcamNum = webcamNum;      
+        console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+      }
+    }   
+    waypointLabel.style = `z-index: 1`;
+  } else {
+    liveScanModel.videoIsOn = false;
+    videoTag.style = `display: none`;
+    waypoint.style = `background-image: url(${liveScanModel.waypoint.bgMap})`;
+    waypointLabel.innerHTML = "WAYPOINT";
+    waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
+    waypointDiv.style.display = "block";
+    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull)", showVideoOn, showVideo, webcamNum, videoIsFull);
+  }
+  return new Promise((resolve, reject )=>{
+    resolve()
+    reject()
+  })  
+}
+
 function outputVideoOverlay() {
   //Superimpose list of vessels in camera range
   if(liveScanModel.videoIsOn && liveScanModel.vesselsInCamera.length>0 && !liveScanModel.vesselsAreInCameraRange) {
@@ -318,41 +537,30 @@ function outputVideoOverlay() {
   }
 }
 
-function outputTrackerOverlay() {
-  console.log("outputTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
-
-  //Supercede Events list with passenger vessel tracking map
-  if(liveScanModel.vesselsArePass.length>0 && !liveScanModel.passengerTrackerIsOn) {
-    liveScanModel.passengerTrackerIsOn = true
-    map2.classList.remove("active")
-    map3.classList.add("active")
-    quad3Label.classList.add("active")
-    overlay3.classList.add("lower")
-    ulOther.classList.add("tracker")
-    ulPass.innerHTML = ""
-    ulOther.innerHTML = ""
-  } else if(liveScanModel.vesselsArePass.length==0) {
-    liveScanModel.passengerTrackerIsOn = false
-    map3.classList.remove("active")
-    map2.classList.add("active")
-    quad3Label.classList.remove("active")
-    overlay3.classList.remove("lower")
-    ulOther.classList.remove("tracker")
-  }
-  console.log("outputTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
-}
-
 
 async function outputSelVessel() {
   let selVesselOutput = ""
   let live   = liveScanModel.rotatingKey; 
-  let vessObj = liveScanModel.passengerTrackerIsOn ? 
-    liveScanModel.vesselsArePass[liveScanModel.passRotKey] : liveScans[live]
+  //let vessObj = liveScanModel.passengerTrackerIsOn ? 
+  //  liveScanModel.vesselsArePass[liveScanModel.passRotKey] : liveScans[live]
   
+  let vessObj;
+  if(liveScanModel.passengerTrackerIsOn) {
+    vessObj = liveScanModel.vesselsArePass[liveScanModel.passRotKey];
+    //console.log("outputSelVessel in passengerTracker mode", vessObj);
+  } else if(liveScanModel.manualTrackerIsOn ) {
+    vessObj = liveScanModel.trackerStatus.obj;
+    //console.log("oututSelVessel in manual tracker mode", vessObj);
+  } else {
+    vessObj = liveScans[live];
+    //console.log("outputSelVessel in liveScans mode", vessObj, "live key is ", live);
+  }
   if(vessObj===undefined) { 
     if(liveScanModel.rotatingKey > liveScans.length) {
       console.log("Rotating Key updated from "+liveScanModel.rotatingKey+" to 0 by outputSelVessel()")
       liveScanModel.rotatingKey = 0
+    } else {
+      console.log("outputSelVessel() had undefined vessObj");
     }  
     return new Promise((resolve, reject )=>{
       resolve()
@@ -381,7 +589,7 @@ async function outputSelVessel() {
   );
   let vesselID = vessObj.id
   let passageIdx = liveScanModel.passagesList.findIndex( o=> o.id === vesselID)
-  let passageDate = liveScanModel.passagesList[passageIdx].date
+  let passageDate = liveScanModel.passagesList[passageIdx]?.date || ""
   console.log("passage date", passageDate)
   //let passageDate = new Date(vessObj.lastDetectedTS);
 
@@ -468,46 +676,120 @@ async function outputAllVessels() {
         </div>
         <h5>${obj.liveLocation}</h5>
       </li>`;
-
     }
   }
-  liveScanModel.vesselsInCamera = vesselsInCamera;
+
+  //*** WTF? This erases data!!!! Actual duty in updateLiveScanData() */
+  //liveScanModel.vesselsInCamera = vesselsInCamera;
+  
+  
   //console.log("Content of liveScanModel:", liveScanModel);
   totVessels.innerHTML = liveScans.length+" Vessels"; //Total Vessels Title
   allVessels.innerHTML = allVesselsOutput;     //List of All transponders in range
 }
 
-function outputNews() {
-  //News section
-  animateCSS('#newstext', 'fadeIn');
-  news.innerHTML = liveScanModel.news[liveScanModel.newsKey].text;
-}
+function outputPassengerTrackerOverlay() {
+  //console.log("outputPassengerTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
 
-function playSound() {
-  let audio = new Audio(liveScanModel.waypoint.apubVoiceUrl);
-  audio.loop = false;
-  audio.play(); 
-}
-
-function playAnnouncement() {
-  let audio = new Audio(liveScanModel.announcement.vpubVoiceUrl);
-  audio.loop = false;
-  audio.play(); 
-}
-
-function toggleTvMode() {
-  if(tvMode == true) {
-    alert("TV Mode is off. No promos will play.");
-    tvMode = false;
-  } else {
-    alert("TV Mode is on.  Promos will play 4 times per hour.");
-    tvMode = true;
+  //Supercede Events list with passenger vessel tracking map
+  if(liveScanModel.vesselsArePass.length>0 && !liveScanModel.passengerTrackerIsOn) {
+    liveScanModel.passengerTrackerIsOn = true
+    map2.classList.remove("active")
+    map3.classList.add("active")
+    quad3Label.classList.add("active")
+    overlay3.classList.add("lower")
+    ulOther.classList.add("tracker")
+    ulPass.innerHTML = ""
+    ulOther.innerHTML = ""
+  } else if(liveScanModel.vesselsArePass.length==0 && !liveScanModel.manualTrackerIsOn) {
+    liveScanModel.passengerTrackerIsOn = false
+    map3.classList.remove("active")
+    map2.classList.add("active")
+    quad3Label.classList.remove("active")
+    overlay3.classList.remove("lower")
+    ulOther.classList.remove("tracker")
   }
+  console.log("outputPassengerTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
+}
+
+function outputManualTrackerOverlay() {
+  //console.log("outputManualTrackerOverlay() before"+liveScanModel.manualTrackerIsOn)
+  //Void when passenger tracker is on
+  if(liveScanModel.passengerTrackerIsOn) return;
+  //Supercede Events list with  vessel tracking map
+  if(liveScanModel.trackerStatus.enabled && !liveScanModel.manualTrackerIsOn) {
+    liveScanModel.manualTrackerIsOn = true
+    map2.classList.remove("active")
+    map3.classList.add("active")
+    quad3Label.classList.add("active")
+    overlay3.classList.add("lower")
+    ulOther.classList.add("tracker")
+    ulPass.innerHTML = ""
+    ulOther.innerHTML = ""
+  } else if(!liveScanModel.trackerStatus.enabled && liveScanModel.manualTrackerIsOn) {
+    liveScanModel.manualTrackerIsOn = false
+    map3.classList.remove("active")
+    map2.classList.add("active")
+    quad3Label.classList.remove("active")
+    overlay3.classList.remove("lower")
+    ulOther.classList.remove("tracker")
+    outputPassengerAlerts();
+    outputOtherAlerts();
+  }
+  console.log("outputManualTrackerOverlay() after "+liveScanModel.manualTrackerIsOn)
+}
+
+async function outputTrackerOptions() {
+  const trOp  = document.getElementById('tracker-options')
+  let opStr  = "", obj, vessel, selected;
+  for(vessel in liveScans) {
+    obj = liveScans[vessel];
+    selected = liveScanModel.trackerStatus.followingId==obj.id ? "selected" : ""
+    opStr+= `<option value="${obj.id}" ${selected}>${obj.name}</option>\n`
+  }
+  if(LiveScanModel.trackerStatus.enabled) {
+    trOn.checked = true
+    trOff.checked = false
+  } else {
+    trOn.checked = false
+    trOff.checked = true
+  }
+  trOp.innerHTML = opStr;
+}
+
+function outputTrackerAlerts(isPassenger=true) {
+  if(isPassenger) {
+    //Build single passenger alert
+    if(!liveScanModel.alertsPassenger.length) return;
+    let alertsOutputPassenger =
+    `<div id="pass19" class="card animate__animated animate__slideInRight">
+    <h4>${liveScanModel.alertsPassenger[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[19].date)}</time></h4>
+    <p>${liveScanModel.alertsPassenger[19].apubText}</p>
+    </div>`;
+    if(!overlay3.classList.contains("lower")) {
+      overlay3.classList.add("lower")
+    }
+    overlay3.innerHTML = alertsOutputPassenger;
+  } else {
+      //Build single other alert
+      if(!liveScanModel.alertsAll.length) return;
+      let alertsOutputAll =
+      `<div id="all19" class="card animate__animated animate__slideInRight">
+      <h4>${liveScanModel.alertsAll[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsAll[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsAll[19].date)}</time></h4>
+      <p>${liveScanModel.alertsAll[19].apubText}</p>
+      </div>`;
+      if(!overlay3.classList.contains("lower")) {
+        overlay3.classList.add("lower")
+      }
+      overlay3.innerHTML = alertsOutputAll;
+  }
+
+  
 }
 
 function outputPassengerAlerts() {
   //Build output for passenger alerts
-  if(!liveScanModel.alertsPassenger.length || liveScanModel.passengerTrackerIsOn) return;
+  if(!liveScanModel.alertsPassenger.length || liveScanModel.passengerTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
   let alertsOutputPassenger =
     `<li id="pass19" class="card animate__animated animate__slideInRight">
       <h4>${liveScanModel.alertsPassenger[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[19].date)}</time></h4>
@@ -535,24 +817,9 @@ function outputPassengerAlerts() {
     ulPass.innerHTML     = alertsOutputPassenger;
 }
 
-function outputTrackerAlerts() {
-  //Build single passenger alert
-  if(!liveScanModel.alertsPassenger.length) return;
-  let alertsOutputPassenger =
-  `<div id="pass19" class="card animate__animated animate__slideInRight">
-  <h4>${liveScanModel.alertsPassenger[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[19].date)}</time></h4>
-  <p>${liveScanModel.alertsPassenger[19].apubText}</p>
-  </div>`;
-  if(!overlay3.classList.contains("lower")) {
-    overlay3.classList.add("lower")
-  }
-  overlay3.innerHTML = alertsOutputPassenger;
-  
-}
-
 function outputOtherAlerts() {
   //Build output for other alerts
-  if(!liveScanModel.alertsAll.length || liveScanModel.passengerTrackerIsOn) return;
+  if(!liveScanModel.alertsAll.length || liveScanModel.passengerTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
   let alertsOutputOther =
   `<li id="all19" class="card animate__animated animate__slideInRight">
   <h4>${liveScanModel.alertsAll[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsAll[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsAll[19].date)}</time></h4>
@@ -577,15 +844,42 @@ function outputOtherAlerts() {
   ulOther.innerHTML    = alertsOutputOther;
 }
 
+function outputNews() {
+  //News section
+  animateCSS('#newstext', 'fadeIn');
+  news.innerHTML = liveScanModel.news[liveScanModel.newsKey].text;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 async function initLiveScan(rotateTransponders=true) {  
-  
-  /*   *   *   *   *   *   *   *   *   *   *  *  *   *
-   * Begin a 60 sec master clock for loop control    *
-   *   *   *   *   *   *   *   *   *   *   *  *   *  */
+  /*   *   *   *   *   *   *   *   *   *   *  *  *  *
+   *                                                *
+   * Begin a 60 sec master clock for loop control   *
+   *                                                *
+   *   *   *   *   *   *   *   *   *   *   *  *  *  */
 
   setInterval( async ()=> {
-    let now;
+    let now, key, vessObj;
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
@@ -601,6 +895,7 @@ async function initLiveScan(rotateTransponders=true) {
 
     //Change data slide every 15 sec when there is live data
     if(liveScans.length > 0 && liveScanModel.tock%15==0) {
+      console.log("Tracker status check:",liveScanModel.trackerStatus.enabled, liveScanModel.manualTrackerIsOn);
       await outputSelVessel();
       liveScanModel.rotatingKey++;       
       if(liveScanModel.rotatingKey > liveScans.length) {
@@ -621,7 +916,15 @@ async function initLiveScan(rotateTransponders=true) {
           liveScanModel.vesselsArePass[liveScanModel.passRotKey].lng
         )
       )
-      //console.log("current pass vess", liveScanModel.vesselsArePass)
+    } else if(liveScanModel.manualTrackerIsOn && liveScanModel.tock%15==0) {
+      key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
+      if(key>-1) {
+        console.log("ob for setCenter ", liveScanModel.trackerStatus.obj );
+        liveScanModel.map3.setCenter(  
+          new google.maps.LatLng(liveScanModel.trackerStatus.obj.lat, liveScanModel.trackerStatus.obj.lng)
+        )
+      }
+      
     }
     
     //Every 20 sec --> 
@@ -640,67 +943,7 @@ async function initLiveScan(rotateTransponders=true) {
         }
         
       }
-      
-      //Get LiveScan data...
-      let key, obj, dat, data, i, vesselsInCamera=[], vesselsArePass=[];
-      data = await fetchLiveScanData()
-                          
-      for(i=0; i<data.length; i++){
-        dat = data[i];
-        //Skip out-of-region data objects
-        if(dat.liveRegion != region) {
-          console.log("Skipping out-of-region vessel",dat.liveName);
-          continue;
-        }
-        if(!liveScans.length){
-          key = -1;
-        } else {
-          key = getKeyOfId(liveScans, dat.liveVesselID);
-        }
-        
-        //Create & push
-        if(key==-1) {
-          obj = await liveScanModel.mapper(new LiveScan(), dat, true);
-          obj.key = liveScans.length;
-          liveScans.push(obj);
-          //Test for vessels in camera view
-          if(obj.inCameraRange==true) {
-            vesselsInCamera.push(obj.name);
-            //console.log(`Adding ${obj.name} to vesselsInCamera`);
-          }
-          //Test for passenger vessels
-          if(obj.typeIsPassenger) {
-            vesselsArePass.push(obj);
-          }
-        }
-        //Find & Update
-        else {
-          liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
-          //Has num of vessels changed?
-          if(liveScans.length != liveScanModel.numVessels) {
-            //Store new vessels quantity
-            liveScanModel.numVessels = liveScans.length;
-            //Reset rotating key to avoid desynch
-            liveScanModel.rotatingKey = liveScanModel.numVessels;              
-          }
-          //Test for vessels in camera view
-          if(liveScans[key].inCameraRange==true) {
-            vesselsInCamera.push(liveScans[key].name);
-            //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
-          }
-          //Test for passenger vessels
-          if(liveScans[key].typeIsPassenger==true) {
-            vesselsArePass.push(liveScans[key]);
-          }
-        }
-      }
-
-      liveScanModel.vesselsInCamera = vesselsInCamera;
-      liveScanModel.vesselsArePass = vesselsArePass;
-      if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
-        outputVideoOverlay(); 
-        outputTrackerOverlay();
-      }          
+      updateLiveScanData();
     }
     //Every 1 sec advance clock 
     liveScanModel.tock++;
@@ -757,10 +1000,11 @@ async function initLiveScan(rotateTransponders=true) {
   //Do first outputs
   outputOtherAlerts();
   outputPassengerAlerts();
-  outputTrackerAlerts();
+  //outputTrackerAlerts();
   outputSelVessel();
   outputVideoOverlay();
-  outputTrackerOverlay();  
+  outputPassengerTrackerOverlay();
+  outputManualTrackerOverlay();  
 }
 
 function updateTimes() {
@@ -776,6 +1020,10 @@ function updateTimes() {
     }
   }
 }
+
+/* * * * * * * * * * * 
+ *  FETCH FUNCTIONS  *
+ * * * * * * * * * * */
 
 
 async function fetchLiveScanData() {
@@ -801,6 +1049,75 @@ async function fetchLiveScanData() {
   }
   return data
 }
+
+async function updateLiveScanData() {
+  //Get LiveScan data...
+  let key, obj, dat, data, i, vesselsInCamera=[], vesselsArePass=[];
+  data = await fetchLiveScanData()
+                      
+  for(i=0; i<data.length; i++){
+    dat = data[i];
+    //Skip out-of-region data objects
+    if(dat.liveRegion != region) {
+      console.log("Skipping out-of-region vessel",dat.liveName);
+      continue;
+    }
+    if(!liveScans.length){
+      key = -1;
+    } else {
+      key = getKeyOfId(liveScans, dat.liveVesselID);
+    }
+    
+    // Create & push
+    if(key==-1) {
+      obj = await liveScanModel.mapper(new LiveScan(), dat, true);
+      obj.key = liveScans.length;
+      liveScans.push(obj);
+      //Test for vessels in camera view
+      if(obj.inCameraRange==true) {
+        vesselsInCamera.push(obj.name);
+        //console.log(`Adding ${obj.name} to vesselsInCamera`);
+      }
+      //Test for passenger vessels
+      if(obj.typeIsPassenger) {
+        vesselsArePass.push(obj);
+      }
+    }
+    // Find & Update
+    else {
+      liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
+      //If manualTracker on update stored obj
+      if(liveScanModel.manualTrackerIsOn && liveScans[key].id==liveScanModel.trackerStatus.obj.id) {
+        liveScanModel.trackerStatus.obj = liveScans[key];
+      }
+      //Has num of vessels changed?
+      if(liveScans.length != liveScanModel.numVessels) {
+        //Store new vessels quantity
+        liveScanModel.numVessels = liveScans.length;
+        //Reset rotating key to avoid desynch
+        liveScanModel.rotatingKey = liveScanModel.numVessels;              
+      }
+      //Test for vessels in camera view
+      if(liveScans[key].inCameraRange==true) {
+        vesselsInCamera.push(liveScans[key].name);
+        //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
+      }
+      //Test for passenger vessels
+      if(liveScans[key].typeIsPassenger==true) {
+        vesselsArePass.push(liveScans[key]);
+      }
+    }
+  }
+  liveScanModel.vesselsInCamera = vesselsInCamera;
+  liveScanModel.vesselsArePass = vesselsArePass;
+  if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
+    outputVideoOverlay(); 
+    outputPassengerTrackerOverlay();
+    outputManualTrackerOverlay();
+  } 
+}
+
+
 
 function fetchPassagesList() {
   return new Promise(async (resolve, reject )=>{
@@ -852,8 +1169,10 @@ async function fetchAllAlerts() {
       tempAlertsAll.sort( (a,b) => parseInt(a.apubTS) - parseInt(b.apubTS))
       liveScanModel.alertsAll = [...tempAlertsAll]
       //Skip during passengerTracker mode otherwise update in browser
-      if(!liveScanModel.passengerTrackerIsOn) {
-        outputOtherAlerts();
+      if(liveScanModel.passengerTrackerIsOn) {
+        outputTrackerAlerts(true);
+      } else if(liveScanModel.manualTrackerIsOn) {
+        outputPassengerAlerts(false);
       }      
       //playSound();  MOVED TO fetchWaypoint()
     })
@@ -881,10 +1200,10 @@ async function fetchPassengerAlerts() {
       liveScanModel.alertsPassenger = [...tempAlertsPassenger]
       //Skip during passengerTracker mode otherwise update in browser
       if(liveScanModel.passengerTrackerIsOn) {
-        outputTrackerAlerts();
-      } else {
-        outputPassengerAlerts()       
-      }
+        outputTrackerAlerts(true);
+      } else if(liveScanModel.manualTrackerIsOn) {
+        outputPassengerAlerts(false);
+      }    
     })
   }
   return new Promise((resolve, reject )=>{
@@ -898,18 +1217,33 @@ async function fetchWaypoint() {
     let dataSet = querySnapshot.data()
     let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint 
     let wasOutput = false; //Resets when screen updates
+
+    console.log("TRACER: Admin obj & liveScanModel.sitename ", dataSet, liveScanModel.sitename);
+    console.log("TracerB: showVideoField, showVideoOnField, webcamNumField, webcamZoomfield",liveScanModel.showVideoField, liveScanModel.showVideoOnField, liveScanModel.webcamNumField, liveScanModel.webcamZoomField);
     apubID = dataSet[liveScanModel.apubFieldName].toString()
     vpubID = dataSet[liveScanModel.vpubFieldName].toString()
     lsLen   = dataSet[liveScanModel.lsLenField]
-    liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.region+"A"].src
-    liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.region+"B"].src
-    liveScanModel.webcamName = dataSet.webcamSources[liveScanModel.region+"A"].name
-    
-    liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
-    liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
-    liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
-    liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet.videoIsPassingCloseup;
-    liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull   
+
+    if(!sitename.includes("dash")) {
+      liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.sitename+"A"].src || null
+      liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.sitename+"B"].src || null
+      liveScanModel.webcamSource.C = dataSet.webcamSources[liveScanModel.sitename+"C"].src || null
+      liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
+      liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
+      liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || nulls
+  
+      liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
+      liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
+      liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
+
+
+      liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamZoomField]
+      liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet.videoIsPassingCloseup;
+      liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull;
+
+
+    }
+
     apublishCollection = liveScanModel.alertpublishCollection;
     vpublishCollection = liveScanModel.voicepublishCollection;
     liveScanModel.resetTime = dataSet.resetTime;
@@ -1157,6 +1491,33 @@ function formatTime(ts) {
   return str;
 }
 
+function loadSavedTracker() {
+  console.log("running loadSavedTracker 25 sec after a refresh");
+  let loadItem  = window.localStorage.getItem('crtTrackerStatusEnabled');
+  let isEnabled = loadItem=='true'? true : false;
+  let followingId = parseInt(window.localStorage.getItem('crtTrackerStatusFollowingId'));
+  let key = getKeyOfId(liveScans, followingId);
+  if(isEnabled) {
+    console.log("key match? ", key);
+    if(key>-1) {
+      liveScanModel.trackerStatus.enabled = true;
+      liveScanModel.trackerStatus.followingId = followingId;
+      liveScanModel.trackerStatus.obj = liveScans[key];
+      outputPassengerAlerts(false);
+    } else {
+      liveScanModel.trackerStatus.enabled = false;
+      liveScanModel.trackerStatus.followingId = null;
+      liveScanModel.trackerStatus.obj = null;
+    }
+  }
+  
+}
+
+
+
+
+
+
 function predictMovement() {
   //console.log('predictMovement()')
   var speed, distance, bearing, point, coords, icon;
@@ -1222,6 +1583,7 @@ function stepTransponderView() {
   if(len < liveScanModel.transponder.stepMax) {
     //Do nothing when tranponder list fits on screen
     outputAllVessels()
+    outputTrackerOptions();
     return
   }
   if(i >= len) {
@@ -1242,6 +1604,7 @@ function stepTransponderView() {
     liveScanModel.transponder.viewList[v] = liveScans[s[v]]
   }
   outputAllVessels()
+  outputTrackerOptions()
   liveScanModel.transponder.step++
 }
 

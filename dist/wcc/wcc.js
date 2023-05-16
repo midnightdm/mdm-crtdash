@@ -33371,7 +33371,7 @@ let adminMsg = {};
 let user     = {};
 let userIsLogged = false;
 let userIsAdmin = false;
-let showVideo, showVideoOn, webcamNum; 
+let showVideo, showVideoOn, webcamNum, webcamZoom; 
 
 window.env    = _environment__WEBPACK_IMPORTED_MODULE_3__.Environment
 const firebaseConfig = window.env.firebaseConfig
@@ -33400,14 +33400,25 @@ const buttonLogin  = document.getElementById("login-btn");
 
 const buttonVideo  = document.getElementById("video-button");
 const buttonVText  = document.getElementById("video-button-text");
+const buttonDR     = document.getElementById("skip-downriver-button");
+const buttonUR     = document.getElementById("skip-upriver-button");
+const buttonSM     = document.getElementById("skip-sawmill-button");
+
 
 const controlLabel = document.getElementById("control-label");
 const controlText  = document.getElementById("control-text");
 
 const switchButtonA = document.getElementById("switch-buttonA");
 const switchButtonB = document.getElementById("switch-buttonB");
+const switchButtonCL = document.getElementById("switch-buttonCL");
+const switchButtonCC = document.getElementById("switch-buttonCC");
+const switchButtonCR = document.getElementById("switch-buttonCR");
+
 const ledA = document.querySelector("#switch-buttonA span.led");
 const ledB = document.querySelector("#switch-buttonB span.led");
+const ledCL = document.querySelector("#switch-buttonCL span.led");
+const ledCC = document.querySelector("#switch-buttonCC span.led");
+const ledCR = document.querySelector("#switch-buttonCR span.led");
 
 const refreshLabel   = document.getElementById("refresh-label");
 const refreshBtn     = document.getElementById("refresh-button");
@@ -33503,6 +33514,9 @@ function monitorAuthState() {
 function addAdminEventListeners() {
   switchButtonA.addEventListener('click', switchToCamA);
   switchButtonB.addEventListener('click', switchToCamB);
+  switchButtonCL.addEventListener('click', switchToCamCL);
+  switchButtonCC.addEventListener('click', switchToCamCC);
+  switchButtonCR.addEventListener('click', switchToCamCR);
   buttonVideo.addEventListener("click", toggleWebcam);
   buttonLogout.addEventListener('click', function() {
     handleLogout();
@@ -33521,6 +33535,9 @@ function addAdminEventListeners() {
   playerB = videojs("cameraB", options);
   refreshBtn.addEventListener("click", refreshClients);
   resetBtn.addEventListener("click", handleResetCams);
+  buttonDR.addEventListener("click", toggleDownriver);
+  buttonUR.addEventListener("click", toggleUpriver);
+  buttonSM.addEventListener("click", toggleSawmill);
 
 }
 
@@ -33531,6 +33548,7 @@ function fetchAdminMessages() {
     showVideo   = dataSet.showClVideo;
     showVideoOn = dataSet.showClVideoOn;
     webcamNum   = dataSet.webcamNumCl;
+    webcamZoom  = dataSet.webcamZoomCl;
     updateTallyLights()    
     outputWebcamControl(showVideoOn, showVideo, webcamNum);
   });
@@ -33617,6 +33635,50 @@ function toggleWebcam() {
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }
 
+
+function toggleDownriver() {
+    console.log("toggleDownriver()",adminMsg);
+    if(!userIsAdmin && !userIsLogged) {
+      return alert("User not authorized for webcam operation.")
+    }
+    if(adminMsg.webcamClaIsDisabled==true) {
+      adminMsg.webcamClaIsDisabled=false
+      document.getElementById("skip-downriver-span").classList.add("green");
+    } else {
+      adminMsg.webcamClaIsDisabled=true
+    }
+    (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+}
+
+function toggleUpriver() {
+    console.log("toggleUpriver()",adminMsg);
+    if(!userIsAdmin && !userIsLogged) {
+      return alert("User not authorized for webcam operation.")
+    }
+    if(adminMsg.webcamClbIsDisabled==true) {
+      adminMsg.webcamClbIsDisabled=false
+      document.getElementById("skip-upriver-span").classList.add("green")
+    } else {
+      adminMsg.webcamClbIsDisabled=true
+    }
+    (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+}
+
+function toggleSawmill() {
+    console.log("toggleSawmill()",adminMsg);
+    if(!userIsAdmin && !userIsLogged) {
+      return alert("User not authorized for webcam operation.")
+    }
+    if(adminMsg.webcamClcIsDisabled==true) {
+      adminMsg.webcamClcIsDisabled=false
+      document.getElementById("skip-sawmill-span").classList.add("green")
+    } else {
+      adminMsg.webcamClcIsDisabled=true
+    }
+    (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+}
+
+
 function getTime() { 
   var date = new Date(); 
   return { 
@@ -33682,6 +33744,36 @@ function switchToCamB() {
   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }
 
+function switchToCamCL() {
+  if(!userIsAdmin && !userIsLogged) {
+    return alert("User not authorized for webcam operation.")
+  }
+  adminMsg.webcamNumCl = "C";
+  adminMsg.webcamZoomCl = 1;
+  updateTallyLights();
+  (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+}
+
+function switchToCamCC() {
+   if(!userIsAdmin && !userIsLogged) {
+     return alert("User not authorized for webcam operation.")
+   }
+   adminMsg.webcamNumCl = "C";
+   adminMsg.webcamZoomCl = 2;
+   updateTallyLights();
+   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+ }
+
+ function switchToCamCR() {
+   if(!userIsAdmin && !userIsLogged) {
+     return alert("User not authorized for webcam operation.")
+   }
+   adminMsg.webcamNumCl = "C";
+   adminMsg.webcamZoomCl = 3;
+   updateTallyLights();
+   (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
+ }
+
 function testLoggeduserIsAdmin(uid) {
   //Test that obj property is array
   if(Array.isArray(adminMsg.adminUsers) && adminMsg.adminUsers.length) {
@@ -33695,14 +33787,48 @@ function testLoggeduserIsAdmin(uid) {
 
 
 function updateTallyLights() {
+    console.log("updateTallyLights() webcamZoom="+webcamZoom);
+    ledA.classList.remove("on")
+    ledB.classList.remove("on");
+    ledCL.classList.remove("on");
+    ledCC.classList.remove("on");
+    ledCR.classList.remove("on");
   if(webcamNum=="A") {
     ledA.classList.add("on")
-    ledB.classList.remove("on");
   }
   if(webcamNum=="B") {
     ledB.classList.add("on")
-    ledA.classList.remove("on");
   }
+  if(webcamNum=="C") {
+
+   if(webcamZoom==1) {
+      ledCL.classList.add("on");
+   } 
+   if(webcamZoom==2) {
+      ledCC.classList.add("on");
+   }
+   if(webcamZoom==3) {
+      ledCR.classList.add("on");
+   }
+  }
+  if(adminMsg.webcamClaIsDisabled) {
+    document.getElementById("skip-downriver-span").classList.remove("green");
+  } else {
+    document.getElementById("skip-downriver-span").classList.add("green");
+  }
+  if(adminMsg.webcamClbIsDisabled) {
+    document.getElementById("skip-upriver-span").classList.remove("green");
+  } else {
+    document.getElementById("skip-upriver-span").classList.add("green");
+  }
+  if(adminMsg.webcamClcIsDisabled) {
+    document.getElementById("skip-sawmill-span").classList.remove("green");
+  } else {
+    document.getElementById("skip-sawmill-span").classList.add("green");
+  }
+
+
+
 }
 
 

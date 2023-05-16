@@ -144,6 +144,10 @@ color: rgb(5, 198, 5);
   background-color: red;
 }
 
+.led.green {
+    background-color: rgb(5, 198, 5);
+}
+
 #control-text {
   text-align: justify;
   margin: .5rem;
