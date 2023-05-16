@@ -561,26 +561,46 @@ export const LiveScanModel = {
   
     //Reworked 5/15/23 to create marker obj once then modify push 3 times
     if(this.mileMarkersList1.length == 0) {
-      let rivMrk, mrkLabel  
+        
       for(let i=0, len=dat.length; i<len; i++) {
-        rivMrk = new google.maps.Polyline({
-            name: "Mile "+dat[i].id,            
-            path: [
-                {lat: dat[i].latA, lng: dat[i].lngA},
-                {lat: dat[i].latB, lng: dat[i].lngB}
-            ],
-            strokeColor: "#34A16B",
-            strokeWeight: 2,
-            map: this.map1
-        });
-        //rivMrk.setMap(this.map1)
-        //this.mileMarkersList1.push(rivMrk)
-        rivMrk.setMap(this.map2)
-        this.mileMarkersList2.push(rivMrk)
-        rivMrk.setMap(this.map3)
-        this.mileMarkersList3.push(rivMrk)
-
-        mrkLabel = null
+        this.mileMarkersList1.push(
+            new google.maps.Polyline({
+                name: "Mile "+dat[i].id,            
+                path: [
+                    {lat: dat[i].latA, lng: dat[i].lngA},
+                    {lat: dat[i].latB, lng: dat[i].lngB}
+                ],
+                strokeColor: "#34A16B",
+                strokeWeight: 2,
+                map: this.map1
+            })
+        )
+        
+        this.mileMarkersList2.push(
+            new google.maps.Polyline({
+                name: "Mile "+dat[i].id,            
+                path: [
+                    {lat: dat[i].latA, lng: dat[i].lngA},
+                    {lat: dat[i].latB, lng: dat[i].lngB}
+                ],
+                strokeColor: "#34A16B",
+                strokeWeight: 2,
+                map: this.map2
+            })
+        )
+        
+        this.mileMarkersList3.push(
+            new google.maps.Polyline({
+                name: "Mile "+dat[i].id,            
+                path: [
+                    {lat: dat[i].latA, lng: dat[i].lngA},
+                    {lat: dat[i].latB, lng: dat[i].lngB}
+                ],
+                strokeColor: "#34A16B",
+                strokeWeight: 2,
+                map: this.map3
+            })
+        )
         /* Mile Labels Disabled on Map 1
         this.mileMarkerLabels1.push(new google.maps.Marker({
             position: {lat: dat[i].latA, lng: dat[i].lngA },
