@@ -1280,6 +1280,7 @@ async function fetchWaypoint() {
       liveScans.forEach( o => {
         o.map1marker.setMap(null)
         o.map2marker.setMap(null)
+        o.map3marker.setMap(null)
       })
       liveScans.splice(0, liveScans.length)
       liveScanModel.labelIndex = 0
