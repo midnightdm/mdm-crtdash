@@ -550,10 +550,10 @@ async function outputSelVessel() {
     //console.log("outputSelVessel in passengerTracker mode", vessObj);
   } else if(liveScanModel.manualTrackerIsOn ) {
     vessObj = liveScanModel.trackerStatus.obj;
-    //console.log("oututSelVessel in manual tracker mode", vessObj);
+    console.log("outputSelVessel in manual tracker mode", vessObj);
   } else {
     vessObj = liveScans[live];
-    //console.log("outputSelVessel in liveScans mode", vessObj, "live key is ", live);
+    console.log("outputSelVessel in liveScans mode", vessObj, "live key is ", live);
   }
   if(vessObj===undefined) { 
     if(liveScanModel.rotatingKey > liveScans.length) {
