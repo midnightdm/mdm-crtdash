@@ -1544,7 +1544,13 @@ function predictMovement() {
   
       //Update map view & object lat/lng
       liveScans[o.key].map1marker.setPosition(new google.maps.LatLng(point[0], point[1]));
-      liveScans[o.key].map2marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+      if(liveScanModel.trackerStatus.enabled) {
+        liveScans[o.key].map3marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+      } else {
+        liveScans[o.key].map2marker.setPosition(new google.maps.LatLng(point[0], point[1]));
+      }
+      
+      
       liveScans[o.key].lat = point[0];
       liveScans[o.key].lng = point[1];
       
