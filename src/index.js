@@ -480,6 +480,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       });
     } else {
       zoomControl(liveScanModel.cameraStatus.webcamZoom);
+      //Switch camera source if changed
       if(webcamNum != liveScanModel.prevWebcamNum) {
         waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge"
         liveScanModel.videoSource = liveScanModel.webcamSource[webcamNum];
@@ -492,10 +493,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
         player.ready(function() {
           player.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource })
           player.play()
-          waypointLabel.style = `z-index: 1`;
         });
         liveScanModel.prevWebcamNum = webcamNum;      
         console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+        waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum];
       }
     }   
     waypointLabel.style = `z-index: 1`;
