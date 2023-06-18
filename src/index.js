@@ -882,7 +882,7 @@ async function initLiveScan(rotateTransponders=true) {
    *   *   *   *   *   *   *   *   *   *   *  *  *  */
 
   setInterval( async ()=> {
-    let now, key, vessObj;
+    let now, nowObj, key, vessObj;
     //Reset clock to 0 every 1 min (& increment minute)
     if(liveScanModel.tock==60) {
       liveScanModel.tock = 0
@@ -953,7 +953,14 @@ async function initLiveScan(rotateTransponders=true) {
     //Advance moving vessel icons predictively
     predictMovement()
     //Test for time triggers
-    now = getTime()
+    nowObj = new Date();
+    now = { 
+        month: nowObj.getMonth(),
+        date: nowObj.getDate(),
+        hour: nowObj.getHours(),
+        min: nowObj.getMinutes(),
+        sec: nowObj.getSeconds()
+    };
     liveScanModel.resetTime.forEach((rt)=>{
       if(now.min==rt.min && now.sec==rt.sec) {
         location.reload();
