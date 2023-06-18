@@ -431,7 +431,6 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       player = videojs("video", options, function onPlayerReady() {
         this.on('ended', function() {
           this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource, });
-
           this.play();
           liveScanModel.promoIsOn = false;
           //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -493,6 +492,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
         player.ready(function() {
           player.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource })
           player.play()
+          waypointLabel.style = `z-index: 1`;
         });
         liveScanModel.prevWebcamNum = webcamNum;      
         console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
