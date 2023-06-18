@@ -403,7 +403,8 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       autoplay: true,
       preload: "auto",
       fluid: true,
-      loadingSpinner: false
+      loadingSpinner: false,
+      techOrder: ["html5", "youtube"]
     };
     console.log("webcamNum is", webcamNum);
     if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
@@ -429,7 +430,8 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
 
       player = videojs("video", options, function onPlayerReady() {
         this.on('ended', function() {
-          this.src({ src: liveScanModel.videoSource });
+          this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource, });
+
           this.play();
           liveScanModel.promoIsOn = false;
           //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -443,7 +445,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           zoomControl(liveScanModel.cameraStatus.webcamZoom);
           waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
         });
-        this.src({ src: promoSource });
+        this.src({ type:"application/x-mpegURL" , src: promoSource });
         this.play();
       });
     }
@@ -458,7 +460,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       }
       player = videojs("video", options, function onPlayerReady() {
         this.on('ended', function() {
-          this.src({ src: liveScanModel.videoSource });
+          this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource });
           this.play();
           liveScanModel.videoProgramIsOn = false;
           //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -473,7 +475,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
         })
         
-        this.src({ src: liveScanModel.videoProgram.source });
+        this.src({ type: liveScanModel.videoProgram.type, src: liveScanModel.videoProgram.source });
         
         this.play();
       });
@@ -482,13 +484,14 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       if(webcamNum != liveScanModel.prevWebcamNum) {
         waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge"
         liveScanModel.videoSource = liveScanModel.webcamSource[webcamNum];
+        liveScanModel.videoType = liveScanModel.webcamType[webcamNum];
         console.log("video source", liveScanModel.videoSource);
 
         if(player==null) {
           player = videojs("video", options);
         }
         player.ready(function() {
-          player.src({ src: liveScanModel.videoSource })
+          player.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource })
           player.play()
         });
         liveScanModel.prevWebcamNum = webcamNum;      
@@ -1228,9 +1231,19 @@ async function fetchWaypoint() {
       liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.sitename+"A"].src || null
       liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.sitename+"B"].src || null
       liveScanModel.webcamSource.C = dataSet.webcamSources[liveScanModel.sitename+"C"].src || null
+      liveScanModel.webcamSource.D = dataSet.webcamSources[liveScanModel.sitename+"D"].src || null
       liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
       liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
-      liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || nulls
+      liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || null
+      liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name ||
+      null
+
+      liveScanModel.webcamType.A = dataSet.webcamSources[liveScanModel.sitename+"A"].type || null
+      liveScanModel.webcamType.B = dataSet.webcamSources[liveScanModel.sitename+"B"].type || null
+      liveScanModel.webcamType.C = dataSet.webcamSources[liveScanModel.sitename+"C"].type || null
+      liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type ||
+      null
+
   
       liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
       liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
