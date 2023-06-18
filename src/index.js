@@ -496,10 +496,9 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
         });
         liveScanModel.prevWebcamNum = webcamNum;      
         console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
-        waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum];
       }
     }   
-    waypointLabel.style = `z-index: 1`;
+    //waypointLabel.style = `z-index: 1`;
   } else {
     liveScanModel.videoIsOn = false;
     videoTag.style = `display: none`;
