@@ -55,6 +55,7 @@ export const LiveScanModel = {
   webcamZoomField: null,
   webcamSource: {"A":null, "B": null, "C": null, "D": null },
   webcamName: {"A": null, "B": null, "C": null, "D": null}, 
+  webcamType: {"A": null, "B": null, "C": null, "D": null},
   videoSource: null,
   videoType: "application/x-mpegURL",
   videoIsOn: false,

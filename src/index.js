@@ -1242,14 +1242,12 @@ async function fetchWaypoint() {
       liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
       liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
       liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || null
-      liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name ||
-      null
+      liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name || null
 
       liveScanModel.webcamType.A = dataSet.webcamSources[liveScanModel.sitename+"A"].type || null
       liveScanModel.webcamType.B = dataSet.webcamSources[liveScanModel.sitename+"B"].type || null
       liveScanModel.webcamType.C = dataSet.webcamSources[liveScanModel.sitename+"C"].type || null
-      liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type ||
-      null
+      liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type || null
 
   
       liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
