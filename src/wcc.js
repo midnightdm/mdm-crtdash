@@ -57,12 +57,14 @@ const switchButtonB = document.getElementById("switch-buttonB");
 const switchButtonCL = document.getElementById("switch-buttonCL");
 const switchButtonCC = document.getElementById("switch-buttonCC");
 const switchButtonCR = document.getElementById("switch-buttonCR");
+const switchButtonD = document.getElementById("switch-buttonD");
 
 const ledA = document.querySelector("#switch-buttonA span.led");
 const ledB = document.querySelector("#switch-buttonB span.led");
 const ledCL = document.querySelector("#switch-buttonCL span.led");
 const ledCC = document.querySelector("#switch-buttonCC span.led");
 const ledCR = document.querySelector("#switch-buttonCR span.led");
+const ledD = document.querySelector("#switch-buttonD span.led");
 
 const refreshLabel   = document.getElementById("refresh-label");
 const refreshBtn     = document.getElementById("refresh-button");
@@ -161,6 +163,7 @@ function addAdminEventListeners() {
   switchButtonCL.addEventListener('click', switchToCamCL);
   switchButtonCC.addEventListener('click', switchToCamCC);
   switchButtonCR.addEventListener('click', switchToCamCR);
+  switchButtonD.addEventListener('click', switchToCamD);
   buttonVideo.addEventListener("click", toggleWebcam);
   buttonLogout.addEventListener('click', function() {
     handleLogout();
@@ -325,13 +328,15 @@ function toggleSawmill() {
 
 function getTime() { 
   var date = new Date(); 
-  return { 
+  var now = { 
     month: (date.getMonth()+1),
     date: date.getDate(),
     hour: date.getHours(), 
     min: date.getMinutes(), 
     sec: date.getSeconds() 
-  }; 
+  }
+  if(now.month > 12) { now.month = 1; }
+  return now; 
 } 
 
 function xSecondsLater(time, x) {
@@ -373,7 +378,6 @@ function switchToCamA() {
   }
   adminMsg.webcamNumCl = "A";
   updateTallyLights();
-
   setDoc(adminMsgRef, adminMsg, {merge: true})
 }
 
@@ -384,7 +388,6 @@ function switchToCamB() {
   }
   adminMsg.webcamNumCl = "B";
   updateTallyLights();
-
   setDoc(adminMsgRef, adminMsg, {merge: true})
 }
 
@@ -418,6 +421,16 @@ function switchToCamCC() {
    setDoc(adminMsgRef, adminMsg, {merge: true})
  }
 
+function switchToCamD() {
+    console.log("switchToCamD()");
+    if(!userIsAdmin && !userIsLogged) {
+        return alert("User not authorized for webcam operation.")
+    }
+    adminMsg.webcamNumCl = "D";
+    updateTallyLights();
+    setDoc(adminMsgRef, adminMsg, {merge: true})
+}
+
 function testLoggeduserIsAdmin(uid) {
   //Test that obj property is array
   if(Array.isArray(adminMsg.adminUsers) && adminMsg.adminUsers.length) {
@@ -437,6 +450,7 @@ function updateTallyLights() {
     ledCL.classList.remove("on");
     ledCC.classList.remove("on");
     ledCR.classList.remove("on");
+    ledD.classList.remove("on")
   if(webcamNum=="A") {
     ledA.classList.add("on")
   }
@@ -454,6 +468,9 @@ function updateTallyLights() {
    if(webcamZoom==3) {
       ledCR.classList.add("on");
    }
+  }
+  if(webcamNum=="D") {
+    ledD.classList.add("on")
   }
   if(adminMsg.webcamClaIsDisabled) {
     document.getElementById("skip-downriver-span").classList.remove("green");

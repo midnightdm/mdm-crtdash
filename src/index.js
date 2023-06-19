@@ -204,14 +204,16 @@ setTimeout(loadSavedTracker, 25000);
 
 
 function getTime() { 
-  var date = new Date(); 
-  return { 
-    month: (date.getMonth()+1),
-    date: date.getDate(),
-    hour: date.getHours(), 
-    min: date.getMinutes(), 
-    sec: date.getSeconds() 
-  }; 
+    var date = new Date(); 
+    var now = { 
+        month: (date.getMonth()+1),
+        date: date.getDate(),
+        hour: date.getHours(), 
+        min: date.getMinutes(), 
+        sec: date.getSeconds() 
+    }
+    if(now.month > 12) { now.month = 1; }
+    return now; 
 } 
 
 function fifteenSecondsLater(time) {
@@ -953,14 +955,8 @@ async function initLiveScan(rotateTransponders=true) {
     //Advance moving vessel icons predictively
     predictMovement()
     //Test for time triggers
-    nowObj = new Date();
-    now = { 
-        month: nowObj.getMonth(),
-        date: nowObj.getDate(),
-        hour: nowObj.getHours(),
-        min: nowObj.getMinutes(),
-        sec: nowObj.getSeconds()
-    };
+    
+    now = getTime();
     liveScanModel.resetTime.forEach((rt)=>{
       if(now.min==rt.min && now.sec==rt.sec) {
         location.reload();
