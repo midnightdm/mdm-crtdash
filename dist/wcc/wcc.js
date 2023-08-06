@@ -33778,10 +33778,11 @@ function switchToCamCC() {
  }
 
 function switchToCamD() {
+    console.log("switchToCamD()");
     if(!userIsAdmin && !userIsLogged) {
         return alert("User not authorized for webcam operation.")
     }
-    adminMsg.webcamNumdCl = "D";
+    adminMsg.webcamNumCl = "D";
     updateTallyLights();
     (0,firebase_firestore__WEBPACK_IMPORTED_MODULE_1__.setDoc)(adminMsgRef, adminMsg, {merge: true})
 }

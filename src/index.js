@@ -518,10 +518,11 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
 
 function outputVideoOverlay() {
   //Superimpose list of vessels in camera range
-  if(liveScanModel.videoIsOn && liveScanModel.vesselsInCamera.length>0 && !liveScanModel.vesselsAreInCameraRange) {
+  if(liveScanModel.videoIsOn && 
+    liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum].length>0 && !liveScanModel.vesselsAreInCameraRange) {
     let v, vlist = "";
-    for(v in liveScanModel.vesselsInCamera) {
-      vlist += `<li class="crv-list">${liveScanModel.vesselsInCamera[v]}</li>`;
+    for(v in liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum]) {
+      vlist += `<li class="crv-list">${liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum][v]}</li>`;
     }
     overlayList.innerHTML = vlist;
     liveScanModel.vesselsAreInCameraRange = true;
@@ -536,7 +537,7 @@ function outputVideoOverlay() {
     }
     //See initLiveScan() for the camera in view test
   } else {
-    if(!liveScanModel.vesselsInCamera.length && liveScanModel.vesselsAreInCameraRange && overlay2.classList.contains("active")) {
+    if(!liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum].length && liveScanModel.vesselsAreInCameraRange && overlay2.classList.contains("active")) {
       overlay2.classList.remove("active");
     }
   }
@@ -634,7 +635,7 @@ async function outputSelVessel() {
 }
 
 async function outputAllVessels() {
-  let allVesselsOutput = "", vesselsInCamera = [], mapPassengerClass;
+  let allVesselsOutput = "", mapPassengerClass;
   //Build output for transponder list (from viewList if used)
   if(liveScanModel.transponder.viewList.length> 0){
     let c = 0;
@@ -683,10 +684,6 @@ async function outputAllVessels() {
       </li>`;
     }
   }
-
-  //*** WTF? This erases data!!!! Actual duty in updateLiveScanData() */
-  //liveScanModel.vesselsInCamera = vesselsInCamera;
-  
   
   //console.log("Content of liveScanModel:", liveScanModel);
   totVessels.innerHTML = liveScans.length+" Vessels"; //Total Vessels Title
@@ -1058,7 +1055,7 @@ async function fetchLiveScanData() {
 
 async function updateLiveScanData() {
   //Get LiveScan data...
-  let key, obj, dat, data, i, vesselsInCamera=[], vesselsArePass=[];
+  let key, obj, dat, data, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[];
   data = await fetchLiveScanData()
                       
   for(i=0; i<data.length; i++){
@@ -1080,9 +1077,21 @@ async function updateLiveScanData() {
       obj.key = liveScans.length;
       liveScans.push(obj);
       //Test for vessels in camera view
-      if(obj.inCameraRange==true) {
-        vesselsInCamera.push(obj.name);
-        //console.log(`Adding ${obj.name} to vesselsInCamera`);
+        //   if(obj.inCameraRange==true) {
+        //     vesselsInCamera.push(obj.name);
+        //     //console.log(`Adding ${obj.name} to vesselsInCamera`);
+        //   }
+      if(obj.isInCameraRange.A==true) {
+        vesselsInCamera.A.push(obj.name);
+      } 
+      if(obj.isInCameraRange.B==true) {
+        vesselsInCamera.B.push(obj.name);
+      }
+      if(obj.isInCameraRange.C==true) {
+        vesselsInCamera.C.push(obj.name);
+      }
+      if(obj.isInCameraRange.D==true) {
+        vesselsInCamera.D.push(obj.name);
       }
       //Test for passenger vessels
       if(obj.typeIsPassenger) {
@@ -1104,10 +1113,23 @@ async function updateLiveScanData() {
         liveScanModel.rotatingKey = liveScanModel.numVessels;              
       }
       //Test for vessels in camera view
-      if(liveScans[key].inCameraRange==true) {
-        vesselsInCamera.push(liveScans[key].name);
-        //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
+        //   if(liveScans[key].inCameraRange==true) {
+        //     vesselsInCamera.push(liveScans[key].name);
+        //     //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
+        //   }
+      if(liveScans[key].isInCameraRange.A==true) {
+        liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
+      } 
+      if(liveScans[key].isInCameraRange.B==true) {
+        liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
       }
+      if(liveScans[key].isInCameraRange.C==true) {
+        liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
+      }
+      if(liveScans[key].isInCameraRange.D==true) {
+        vesselsInCamera.D.push(liveScans[key].name);
+      }
+
       //Test for passenger vessels
       if(liveScans[key].typeIsPassenger==true) {
         vesselsArePass.push(liveScans[key]);
