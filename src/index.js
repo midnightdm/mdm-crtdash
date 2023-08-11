@@ -433,6 +433,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       player = videojs("video", options, function onPlayerReady() {
         this.on('ended', function() {
           this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource, });
+          if(liveScanModel.videoType == "video/youtube") {
+            console.log("Muting audio from source type YouTube.");
+            this.muted(true)
+          }
           this.play();
           liveScanModel.promoIsOn = false;
           //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -462,6 +466,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       player = videojs("video", options, function onPlayerReady() {
         this.on('ended', function() {
           this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource });
+          if(liveScanModel.videoType == "video/youtube") {
+            console.log("Muting audio from source type YouTube.");
+            this.muted(true)
+          }
           this.play();
           liveScanModel.videoProgramIsOn = false;
           //togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -494,6 +502,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
         }
         player.ready(function() {
           player.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource })
+          if(liveScanModel.videoType == "video/youtube") {
+            console.log("Muting audio from source type YouTube.");
+            player.muted(true)
+          }
           player.play()
         });
         liveScanModel.prevWebcamNum = webcamNum;      
@@ -1055,16 +1067,19 @@ async function fetchLiveScanData() {
 
 async function updateLiveScanData() {
   //Get LiveScan data...
-  let key, obj, dat, data, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[];
+  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[];
   data = await fetchLiveScanData()
-                      
   for(i=0; i<data.length; i++){
     dat = data[i];
+    console.log("Test vessel", liveScanModel.liveName, liveScanModel.sitename, "liveRegion", dat.liveRegion)
+
     //Skip out-of-region data objects
-    if(dat.liveRegion != region) {
-      console.log("Skipping out-of-region vessel",dat.liveName);
-      continue;
+    if(!liveScanModel.regionsWatched.includes(dat?.liveRegion)) {
+        console.log("Skipping unwatched region", dat.liveRegion)
+        continue;
     }
+
+
     if(!liveScans.length){
       key = -1;
     } else {
@@ -1076,11 +1091,6 @@ async function updateLiveScanData() {
       obj = await liveScanModel.mapper(new LiveScan(), dat, true);
       obj.key = liveScans.length;
       liveScans.push(obj);
-      //Test for vessels in camera view
-        //   if(obj.inCameraRange==true) {
-        //     vesselsInCamera.push(obj.name);
-        //     //console.log(`Adding ${obj.name} to vesselsInCamera`);
-        //   }
       if(obj.isInCameraRange.A==true) {
         vesselsInCamera.A.push(obj.name);
       } 
@@ -1100,40 +1110,40 @@ async function updateLiveScanData() {
     }
     // Find & Update
     else {
-      liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
-      //If manualTracker on update stored obj
-      if(liveScanModel.manualTrackerIsOn && liveScans[key].id==liveScanModel.trackerStatus.obj.id) {
-        liveScanModel.trackerStatus.obj = liveScans[key];
-      }
-      //Has num of vessels changed?
-      if(liveScans.length != liveScanModel.numVessels) {
-        //Store new vessels quantity
-        liveScanModel.numVessels = liveScans.length;
-        //Reset rotating key to avoid desynch
-        liveScanModel.rotatingKey = liveScanModel.numVessels;              
-      }
-      //Test for vessels in camera view
-        //   if(liveScans[key].inCameraRange==true) {
-        //     vesselsInCamera.push(liveScans[key].name);
-        //     //console.log(`Adding ${liveScans[key].name} to vesselsInCamera`);
-        //   }
-      if(liveScans[key].isInCameraRange.A==true) {
-        liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
-      } 
-      if(liveScans[key].isInCameraRange.B==true) {
-        liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
-      }
-      if(liveScans[key].isInCameraRange.C==true) {
-        liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
-      }
-      if(liveScans[key].isInCameraRange.D==true) {
-        vesselsInCamera.D.push(liveScans[key].name);
-      }
-
-      //Test for passenger vessels
-      if(liveScans[key].typeIsPassenger==true) {
-        vesselsArePass.push(liveScans[key]);
-      }
+        //Remove object if no longer in region
+        if(!liveScanModel.regionsWatched.includes(dat.liveRegion)) {
+            liveScans.splice(key, 1)
+        //Otherwise update the data
+        } else {
+            liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
+            if(liveScans[key].isInCameraRange.A==true) {
+                liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
+            } 
+            if(liveScans[key].isInCameraRange.B==true) {
+                liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
+            }
+            if(liveScans[key].isInCameraRange.C==true) {
+                liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
+            }
+            if(liveScans[key].isInCameraRange.D==true) {
+                vesselsInCamera.D.push(liveScans[key].name);
+            }
+            //Test for passenger vessels
+            if(liveScans[key].typeIsPassenger==true) {
+                vesselsArePass.push(liveScans[key]);
+            }
+            //If manualTracker on, update stored obj
+            if(liveScanModel.manualTrackerIsOn && liveScans[key].id==liveScanModel.trackerStatus.obj.id) {
+              liveScanModel.trackerStatus.obj = liveScans[key];
+            }
+        }
+        //Has num of vessels changed?
+        if(liveScans.length != liveScanModel.numVessels) {
+            //Store new vessels quantity
+            liveScanModel.numVessels = liveScans.length;
+            //Reset rotating key to avoid desynch
+            liveScanModel.rotatingKey = liveScanModel.numVessels;              
+        }
     }
   }
   liveScanModel.vesselsInCamera = vesselsInCamera;

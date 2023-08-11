@@ -7,10 +7,10 @@ const sftp = new SftpClient();
 
 // Set up connection options
 const options = {
-    host: 'your-hostname-or-ip',
+    host: '45.79.25.138',
     port: 22,
-    username: 'your-username',
-    password: 'your-password'
+    username: 'root',
+    password: 'DoubleEdgeSword'
 };
 
 // Set up remote directory path

@@ -39,6 +39,7 @@ export const LiveScanModel = {
   lab:"_ABCDEFGHIJKLMNOPQRSTUVWXYZ*#@&~1234567890abcdefghijklmnopqrstuvwxyz",
   red:"#ff0000",
   region: null,
+  regionsWatched: [],
   title: null,
   focusPosition:null,
   map1ZoomLevel: 10,
@@ -135,6 +136,7 @@ export const LiveScanModel = {
         this.showVideoOnField = "showClVideoOn";
         this.webcamNumField = "webcamNumCl";
         this.webcamZoomField = "webcamZoomCl";
+        this.regionsWatched = ["clinton"];
         break;
       case "clintondash":
         this.title = "clinton";
@@ -151,6 +153,7 @@ export const LiveScanModel = {
         this.showVideoOnField = "showClVideoOn";
         this.webcamNumField = "webcamNumCl";
         this.webcamZoomField = "webcamZoomCl";
+        this.regionsWatched = ["clinton"];
         break;
       
       case "qc":
@@ -168,6 +171,7 @@ export const LiveScanModel = {
         this.showVideoOnField = "showQcVideoOn";
         this.webcamNumField = "webcamNumQc";
         this.webcamZoomField = "webcamZoomQc";
+        this.regionsWatched = ["qc"];
         break;
       case "qcdash":
         this.title = "qc";
@@ -184,12 +188,13 @@ export const LiveScanModel = {
         this.showVideoOnField = "showQcVideoOn";
         this.webcamNumField = "webcamNumQc";
         this.webcamZoomField = "webcamZoomQc";
+        this.regionsWatched = ["qc"]
         break;
       
       case "clintoncf":
         this.title = "clinton"; 
         this.focusPosition = this.clinton; 
-        this.map1ZoomLevel = 11;
+        this.map1ZoomLevel = 9;
         this.passagesCollection = "Passages";
         this.alertpublishCollection = "Alertpublish";
         this.voicepublishCollection = "Voicepublish";
@@ -201,6 +206,7 @@ export const LiveScanModel = {
         this.showVideoOnField = "showClVideoOn";
         this.webcamNumField = "webcamNumCl";
         this.webcamZoomField = "webcamZoomCl";
+        this.regionsWatched = ["clinton", "qc"];
         break;
       
     }
