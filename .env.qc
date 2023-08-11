@@ -1,2 +1,0 @@
-DASH_REGION=qc
-SITE_NAME=qc
