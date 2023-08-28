@@ -563,8 +563,8 @@ async function outputSelVessel() {
   //  liveScanModel.vesselsArePass[liveScanModel.passRotKey] : liveScans[live]
   
   let vessObj;
-  if(liveScanModel.passengerTrackerIsOn) {
-    vessObj = liveScanModel.vesselsArePass[liveScanModel.passRotKey];
+  if(liveScanModel.watchedTrackerIsOn) {
+    vessObj = liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey];
     //console.log("outputSelVessel in passengerTracker mode", vessObj);
   } else if(liveScanModel.manualTrackerIsOn ) {
     vessObj = liveScanModel.trackerStatus.obj;
@@ -612,7 +612,7 @@ async function outputSelVessel() {
   //let passageDate = new Date(vessObj.lastDetectedTS);
 
   //Add special CSS class for passenger vessel
-  let mapPassengerClass = vessObj.typeIsPassenger ? ' type-passenger' : '';
+  let mapWatchedClass = vessObj.vesselWatchOn ? ' type-watched' : '';
 
   //Build output for selected vessel
   selVesselOutput += 
@@ -620,7 +620,7 @@ async function outputSelVessel() {
     ${vessObj.type}</span></li>
     <li class="dataPoint"><span class="th">MMSI #:</span> <span class="td">
     ${vessObj.id}</span></li>
-    <li class="dataPoint"><span class="th">LABEL:</span> <span class="td"><h4 class="map-label ${mapPassengerClass}">
+    <li class="dataPoint"><span class="th">LABEL:</span> <span class="td"><h4 class="map-label ${mapWatchedClass}">
     ${vessObj.mapLabel}</h4></span></li>
     <li class="dataPoint"><span class="th">COURSE:</span> <span class="td">
   ${vessObj.course}°</span></li>
@@ -706,8 +706,8 @@ function outputPassengerTrackerOverlay() {
   //console.log("outputPassengerTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
 
   //Supercede Events list with passenger vessel tracking map
-  if(liveScanModel.vesselsArePass.length>0 && !liveScanModel.passengerTrackerIsOn) {
-    liveScanModel.passengerTrackerIsOn = true
+  if(liveScanModel.vesselsAreWatched.length>0 && !liveScanModel.watchedTrackerIsOn) {
+    liveScanModel.watchedTrackerIsOn = true
     map2.classList.remove("active")
     map3.classList.add("active")
     quad3Label.classList.add("active")
@@ -715,21 +715,21 @@ function outputPassengerTrackerOverlay() {
     ulOther.classList.add("tracker")
     ulPass.innerHTML = ""
     ulOther.innerHTML = ""
-  } else if(liveScanModel.vesselsArePass.length==0 && !liveScanModel.manualTrackerIsOn) {
-    liveScanModel.passengerTrackerIsOn = false
+  } else if(liveScanModel.vesselsAreWatched.length==0 && !liveScanModel.manualTrackerIsOn) {
+    liveScanModel.watchedTrackerIsOn = false
     map3.classList.remove("active")
     map2.classList.add("active")
     quad3Label.classList.remove("active")
     overlay3.classList.remove("lower")
     ulOther.classList.remove("tracker")
   }
-  console.log("outputPassengerTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
+  console.log("outputWatchedTrackerOverlay() "+liveScanModel.watchedTrackerIsOn)
 }
 
 function outputManualTrackerOverlay() {
   //console.log("outputManualTrackerOverlay() before"+liveScanModel.manualTrackerIsOn)
   //Void when passenger tracker is on
-  if(liveScanModel.passengerTrackerIsOn) return;
+  if(liveScanModel.watchedTrackerIsOn) return;
   //Supercede Events list with  vessel tracking map
   if(liveScanModel.trackerStatus.enabled && !liveScanModel.manualTrackerIsOn) {
     liveScanModel.manualTrackerIsOn = true
@@ -803,7 +803,7 @@ function outputTrackerAlerts(isPassenger=true) {
 
 function outputPassengerAlerts() {
   //Build output for passenger alerts
-  if(!liveScanModel.alertsPassenger.length || liveScanModel.passengerTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
+  if(!liveScanModel.alertsPassenger.length || liveScanModel.watchedTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
   let alertsOutputPassenger =
     `<li id="pass19" class="card animate__animated animate__slideInRight">
       <h4>${liveScanModel.alertsPassenger[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsPassenger[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsPassenger[19].date)}</time></h4>
@@ -833,7 +833,7 @@ function outputPassengerAlerts() {
 
 function outputOtherAlerts() {
   //Build output for other alerts
-  if(!liveScanModel.alertsAll.length || liveScanModel.passengerTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
+  if(!liveScanModel.alertsAll.length || liveScanModel.watchedTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
   let alertsOutputOther =
   `<li id="all19" class="card animate__animated animate__slideInRight">
   <h4>${liveScanModel.alertsAll[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsAll[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsAll[19].date)}</time></h4>
@@ -919,28 +919,52 @@ async function initLiveScan(rotateTransponders=true) {
     }
 
     //Also every 15 sec when there are >1 pass vess, change tracker map
-    if(liveScanModel.vesselsArePass.length>0 && liveScanModel.tock%15==0) {
-      liveScanModel.passRotKey++;
-      if(liveScanModel.passRotKey > liveScanModel.vesselsArePass.length) {
-        liveScanModel.passRotKey = 0;
-      }
-      liveScanModel.map3.setCenter(  
-        new google.maps.LatLng(
-          liveScanModel.vesselsArePass[liveScanModel.passRotKey].lat, 
-          liveScanModel.vesselsArePass[liveScanModel.passRotKey].lng
-        )
-      )
-    } else if(liveScanModel.manualTrackerIsOn && liveScanModel.tock%15==0) {
-      key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
-      if(key>-1) {
-        console.log("ob for setCenter ", liveScanModel.trackerStatus.obj );
-        liveScanModel.map3.setCenter(  
-          new google.maps.LatLng(liveScanModel.trackerStatus.obj.lat, liveScanModel.trackerStatus.obj.lng)
-        )
-      }
+    // if(liveScanModel.vesselsArePass.length>0 && liveScanModel.tock%15==0) {
+    //   liveScanModel.passRotKey++;
+    //   if(liveScanModel.passRotKey > liveScanModel.vesselsArePass.length) {
+    //     liveScanModel.passRotKey = 0;
+    //   }
+    //   liveScanModel.map3.setCenter(  
+    //     new google.maps.LatLng(
+    //       liveScanModel.vesselsArePass[liveScanModel.passRotKey].lat, 
+    //       liveScanModel.vesselsArePass[liveScanModel.passRotKey].lng
+    //     )
+    //   )
+    // } else if(liveScanModel.manualTrackerIsOn && liveScanModel.tock%15==0) {
+    //   key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
+    //   if(key>-1) {
+    //     console.log("ob for setCenter ", liveScanModel.trackerStatus.obj );
+    //     liveScanModel.map3.setCenter(  
+    //       new google.maps.LatLng(liveScanModel.trackerStatus.obj.lat, liveScanModel.trackerStatus.obj.lng)
+    //     )
+    //   }
       
-    }
+    // }
     
+    //Also every 15 sec when there are >1 watched vess, change tracker map
+    if(liveScanModel.vesselsAreWatched.length>0 && liveScanModel.tock%15==0) {
+        liveScanModel.watchedRotKey++;
+        if(liveScanModel.watchedRotKey > liveScanModel.vesselsAreWatched.length) {
+          liveScanModel.watchedRotKey = 0;
+        }
+        liveScanModel.map3.setCenter(  
+          new google.maps.LatLng(
+            liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lat, 
+            liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lng
+          )
+        )
+      } else if(liveScanModel.manualTrackerIsOn && liveScanModel.tock%15==0) {
+        key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
+        if(key>-1) {
+          console.log("ob for setCenter ", liveScanModel.trackerStatus.obj );
+          liveScanModel.map3.setCenter(  
+            new google.maps.LatLng(liveScanModel.trackerStatus.obj.lat, liveScanModel.trackerStatus.obj.lng)
+          )
+        }
+        
+      }
+
+
     //Every 20 sec --> 
     if(liveScanModel.tock%20==0) {
       //Change news text...
@@ -949,11 +973,11 @@ async function initLiveScan(rotateTransponders=true) {
           liveScanModel.newsKey = 0;
         }
         //Disable output news when pass vess passing camera
-        if(!liveScanModel.cameraStatus.videoIsPassingCloseup && !liveScanModel.vesselsArePass.length) {
+        if(!liveScanModel.cameraStatus.videoIsPassingCloseup && !liveScanModel.vesselsAreWatched.length) {
           outputNews();
           liveScanModel.newsKey++
         } else {
-          news.innerHTML = "Now live tracking passenger vessel <em>"+liveScanModel.vesselsArePass[0].name+"</em>."
+          news.innerHTML = "Now live tracking passenger vessel <em>"+liveScanModel.vesselsAreWatched[0].name+"</em>."
         }
         
       }
@@ -1067,7 +1091,7 @@ async function fetchLiveScanData() {
 
 async function updateLiveScanData() {
   //Get LiveScan data...
-  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[];
+  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[], vesselsAreWatched=[];
   data = await fetchLiveScanData()
   for(i=0; i<data.length; i++){
     dat = data[i];
@@ -1103,9 +1127,9 @@ async function updateLiveScanData() {
       if(obj.isInCameraRange.D==true) {
         vesselsInCamera.D.push(obj.name);
       }
-      //Test for passenger vessels
-      if(obj.typeIsPassenger) {
-        vesselsArePass.push(obj);
+      //Test for watched vessels
+      if(obj.vesselWatchOn) {
+        vesselsAreWatched.push(obj);
       }
     }
     // Find & Update
@@ -1129,8 +1153,12 @@ async function updateLiveScanData() {
                 vesselsInCamera.D.push(liveScans[key].name);
             }
             //Test for passenger vessels
-            if(liveScans[key].typeIsPassenger==true) {
-                vesselsArePass.push(liveScans[key]);
+            // if(liveScans[key].typeIsPassenger==true) {
+            //     vesselsAreWatched.push(liveScans[key]);
+            // }
+            //Test for watched vessels
+            if(liveScans[key].vesselWatchOn==true) {
+                vesselsAreWatched.push(liveScans[key]);
             }
             //If manualTracker on, update stored obj
             if(liveScanModel.manualTrackerIsOn && liveScans[key].id==liveScanModel.trackerStatus.obj.id) {
@@ -1147,7 +1175,8 @@ async function updateLiveScanData() {
     }
   }
   liveScanModel.vesselsInCamera = vesselsInCamera;
-  liveScanModel.vesselsArePass = vesselsArePass;
+  //liveScanModel.vesselsArePass = vesselsArePass;
+  liveScanModel.vesselsAreWatched = vesselsAreWatched;
   if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
     outputVideoOverlay(); 
     outputPassengerTrackerOverlay();
@@ -1206,8 +1235,8 @@ async function fetchAllAlerts() {
       //Sort by apubTS decending
       tempAlertsAll.sort( (a,b) => parseInt(a.apubTS) - parseInt(b.apubTS))
       liveScanModel.alertsAll = [...tempAlertsAll]
-      //Skip during passengerTracker mode otherwise update in browser
-      if(liveScanModel.passengerTrackerIsOn) {
+      //Skip during watchedTracker mode otherwise update in browser
+      if(liveScanModel.watchedTrackerIsOn) {
         outputTrackerAlerts(true);
       } else if(liveScanModel.manualTrackerIsOn) {
         outputPassengerAlerts(false);
@@ -1236,8 +1265,8 @@ async function fetchPassengerAlerts() {
       tempAlertsPassenger.sort( (a,b) => parseInt(a.apubTS) - parseInt(b.apubTS))
       //After building array replace liveScanModel version
       liveScanModel.alertsPassenger = [...tempAlertsPassenger]
-      //Skip during passengerTracker mode otherwise update in browser
-      if(liveScanModel.passengerTrackerIsOn) {
+      //Skip during watchedTracker mode otherwise update in browser
+      if(liveScanModel.watchedTrackerIsOn) {
         outputTrackerAlerts(true);
       } else if(liveScanModel.manualTrackerIsOn) {
         outputPassengerAlerts(false);

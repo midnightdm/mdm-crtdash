@@ -28,10 +28,11 @@ export default class LiveScan {
     this.hasImage       = null
     this.imageUrl       = null
     this.type           = null
+    this.vesselWatchOn  = false
     this.liveIsLocal    = false
     this.inCameraRange  = false
     this.isInCameraRange = {"A": false, "B":false, "C":false, "D":false}
-    this.typeIsPassenger = false
+    this.typeIsWatched = false
     this.liveMarkerAlphaWasReached = false
     this.liveMarkerAlphaTS         = null
     this.liveMarkerBravoWasReached = false

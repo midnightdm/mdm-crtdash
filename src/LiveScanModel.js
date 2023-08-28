@@ -62,11 +62,13 @@ export const LiveScanModel = {
   videoIsOn: false,
   videoProgram: null,
   videoProgramIsOn: false,
+  watchedTrackerIsOn: false,
   passengerTrackerIsOn: false,
   manualTrackerIsOn: false,
   vesselsAreInCameraRange: false,
   vesselsInCamera: {"A":[], "B":[], "C":[], "D":[]},
   vesselsArePass: [],
+  vesselsAreWatched: [],
   map1: {},
   map2: {},
   map3: {},
@@ -79,6 +81,7 @@ export const LiveScanModel = {
   mileMarkerLabels3:[],
   rotatingKey: 0,
   passRotKey: 0,
+  watchedRotKey: 0,
   numVessels: 0,
   fakeDataIterator: 0,
   passagesList: [{type:"default"}],
@@ -259,21 +262,22 @@ export const LiveScanModel = {
     o.course = dat.liveCourse;
     o.imageUrl = dat.imageUrl;
     o.type   = dat.type;
+    o.vesselWatchOn = dat.vesselWatchOn;
     o.otherDataLabel = "od"+dat.liveVesselID;
     o.inCameraRange = dat.inCameraRange;
     o.isInCameraRange = dat.isInCameraRange;
         
     //FOR SHIP ICON MOVEMENT
     let coords = this.getShipSpriteCoords(o.course), icon;
-    if(dat.type=="Passenger") {
-      o.typeIsPassenger = true;
+    if(dat.vesselWatchOn==true) {
+      o.typeIsWatched = true;
       icon = {
         url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/ship-icon-sprite-yellow.png",
         origin: { x: coords[0], y: coords[1] }, 
         size: {width: 55, height: 55 }
       };
     } else {
-      o.typeIsPassenger = false;
+      o.typeIsWatched = false;
       icon = {
         url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/ship-icon-sprite-cyan.png",
         origin: { x: coords[0], y: coords[1] }, 

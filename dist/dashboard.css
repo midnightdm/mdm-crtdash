@@ -364,7 +364,7 @@ h4.map-label {
   border: 2px solid black;  
 }
 
-h4.map-label.type-passenger {
+h4.map-label.type-watched {
   background: rgba(255, 255, 0, 0.82);
 }
 .listMode .list-wrap h4.map-label {
