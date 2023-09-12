@@ -323,11 +323,11 @@ function toggleTvMode() {
 function zoomControl(state) {
   videoTag.classList.remove("smz");
   videoTag.classList.remove(liveScanModel.cameraStatus.zoomArray[liveScanModel.cameraStatus.zoomMode]);
-  if(liveScanModel.promoIsOn || liveScanModel.playProgram || liveScanModel.cameraStatus.webcamNum != 'C') {
-    console.log("Sawmill Zoom off, webcamNum/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamNum, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
+  if(liveScanModel.promoIsOn || liveScanModel.playProgram || liveScanModel.cameraStatus.webcamID != 'C') {
+    console.log("Sawmill Zoom off, webcamID/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamID, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
     return;
   }
-  console.log("zoomControl -> webcamNum/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamNum, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
+  console.log("zoomControl -> webcamID/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamID, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
   videoTag.classList.add("smz");
   switch(state) {
     case "L":
@@ -392,11 +392,11 @@ function clearZoom() {
 
 
 
-async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, playPromo, playProgram, videoIsPassingCloseup) {  
+async function outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull, playPromo, playProgram, videoIsPassingCloseup) {  
   if(privateMode==true) { 
     showVideoOn=false;
   }
-  console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+  console.log("outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull), videoSource", showVideoOn, showVideo, webcamID, videoIsFull, liveScanModel.videoSource);
   if(showVideoOn==true && showVideo==true) {
     liveScanModel.videoIsOn = true;
     waypointDiv.style = `display: none`;
@@ -408,7 +408,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       loadingSpinner: false,
       techOrder: ["html5", "youtube"]
     };
-    console.log("webcamNum is", webcamNum);
+    console.log("webcamID is", webcamID);
     if(videoIsPassingCloseup && !liveScanModel.cameraStatus.videoIsPassingCloseup) {
       //Turn on closeup if passing and not on already
       togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
@@ -448,7 +448,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
             togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           }
           zoomControl(liveScanModel.cameraStatus.webcamZoom);
-          waypointLabel.innerHTML = liveScanModel.webcamSources[webcamNum].name; //"3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamSources[webcamID].name; //"3 Miles South of Drawbridge";
         });
         this.src({ type:"application/x-mpegURL" , src: promoSource });
         this.play();
@@ -464,7 +464,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
         overlay2.classList.remove("active");
       }
       player = videojs("video", options, function onPlayerReady() {
-        this.on('ended', function() {
+        this.on('ended', function() {camNum
           this.src({ type: liveScanModel.videoType, src: liveScanModel.videoSource });
           if(liveScanModel.videoType == "video/youtube") {
             console.log("Muting audio from source type YouTube.");
@@ -481,7 +481,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
             togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           }
           zoomControl(liveScanModel.cameraStatus.webcamZoom)
-          waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamName[webcamID]; //"3 Miles South of Drawbridge";
         })
         
         this.src({ type: liveScanModel.videoProgram.type, src: liveScanModel.videoProgram.source });
@@ -491,11 +491,11 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
     } else {
       zoomControl(liveScanModel.cameraStatus.webcamZoom);
       //Switch camera source if changed
-      if(webcamNum != liveScanModel.prevWebcamNum) {
-        waypointLabel.innerHTML = liveScanModel.webcamSources[webcamNum].name; //"3 Miles South of Drawbridge"
-        liveScanModel.videoSource = liveScanModel.webcamSources[webcamNum].src;
-        liveScanModel.videoType = liveScanModel.webcamSources[webcamNum].type;
-        console.log("video source", liveScanModel.webcamSources[webcamNum]);
+      if(webcamID != liveScanModel.prevWebcamID) {
+        waypointLabel.innerHTML = liveScanModel.webcamSources[webcamID].name; //"3 Miles South of Drawbridge"
+        liveScanModel.videoSource = liveScanModel.webcamSources[webcamID].src;
+        liveScanModel.videoType = liveScanModel.webcamSources[webcamID].type;
+        console.log("video source", liveScanModel.webcamSources[webcamID]);
 
         if(player==null) {
           player = videojs("video", options);
@@ -508,8 +508,8 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
           }
           player.play()
         });
-        liveScanModel.prevWebcamNum = webcamNum;      
-        console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull), videoSource", showVideoOn, showVideo, webcamNum, videoIsFull, liveScanModel.videoSource);
+        liveScanModel.prevWebcamID = webcamID;      
+        console.log("outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull), videoSource", showVideoOn, showVideo, webcamID, videoIsFull, liveScanModel.videoSource);
       }
     }   
     //waypointLabel.style = `z-index: 1`;
@@ -520,7 +520,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
     waypointLabel.innerHTML = "WAYPOINT";
     waypointDiv.innerHTML = `<h3>${liveScanModel.waypoint.apubText}</h3>`;
     waypointDiv.style.display = "block";
-    console.log("outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull)", showVideoOn, showVideo, webcamNum, videoIsFull);
+    console.log("outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull)", showVideoOn, showVideo, webcamID, videoIsFull);
   }
   return new Promise((resolve, reject )=>{
     resolve()
@@ -530,11 +530,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
 
 function outputVideoOverlay() {
   //Superimpose list of vessels in camera range
-  if(liveScanModel.videoIsOn && 
-    liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum].length>0 && !liveScanModel.vesselsAreInCameraRange) {
+  if(liveScanModel.videoIsOn && liveScanModel.cameraStatus.vesselsInRange[0] != 'None') {
     let v, vlist = "";
-    for(v in liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum]) {
-      vlist += `<li class="crv-list">${liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum][v]}</li>`;
+    for(v in liveScanModel.cameraStatus.vesselsInRange) {
+      vlist += `<li class="crv-list">${liveScanModel.cameraStatus.vesselsInRange[v]}</li>`;
     }
     overlayList.innerHTML = vlist;
     liveScanModel.vesselsAreInCameraRange = true;
@@ -549,8 +548,9 @@ function outputVideoOverlay() {
     }
     //See initLiveScan() for the camera in view test
   } else {
-    if(!liveScanModel.vesselsInCamera[liveScanModel.cameraStatus.webcamNum].length && liveScanModel.vesselsAreInCameraRange && overlay2.classList.contains("active")) {
-      overlay2.classList.remove("active");
+    if(liveScanModel.cameraStatus.vesselsInRange[0] == 'None' && liveScanModel.vesselsAreInCameraRange && overlay2.classList.contains("active")) {
+      overlay2.classList.remove("active")
+      liveScanModel.vesselsAreInCameraRange = false;
     }
   }
 }
@@ -1000,7 +1000,7 @@ async function initLiveScan(rotateTransponders=true) {
         await outputWaypoint(
           liveScanModel.cameraStatus.showVideoOn,
           liveScanModel.cameraStatus.showVideo,
-          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.webcamID,
           idt.videoIsFull,
           true,
           false,
@@ -1016,7 +1016,7 @@ async function initLiveScan(rotateTransponders=true) {
           await outputWaypoint(
             liveScanModel.cameraStatus.showVideoOn,
             liveScanModel.cameraStatus.showVideo,
-            liveScanModel.cameraStatus.webcamNum,
+            liveScanModel.cameraStatus.webcamID,
             liveScanModel.videoProgram.videoIsFull,
             false,
             true,
@@ -1286,43 +1286,20 @@ async function fetchWaypoint() {
     let wasOutput = false; //Resets when screen updates
 
     console.log("TRACER: Admin obj & liveScanModel.sitename ", dataSet, liveScanModel.sitename);
-    console.log("TracerB: showVideoField, showVideoOnField, webcamNumField, webcamZoomfield",liveScanModel.showVideoField, liveScanModel.showVideoOnField, liveScanModel.webcamNumField, liveScanModel.webcamZoomField);
+    console.log("TracerB: showVideoField, showVideoOnField, webcamIDField, webcamZoomfield",liveScanModel.showVideoField, liveScanModel.showVideoOnField, liveScanModel.webcamIDField, liveScanModel.webcamZoomField);
     apubID = dataSet[liveScanModel.apubFieldName].toString()
     vpubID = dataSet[liveScanModel.vpubFieldName].toString()
     lsLen   = dataSet[liveScanModel.lsLenField]
 
     if(!sitename.includes("dash")) {
         liveScanModel.webcamSources = dataSet.webcamSources;
-    //   liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.sitename+"A"].src || null
-    //   liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.sitename+"B"].src || null
-    //   liveScanModel.webcamSource.C = dataSet.webcamSources[liveScanModel.sitename+"C"].src || null
-    //   liveScanModel.webcamSource.D = dataSet.webcamSources[liveScanModel.sitename+"D"].src || null
-    //   liveScanModel.webcamSource.E = dataSet.webcamSources[liveScanModel.sitename+"E"].src || null
-
-    //   liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
-    //   liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
-    //   liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || null
-    //   liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name || null
-    //   liveScanModel.webcamName.E = dataSet.webcamSources[liveScanModel.sitename+"E"].name || null
-
-    //   liveScanModel.webcamType.A = dataSet.webcamSources[liveScanModel.sitename+"A"].type || null
-    //   liveScanModel.webcamType.B = dataSet.webcamSources[liveScanModel.sitename+"B"].type || null
-    //   liveScanModel.webcamType.C = dataSet.webcamSources[liveScanModel.sitename+"C"].type || null
-    //   liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type || null
-    //   liveScanModel.webcamType.E = dataSet.webcamSources[liveScanModel.sitename+"E"].type || null
-
-  
-      liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
-      liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
-      liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField].name
-      //liveScanModel.cameraStatus.src  = liveScanModel.webcamSources[liveScanModel.cameraStatusWebcamNum].src
-
-
-      liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamNumField].zoom
-      liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet.videoIsPassingCloseup;
-      liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull;
-
-
+        liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
+        liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
+        liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamIDField].name
+        liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamIDField].vesselsInRange
+        liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamIDField].zoom
+        liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamIDField].videoIsPassingCloseup;
+        liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamIDField].videoIsFull;
     }
 
     apublishCollection = liveScanModel.alertpublishCollection;
@@ -1394,7 +1371,7 @@ async function fetchWaypoint() {
         outputWaypoint(
           liveScanModel.cameraStatus.showVideoOn, 
           liveScanModel.cameraStatus.showVideo, 
-          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.webcamID,
           liveScanModel.cameraStatus.videoIsFull, 
           liveScanModel.promoIsOn,
           liveScanModel.videoProgramIsOn,
@@ -1421,7 +1398,7 @@ async function fetchWaypoint() {
         outputWaypoint(
           liveScanModel.cameraStatus.showVideoOn, 
           liveScanModel.cameraStatus.showVideo, 
-          liveScanModel.cameraStatus.webcamNum,
+          liveScanModel.cameraStatus.webcamID,
           liveScanModel.cameraStatus.videoIsFull, 
           liveScanModel.promoIsOn,
           liveScanModel.videoProgramIsOn,
@@ -1448,7 +1425,7 @@ async function fetchWaypoint() {
       outputWaypoint(
         liveScanModel.cameraStatus.showVideoOn, 
         liveScanModel.cameraStatus.showVideo, 
-        liveScanModel.cameraStatus.webcamNum,
+        liveScanModel.cameraStatus.webcamID,
         liveScanModel.cameraStatus.videoIsFull, 
         liveScanModel.promoIsOn,
         liveScanModel.videoProgramIsOn,
@@ -1489,7 +1466,7 @@ async function fetchWaypoint() {
       outputWaypoint(
         liveScanModel.cameraStatus.showVideoOn, 
         liveScanModel.cameraStatus.showVideo, 
-        liveScanModel.cameraStatus.webcamNum,
+        liveScanModel.cameraStatus.webcamID,
         liveScanModel.cameraStatus.videoIsFull, 
         liveScanModel.promoIsOn,
         liveScanModel.videoProgramIsOn,
