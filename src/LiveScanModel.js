@@ -54,9 +54,10 @@ export const LiveScanModel = {
   showVideoOnField: null,
   webcamNumField: null,
   webcamZoomField: null,
-  webcamSource: {"A":null, "B": null, "C": null, "D": null },
-  webcamName: {"A": null, "B": null, "C": null, "D": null}, 
-  webcamType: {"A": null, "B": null, "C": null, "D": null},
+  webcamSources: null,
+  webcamSource: {"A":null, "B": null, "C": null, "D": null, "E": null },
+  webcamName: {"A": null, "B": null, "C": null, "D": null, "E": null}, 
+  webcamType: {"A": null, "B": null, "C": null, "D": null, "E": null},
   videoSource: null,
   videoType: "application/x-mpegURL",
   videoIsOn: false,
@@ -66,7 +67,7 @@ export const LiveScanModel = {
   passengerTrackerIsOn: false,
   manualTrackerIsOn: false,
   vesselsAreInCameraRange: false,
-  vesselsInCamera: {"A":[], "B":[], "C":[], "D":[]},
+  vesselsInCamera: {"A":[], "B":[], "C":[], "D":[],"E": []},
   vesselsArePass: [],
   vesselsAreWatched: [],
   map1: {},
@@ -137,7 +138,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamNumCl";
+        this.webcamNumField = "webcamClinton";
         this.webcamZoomField = "webcamZoomCl";
         this.regionsWatched = ["clinton"];
         break;
@@ -154,7 +155,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamNumCl";
+        this.webcamNumField = "webcamClinton";
         this.webcamZoomField = "webcamZoomCl";
         this.regionsWatched = ["clinton"];
         break;
@@ -172,7 +173,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
-        this.webcamNumField = "webcamNumQc";
+        this.webcamNumField = "webcamQc";
         this.webcamZoomField = "webcamZoomQc";
         this.regionsWatched = ["qc"];
         break;
@@ -189,7 +190,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
-        this.webcamNumField = "webcamNumQc";
+        this.webcamNumField = "webcamQc";
         this.webcamZoomField = "webcamZoomQc";
         this.regionsWatched = ["qc"]
         break;
@@ -207,8 +208,8 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamNumCl";
-        this.webcamZoomField = "webcamZoomCl";
+        this.webcamNumField = "webcamClintoncf";
+        this.webcamZoomField = "webcamZoomCf";
         this.regionsWatched = ["clinton", "qc"];
         break;
       

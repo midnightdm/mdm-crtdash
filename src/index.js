@@ -448,7 +448,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
             togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           }
           zoomControl(liveScanModel.cameraStatus.webcamZoom);
-          waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamSources[webcamNum].name; //"3 Miles South of Drawbridge";
         });
         this.src({ type:"application/x-mpegURL" , src: promoSource });
         this.play();
@@ -492,10 +492,10 @@ async function outputWaypoint(showVideoOn, showVideo, webcamNum, videoIsFull, pl
       zoomControl(liveScanModel.cameraStatus.webcamZoom);
       //Switch camera source if changed
       if(webcamNum != liveScanModel.prevWebcamNum) {
-        waypointLabel.innerHTML = liveScanModel.webcamName[webcamNum]; //"3 Miles South of Drawbridge"
-        liveScanModel.videoSource = liveScanModel.webcamSource[webcamNum];
-        liveScanModel.videoType = liveScanModel.webcamType[webcamNum];
-        console.log("video source", liveScanModel.videoSource);
+        waypointLabel.innerHTML = liveScanModel.webcamSources[webcamNum].name; //"3 Miles South of Drawbridge"
+        liveScanModel.videoSource = liveScanModel.webcamSources[webcamNum].src;
+        liveScanModel.videoType = liveScanModel.webcamSources[webcamNum].type;
+        console.log("video source", liveScanModel.webcamSources[webcamNum]);
 
         if(player==null) {
           player = videojs("video", options);
@@ -647,7 +647,7 @@ async function outputSelVessel() {
 }
 
 async function outputAllVessels() {
-  let allVesselsOutput = "", mapPassengerClass;
+  let allVesselsOutput = "", mapWatchedClass;
   //Build output for transponder list (from viewList if used)
   if(liveScanModel.transponder.viewList.length> 0){
     let c = 0;
@@ -655,13 +655,13 @@ async function outputAllVessels() {
     for(let vessel in liveScanModel.transponder.viewList) {
       let obj = liveScanModel.transponder.viewList[vessel]
       //Add special CSS class for passenger vessel
-      mapPassengerClass = obj.typeIsPassenger ? ' type-passenger' : '';
+      mapWatchedClass = obj.vesselWatchOn ? ' type-watched' : '';
 
       allVesselsOutput+= c==liveScanModel.transponder.stepMax-1 ? `<li class="animate__animated animate__slideInLeft">` : `<li class="animate__animated animate__slideInUp">`;
       
       allVesselsOutput+=
         `<div class="list-wrap">
-          <h4 class="map-label ${mapPassengerClass}">${obj.mapLabel}</h4>
+          <h4 class="map-label ${mapWatchedClass}">${obj.mapLabel}</h4>
           <h4 class="tile-title">${obj.name}</h4> 
           <div class="dir-container">
             <img class="dir-img" src="${obj.dirImg}"/>          
@@ -681,11 +681,11 @@ async function outputAllVessels() {
         spd = Math.round(obj.speed);
       }
       //Add special CSS class for passenger vessel
-      mapPassengerClass = obj.typeIsPassenger ? ' type-passenger' : '';
+      mapWatchedClass = obj.vesselWatchOn ? ' type-watched' : '';
       allVesselsOutput+= 
       `<li>
         <div class="list-wrap">
-          <h4 class="map-label ${mapPassengerClass}">${obj.mapLabel}</h4>
+          <h4 class="map-label ${mapWatchedClass}">${obj.mapLabel}</h4>
           <h4 class="tile-title">${obj.name}</h4> 
           <div class="dir-container">
             <img class="dir-img" src="${obj.dirImg}"/>
@@ -977,7 +977,7 @@ async function initLiveScan(rotateTransponders=true) {
           outputNews();
           liveScanModel.newsKey++
         } else {
-          news.innerHTML = "Now live tracking passenger vessel <em>"+liveScanModel.vesselsAreWatched[0].name+"</em>."
+          news.innerHTML = "Now live tracking "+liveScanModel.vesselsAreWatched[0].type+" vessel <em>"+liveScanModel.vesselsAreWatched[0].name+"</em>."
         }
         
       }
@@ -1041,9 +1041,9 @@ async function initLiveScan(rotateTransponders=true) {
   outputPassengerAlerts();
   //outputTrackerAlerts();
   outputSelVessel();
-  outputVideoOverlay();
-  outputPassengerTrackerOverlay();
-  outputManualTrackerOverlay();  
+  //outputVideoOverlay();
+  //outputPassengerTrackerOverlay();
+ // outputManualTrackerOverlay();  
 }
 
 function updateTimes() {
@@ -1091,7 +1091,7 @@ async function fetchLiveScanData() {
 
 async function updateLiveScanData() {
   //Get LiveScan data...
-  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[]}, vesselsArePass=[], vesselsAreWatched=[];
+  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[], "E":[]}, vesselsArePass=[], vesselsAreWatched=[];
   data = await fetchLiveScanData()
   for(i=0; i<data.length; i++){
     dat = data[i];
@@ -1115,22 +1115,22 @@ async function updateLiveScanData() {
       obj = await liveScanModel.mapper(new LiveScan(), dat, true);
       obj.key = liveScans.length;
       liveScans.push(obj);
-      if(obj.isInCameraRange.A==true) {
-        vesselsInCamera.A.push(obj.name);
-      } 
-      if(obj.isInCameraRange.B==true) {
-        vesselsInCamera.B.push(obj.name);
-      }
-      if(obj.isInCameraRange.C==true) {
-        vesselsInCamera.C.push(obj.name);
-      }
-      if(obj.isInCameraRange.D==true) {
-        vesselsInCamera.D.push(obj.name);
-      }
-      //Test for watched vessels
-      if(obj.vesselWatchOn) {
-        vesselsAreWatched.push(obj);
-      }
+    //   if(obj.isInCameraRange.A==true) {
+    //     vesselsInCamera.A.push(obj.name);
+    //   } 
+    //   if(obj.isInCameraRange.B==true) {
+    //     vesselsInCamera.B.push(obj.name);
+    //   }
+    //   if(obj.isInCameraRange.C==true) {
+    //     vesselsInCamera.C.push(obj.name);
+    //   }
+    //   if(obj.isInCameraRange.D==true) {
+    //     vesselsInCamera.D.push(obj.name);
+    //   }
+    //   //Test for watched vessels
+    //   if(obj.vesselWatchOn) {
+    //     vesselsAreWatched.push(obj);
+    //   }
     }
     // Find & Update
     else {
@@ -1140,18 +1140,18 @@ async function updateLiveScanData() {
         //Otherwise update the data
         } else {
             liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
-            if(liveScans[key].isInCameraRange.A==true) {
-                liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
-            } 
-            if(liveScans[key].isInCameraRange.B==true) {
-                liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
-            }
-            if(liveScans[key].isInCameraRange.C==true) {
-                liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
-            }
-            if(liveScans[key].isInCameraRange.D==true) {
-                vesselsInCamera.D.push(liveScans[key].name);
-            }
+            // if(liveScans[key].isInCameraRange.A==true) {
+            //     liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
+            // } 
+            // if(liveScans[key].isInCameraRange.B==true) {
+            //     liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
+            // }
+            // if(liveScans[key].isInCameraRange.C==true) {
+            //     liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
+            // }
+            // if(liveScans[key].isInCameraRange.D==true) {
+            //     vesselsInCamera.D.push(liveScans[key].name);
+            // }
             //Test for passenger vessels
             // if(liveScans[key].typeIsPassenger==true) {
             //     vesselsAreWatched.push(liveScans[key]);
@@ -1178,9 +1178,9 @@ async function updateLiveScanData() {
   //liveScanModel.vesselsArePass = vesselsArePass;
   liveScanModel.vesselsAreWatched = vesselsAreWatched;
   if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
-    outputVideoOverlay(); 
-    outputPassengerTrackerOverlay();
-    outputManualTrackerOverlay();
+    //outputVideoOverlay(); 
+    //outputPassengerTrackerOverlay();
+    //outputManualTrackerOverlay();
   } 
 }
 
@@ -1292,27 +1292,33 @@ async function fetchWaypoint() {
     lsLen   = dataSet[liveScanModel.lsLenField]
 
     if(!sitename.includes("dash")) {
-      liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.sitename+"A"].src || null
-      liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.sitename+"B"].src || null
-      liveScanModel.webcamSource.C = dataSet.webcamSources[liveScanModel.sitename+"C"].src || null
-      liveScanModel.webcamSource.D = dataSet.webcamSources[liveScanModel.sitename+"D"].src || null
-      liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
-      liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
-      liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || null
-      liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name || null
+        liveScanModel.webcamSources = dataSet.webcamSources;
+    //   liveScanModel.webcamSource.A = dataSet.webcamSources[liveScanModel.sitename+"A"].src || null
+    //   liveScanModel.webcamSource.B = dataSet.webcamSources[liveScanModel.sitename+"B"].src || null
+    //   liveScanModel.webcamSource.C = dataSet.webcamSources[liveScanModel.sitename+"C"].src || null
+    //   liveScanModel.webcamSource.D = dataSet.webcamSources[liveScanModel.sitename+"D"].src || null
+    //   liveScanModel.webcamSource.E = dataSet.webcamSources[liveScanModel.sitename+"E"].src || null
 
-      liveScanModel.webcamType.A = dataSet.webcamSources[liveScanModel.sitename+"A"].type || null
-      liveScanModel.webcamType.B = dataSet.webcamSources[liveScanModel.sitename+"B"].type || null
-      liveScanModel.webcamType.C = dataSet.webcamSources[liveScanModel.sitename+"C"].type || null
-      liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type || null
+    //   liveScanModel.webcamName.A = dataSet.webcamSources[liveScanModel.sitename+"A"].name || null
+    //   liveScanModel.webcamName.B = dataSet.webcamSources[liveScanModel.sitename+"B"].name || null
+    //   liveScanModel.webcamName.C = dataSet.webcamSources[liveScanModel.sitename+"C"].name || null
+    //   liveScanModel.webcamName.D = dataSet.webcamSources[liveScanModel.sitename+"D"].name || null
+    //   liveScanModel.webcamName.E = dataSet.webcamSources[liveScanModel.sitename+"E"].name || null
+
+    //   liveScanModel.webcamType.A = dataSet.webcamSources[liveScanModel.sitename+"A"].type || null
+    //   liveScanModel.webcamType.B = dataSet.webcamSources[liveScanModel.sitename+"B"].type || null
+    //   liveScanModel.webcamType.C = dataSet.webcamSources[liveScanModel.sitename+"C"].type || null
+    //   liveScanModel.webcamType.D = dataSet.webcamSources[liveScanModel.sitename+"D"].type || null
+    //   liveScanModel.webcamType.E = dataSet.webcamSources[liveScanModel.sitename+"E"].type || null
 
   
       liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
       liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
-      liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField]
+      liveScanModel.cameraStatus.webcamNum   = dataSet[liveScanModel.webcamNumField].name
+      //liveScanModel.cameraStatus.src  = liveScanModel.webcamSources[liveScanModel.cameraStatusWebcamNum].src
 
 
-      liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamZoomField]
+      liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamNumField].zoom
       liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet.videoIsPassingCloseup;
       liveScanModel.cameraStatus.videoIsFull = dataSet.videoIsFull;
 
