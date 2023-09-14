@@ -139,7 +139,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamClinton";
+        this.webcamIDField = "webcamClinton";
         this.webcamZoomField = "webcamZoomCl";
         this.regionsWatched = ["clinton"];
         break;
@@ -156,7 +156,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamClinton";
+        this.webcamIDField = "webcamClinton";
         this.webcamZoomField = "webcamZoomCl";
         this.regionsWatched = ["clinton"];
         break;
@@ -174,7 +174,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
-        this.webcamNumField = "webcamQc";
+        this.webcamIDField = "webcamQc";
         this.webcamZoomField = "webcamZoomQc";
         this.regionsWatched = ["qc"];
         break;
@@ -191,7 +191,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
-        this.webcamNumField = "webcamQc";
+        this.webcamIDField = "webcamQc";
         this.webcamZoomField = "webcamZoomQc";
         this.regionsWatched = ["qc"]
         break;
@@ -209,7 +209,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamNumField = "webcamClintoncf";
+        this.webcamIDField = "webcamClintoncf";
         this.webcamZoomField = "webcamZoomCf";
         this.regionsWatched = ["clinton", "qc"];
         break;
@@ -659,7 +659,7 @@ export const LiveScanModel = {
             title: "Mile "+dat[i].id, 
             label: String(dat[i].id),
             icon: {
-              url: "https://storage.googleapis.com/www.clintonrivertraffic.com/imagendow.s/green.png" ,
+              url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/green.png" ,
               labelOrigin: {x: 24, y: 15},
               scaledSize: {width: 50, height: 50}
             },
@@ -683,7 +683,7 @@ export const LiveScanModel = {
           title: "Mile "+dat[i].id, 
           label: String(dat[i].id),
           icon: {
-            url: "https://storage.googleapis.com/www.clintonrivertraffic.com/imagendow.s/green.png" ,
+            url: "https://storage.googleapis.com/www.clintonrivertraffic.com/images/green.png" ,
             labelOrigin: {x: 24, y: 15},
             scaledSize: {width: 50, height: 50}
           },
