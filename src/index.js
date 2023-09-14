@@ -481,7 +481,7 @@ async function outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull, pla
             togglePassingCloseup(videoIsPassingCloseup, videoIsFull)
           }
           zoomControl(liveScanModel.cameraStatus.webcamZoom)
-          waypointLabel.innerHTML = liveScanModel.webcamName[webcamID]; //"3 Miles South of Drawbridge";
+          waypointLabel.innerHTML = liveScanModel.webcamSources[webcamID].name; //"3 Miles South of Drawbridge";
         })
         
         this.src({ type: liveScanModel.videoProgram.type, src: liveScanModel.videoProgram.source });
@@ -529,12 +529,14 @@ async function outputWaypoint(showVideoOn, showVideo, webcamID, videoIsFull, pla
 }
 
 function outputVideoOverlay() {
+    console.log("outputVideoOverlay() run");
   //Superimpose list of vessels in camera range
   if(liveScanModel.videoIsOn && liveScanModel.cameraStatus.vesselsInRange[0] != 'None') {
     let v, vlist = "";
     for(v in liveScanModel.cameraStatus.vesselsInRange) {
       vlist += `<li class="crv-list">${liveScanModel.cameraStatus.vesselsInRange[v]}</li>`;
     }
+    console.log("outputVideoOverlay() activated.");
     overlayList.innerHTML = vlist;
     liveScanModel.vesselsAreInCameraRange = true;
     if(!overlay2.classList.contains("active")) {
@@ -1041,9 +1043,9 @@ async function initLiveScan(rotateTransponders=true) {
   outputPassengerAlerts();
   //outputTrackerAlerts();
   outputSelVessel();
-  //outputVideoOverlay();
-  //outputPassengerTrackerOverlay();
- // outputManualTrackerOverlay();  
+  outputVideoOverlay();
+  outputPassengerTrackerOverlay();
+  outputManualTrackerOverlay();  
 }
 
 function updateTimes() {
@@ -1115,22 +1117,7 @@ async function updateLiveScanData() {
       obj = await liveScanModel.mapper(new LiveScan(), dat, true);
       obj.key = liveScans.length;
       liveScans.push(obj);
-    //   if(obj.isInCameraRange.A==true) {
-    //     vesselsInCamera.A.push(obj.name);
-    //   } 
-    //   if(obj.isInCameraRange.B==true) {
-    //     vesselsInCamera.B.push(obj.name);
-    //   }
-    //   if(obj.isInCameraRange.C==true) {
-    //     vesselsInCamera.C.push(obj.name);
-    //   }
-    //   if(obj.isInCameraRange.D==true) {
-    //     vesselsInCamera.D.push(obj.name);
-    //   }
-    //   //Test for watched vessels
-    //   if(obj.vesselWatchOn) {
-    //     vesselsAreWatched.push(obj);
-    //   }
+
     }
     // Find & Update
     else {
@@ -1140,22 +1127,6 @@ async function updateLiveScanData() {
         //Otherwise update the data
         } else {
             liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
-            // if(liveScans[key].isInCameraRange.A==true) {
-            //     liveScanModel.vesselsInCamera.A.push(liveScans[key].name);
-            // } 
-            // if(liveScans[key].isInCameraRange.B==true) {
-            //     liveScanModel.vesselsInCamera.B.push(liveScans[key].name);
-            // }
-            // if(liveScans[key].isInCameraRange.C==true) {
-            //     liveScanModel.vesselsInCamera.C.push(liveScans[key].name);
-            // }
-            // if(liveScans[key].isInCameraRange.D==true) {
-            //     vesselsInCamera.D.push(liveScans[key].name);
-            // }
-            //Test for passenger vessels
-            // if(liveScans[key].typeIsPassenger==true) {
-            //     vesselsAreWatched.push(liveScans[key]);
-            // }
             //Test for watched vessels
             if(liveScans[key].vesselWatchOn==true) {
                 vesselsAreWatched.push(liveScans[key]);
@@ -1178,9 +1149,9 @@ async function updateLiveScanData() {
   //liveScanModel.vesselsArePass = vesselsArePass;
   liveScanModel.vesselsAreWatched = vesselsAreWatched;
   if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
-    //outputVideoOverlay(); 
-    //outputPassengerTrackerOverlay();
-    //outputManualTrackerOverlay();
+    outputVideoOverlay(); 
+    outputPassengerTrackerOverlay();
+    outputManualTrackerOverlay();
   } 
 }
 
