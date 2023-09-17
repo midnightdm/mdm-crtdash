@@ -946,7 +946,7 @@ async function initLiveScan(rotateTransponders=true) {
     //Also every 15 sec when there are >1 watched vess, change tracker map
     if(liveScanModel.vesselsAreWatched.length>0 && liveScanModel.tock%15==0) {
         liveScanModel.watchedRotKey++;
-        if(liveScanModel.watchedRotKey > liveScanModel.vesselsAreWatched.length) {
+        if(liveScanModel.watchedRotKey > liveScanModel.vesselsAreWatched.length-1) {
           liveScanModel.watchedRotKey = 0;
         }
         //Recenter map if there's valid live lat data
