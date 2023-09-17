@@ -323,7 +323,7 @@ function toggleTvMode() {
 function zoomControl(state) {
   videoTag.classList.remove("smz");
   videoTag.classList.remove(liveScanModel.cameraStatus.zoomArray[liveScanModel.cameraStatus.zoomMode]);
-  if(liveScanModel.promoIsOn || liveScanModel.playProgram || liveScanModel.cameraStatus.webcamID != 'C') {
+  if(liveScanModel.promoIsOn || liveScanModel.playProgram || liveScanModel.cameraStatus.webcamID != 'Sawmill') {
     console.log("Sawmill Zoom off, webcamID/zoom/promoIsOn: ",liveScanModel.cameraStatus.webcamID, liveScanModel.cameraStatus.webcamZoom, liveScanModel.promoIsOn);
     return;
   }
@@ -949,12 +949,16 @@ async function initLiveScan(rotateTransponders=true) {
         if(liveScanModel.watchedRotKey > liveScanModel.vesselsAreWatched.length) {
           liveScanModel.watchedRotKey = 0;
         }
-        liveScanModel.map3.setCenter(  
-          new google.maps.LatLng(
-            liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lat, 
-            liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lng
-          )
-        )
+        //Recenter map if there's valid live lat data
+        if(Object.hasOwn(liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey], 'lat')) {
+            liveScanModel.map3.setCenter(  
+                new google.maps.LatLng(
+                  liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lat, 
+                  liveScanModel.vesselsAreWatched[liveScanModel.watchedRotKey].lng
+                )
+              )
+        }
+        
       } else if(liveScanModel.manualTrackerIsOn && liveScanModel.tock%15==0) {
         key = getKeyOfId(liveScans, liveScanModel.trackerStatus.followingId);
         if(key>-1) {
@@ -1097,8 +1101,7 @@ async function updateLiveScanData() {
   data = await fetchLiveScanData()
   for(i=0; i<data.length; i++){
     dat = data[i];
-    console.log("Test vessel", liveScanModel.liveName, liveScanModel.sitename, "liveRegion", dat.liveRegion)
-
+    
     //Skip out-of-region data objects
     if(!liveScanModel.regionsWatched.includes(dat?.liveRegion)) {
         console.log("Skipping unwatched region", dat.liveRegion)
