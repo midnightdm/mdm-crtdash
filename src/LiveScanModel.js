@@ -56,9 +56,6 @@ export const LiveScanModel = {
   webcamIDField: null,
   webcamZoomField: null,
   webcamSources: null,
-  webcamSource: {"A":null, "B": null, "C": null, "D": null, "E": null },
-  webcamName: {"A": null, "B": null, "C": null, "D": null, "E": null}, 
-  webcamType: {"A": null, "B": null, "C": null, "D": null, "E": null},
   videoSource: null,
   videoType: "application/x-mpegURL",
   videoIsOn: false,
@@ -68,7 +65,6 @@ export const LiveScanModel = {
   passengerTrackerIsOn: false,
   manualTrackerIsOn: false,
   vesselsAreInCameraRange: false,
-  vesselsInCamera: {"A":[], "B":[], "C":[], "D":[],"E": []},
   vesselsArePass: [],
   vesselsAreWatched: [],
   map1: {},
@@ -128,6 +124,7 @@ export const LiveScanModel = {
     switch(sitename) {
       case "clinton":
         this.title = "clinton";
+        this.webcamSitesID = "clinton";
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 11;
         this.passagesCollection = "Passages";
@@ -145,6 +142,7 @@ export const LiveScanModel = {
         break;
       case "clintondash":
         this.title = "clinton";
+        this.webcamSitesID = "clinton";
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 11;
         this.passagesCollection = "Passages";
@@ -163,6 +161,7 @@ export const LiveScanModel = {
       
       case "qc":
         this.title = "qc";
+        this.webcamSitesID = "qc";
         this.focusPosition = this.qc;
         this.map1ZoomLevel = 11;
         this.passagesCollection = "PassagesQC";
@@ -180,6 +179,7 @@ export const LiveScanModel = {
         break;
       case "qcdash":
         this.title = "qc";
+        this.webcamSitesID = "qc";
         this.focusPosition = this.qc;
         this.map1ZoomLevel = 11;
         this.passagesCollection = "PassagesQC";
@@ -197,7 +197,8 @@ export const LiveScanModel = {
         break;
       
       case "clintoncf":
-        this.title = "clinton"; 
+        this.title = "clinton";
+        this.webcamSitesID = "clintoncf"; 
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 9;
         this.passagesCollection = "Passages";

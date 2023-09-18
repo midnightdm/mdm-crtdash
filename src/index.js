@@ -101,6 +101,8 @@ liveScanModel.initRegion();
 const liveScans     = [];
   //Load initial liveScans data
   updateLiveScanData();
+  fetchWebcamSources();
+  fetchWebcamSites();
   fetchWaypoint();
   
 const siteLabel     = document.getElementById("site-label");
@@ -1097,7 +1099,7 @@ async function fetchLiveScanData() {
 
 async function updateLiveScanData() {
   //Get LiveScan data...
-  let key, obj, dat, data, skip, i, vesselsInCamera={"A":[], "B":[], "C":[], "D":[], "E":[]}, vesselsArePass=[], vesselsAreWatched=[];
+  let key, obj, dat, data, skip, i, vesselsArePass=[], vesselsAreWatched=[];
   data = await fetchLiveScanData()
   for(i=0; i<data.length; i++){
     dat = data[i];
@@ -1148,7 +1150,7 @@ async function updateLiveScanData() {
         }
     }
   }
-  liveScanModel.vesselsInCamera = vesselsInCamera;
+  //liveScanModel.vesselsInCamera = vesselsInCamera;
   //liveScanModel.vesselsArePass = vesselsArePass;
   liveScanModel.vesselsAreWatched = vesselsAreWatched;
   if(!liveScanModel.promoIsOn && !liveScanModel.videoProgramIsOn) {
@@ -1253,58 +1255,78 @@ async function fetchPassengerAlerts() {
   })
 }
 
+async function fetchWebcamSources() {
+    const adminSnapshot = onSnapshot(doc(db, "Controls", "webcamSources"), (querySnapshot) => {
+        let dataSet = querySnapshot.data();
+        liveScanModel.webcamSources = dataSet;
+    })
+}
+
+async function fetchWebcamSites() { //Gets latest data on webcam activation and switching
+    const adminSnapshot = onSnapshot(doc(db, "Controls", "webcamSites"), (querySnapshot) => {
+        let dataSet = querySnapshot.data();
+        if(!sitename.includes("dash")) {
+            liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.webcamSitesID].showVideo
+            liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.webcamSitesID].showVideoOn
+            liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamSitesID].srcID
+            liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamSitesID].vesselsInRange
+            liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamSitesID].zoom
+            liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamSitesID].videoIsPassingCloseup;
+            liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamSitesID].videoIsFull;
+            liveScanModel.resetTime = dataSet[liveScanModel.webcamSitesID].resetTime;
+            liveScanModel.idTime    = dataSet[liveScanModel.webcamSitesID].idTime;
+            /* DATA FORMAT
+                idTime [
+                    {min:14 sec:50 videoIsFull:false },
+                    {min:44 sec:50 videoIsFull:false },
+                ]
+            */
+            liveScanModel.promoSources  = dataSet[liveScanModel.webcamSitesID].promoSources;
+            liveScanModel.videoProgram  = dataSet[liveScanModel.webcamSitesID].videoProgram;
+            /* DATA FORMAT 
+                videoProgram {
+                date: 5,
+                hour: 3,
+                min : 0,
+                month: 11,
+                sec: 0
+                source: "waypoint-notifications.m3u8",
+                title: "Waypoint Notifications",
+                videoIsFull: true
+                }
+                */
+        }
+    })
+}
+
 async function fetchWaypoint() {
+    
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data()
     let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint 
     let wasOutput = false; //Resets when screen updates
 
-    console.log("TRACER: Admin obj & liveScanModel.sitename ", dataSet, liveScanModel.sitename);
-    console.log("TracerB: showVideoField, showVideoOnField, webcamIDField, webcamZoomfield",liveScanModel.showVideoField, liveScanModel.showVideoOnField, liveScanModel.webcamIDField, liveScanModel.webcamZoomField);
+    //console.log("TRACER: Admin obj & liveScanModel.sitename ", dataSet, liveScanModel.sitename);
+    //console.log("TracerB: showVideoField, showVideoOnField, webcamIDField, webcamZoomfield",liveScanModel.showVideoField, liveScanModel.showVideoOnField, liveScanModel.webcamIDField, liveScanModel.webcamZoomField);
     apubID = dataSet[liveScanModel.apubFieldName].toString()
     vpubID = dataSet[liveScanModel.vpubFieldName].toString()
     lsLen   = dataSet[liveScanModel.lsLenField]
 
-    if(!sitename.includes("dash")) {
-        liveScanModel.webcamSources = dataSet.webcamSources;
-        liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
-        liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
-        liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamIDField].name
-        liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamIDField].vesselsInRange
-        liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamIDField].zoom
-        liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamIDField].videoIsPassingCloseup;
-        liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamIDField].videoIsFull;
-    }
+    // if(!sitename.includes("dash")) {
+    //     liveScanModel.webcamSources = dataSet.webcamSources;
+    //     liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.showVideoField]
+    //     liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.showVideoOnField]
+    //     liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamIDField].name
+    //     liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamIDField].vesselsInRange
+    //     liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamIDField].zoom
+    //     liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamIDField].videoIsPassingCloseup;
+    //     liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamIDField].videoIsFull;
+    // }
 
     apublishCollection = liveScanModel.alertpublishCollection;
     vpublishCollection = liveScanModel.voicepublishCollection;
-    liveScanModel.resetTime = dataSet.resetTime;
-    liveScanModel.idTime    = dataSet.idTime;
-    /* DATA FORMAT
-      idTime [
-        {min:14 sec:50 videoIsFull:false },
-        {min:44 sec:50 videoIsFull:false },
-      ]
-     */
-    liveScanModel.promoSources  = dataSet.promoSources;
-    liveScanModel.videoProgram  = dataSet.videoProgram;
-    /* DATA FORMAT 
-      videoProgram {
-        date: 5,
-        hour: 3,
-        min : 0,
-        month: 11,
-        sec: 0
-        source: "waypoint-notifications.m3u8",
-        title: "Waypoint Notifications",
-        videoIsFull: true
-       }
-     *
                                         */
-    
-    console.log("snapshotUpdate reset time:", liveScanModel.resetTime);
-    console.log("snapshotUpdate id time:", liveScanModel.idTime);
-    //console.log("snapshotYodate idPlus15:", liveScanModel.idPlus15);
+
 
     //Compare lsLen to liveScan array size
     if(lsLen < liveScans.length) {
