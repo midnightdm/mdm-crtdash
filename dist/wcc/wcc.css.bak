@@ -1,0 +1,245 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: 'Merriweather Sans', sans-serif;
+  background-color: #000;
+}
+a {
+  text-decoration: none;
+}
+div.cam-container {
+  overflow: hidden;
+  position: relative; 
+  width: 100%; 
+  height: 25vh;
+  margin:0;
+  padding: 0;
+}
+video {
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); 
+  height: 100%;
+  width: 177.77777778vh; /* 100 * 16 / 9 */
+  min-width: 100%;
+  min-height: 20vw; /* 100 * 9 / 16 */
+  margin: 0;
+  padding: 0;
+}
+.grid-container {
+  display: grid;
+  visibility: hidden;
+  grid-template-columns: 50vw 50;
+  grid-gap: 0px;  
+}
+
+.grid-container.logged {
+  visibility: visibile;
+}
+
+#cam1 {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start:2;
+  grid-row-end:3;
+  min-height: 50vh; max-height: 50vh;
+  min-width:  50vw; max-width:  50vw; 
+}
+#cam2 {
+  background-color: black;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start:2;
+  grid-row-end:3;
+  min-height: 50vh; max-height: 50vh;
+  min-width:  50vw; max-width:  50vw;
+  text-align: center;
+}
+
+#cam3 {
+  background-color: black;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start:3;
+  grid-row-end:4;
+  min-height: 50vh; max-height: 50vh;
+  min-width:  50vw; max-width:  50vw;
+  text-align: center;
+}
+
+#cam4 {
+  background-color: gray;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom;
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start:3;
+  grid-row-end:4;
+  min-height: 50vh; max-height: 50vh;
+  min-width:  50vw; max-width:  50vw;
+  text-align: center;
+  position: relative;
+}
+.cam-container {
+  border-color: cornsilk;
+  border-style:solid;
+  border-width: 1px;
+}
+
+
+div#cameraA-container,
+div#cameraB-container {
+  padding: 5px;
+  border: 5px black solid;
+  border-bottom: 0px;
+}
+
+#cameraB_html5_api {
+  padding: 4px;
+  max-width: 40vw;
+  height: auto;
+}
+
+#cameraA_html5_api {
+  padding: 4px;
+  max-width: 40vw;
+  height: auto;
+}
+
+div#cameraA-container.active,
+div#cameraB-container.active {
+  border: 5px red solid; 
+}
+
+.red {
+color: red;
+}
+
+.green {
+color: rgb(5, 198, 5);
+}
+
+.clabels {
+  display: inline-block;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  padding-top: .5rem;
+}
+
+.led  {
+  height: 10px;
+  display: inline-block;
+  background-color: gray;
+  width: 10px;
+  border-radius: 50%;
+}
+
+.led.on {
+  background-color: red;
+}
+
+.led.green {
+    background-color: rgb(5, 198, 5);
+}
+
+#control-text {
+  text-align: justify;
+  margin: .5rem;
+}
+
+div.holder {
+  background-color: rgb(229, 213, 213);
+  border-radius: 10px;
+  margin: 10px;
+  padding: 0px 0px 5px 5px;
+}
+
+.thumbnail iframe {
+width: 100vw;
+height: 100vh;
+padding: 10%;
+margin-left: 10%;
+}
+.thumbnail {
+  position: relative;
+  -ms-zoom: 0.45;
+  -moz-transform: scale(0.45);
+  -moz-transform-origin: 0 0;
+  -o-transform: scale(0.45);
+  -o-transform-origin: 0 0;
+  -webkit-transform: scale(0.45);
+  -webkit-transform-origin: 0 0;
+}
+
+a#iframe-btn.show {
+  visibility: visible;
+  position: absolute;
+  text-align: center;
+  border-radius: 10px;
+  bottom: 60px;
+  left: 50px;
+  font-size: 60pt;
+  width: 600px;
+  height: 210px;
+  color: yellow;
+  background-color: rgba(0,0,0,.5);
+  margin: 20px;
+  padding: 10px;
+  
+}
+a#iframe-btn {
+  visibility: hidden;
+}
+
+input {
+  font-size: 25pt;
+  height: 2rem;
+  padding: 1rem;
+}
+
+#login-container{
+  visibility: visible;
+  padding: 10px;
+  
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#login-container.logged{
+  display: none;  
+}
+
+#login-container form {
+  padding: 10px;
+}
+
+#login-container h1 {
+  color: yellow;
+  margin-left: 190px;
+}
+ 
+main.grid-container {
+  visibility: hidden;
+}
+
+main.grid-container.logged {
+  visibility: visible;
+}
+
+#logout-btn {
+  visibility: hidden;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+#logout-btn.logged {
+  visibility: visible;
+}
+

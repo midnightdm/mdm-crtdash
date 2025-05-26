@@ -16,7 +16,7 @@ function LiveScanModel() {
   let self = this;
 
   //Config values
-  self.fetchUrl  = "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/json"; 
+  self.fetchUrl  = "https://mongorest.riverboattracker.com/live/json"; 
   //"https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
   self.clinton   = {lat: 41.857202, lng:-90.184084};
   self.red       = "#ff0000";

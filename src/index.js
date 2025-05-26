@@ -81,7 +81,7 @@ let privateMode, tvMode;
 switch(sitename) {
   case 'clintondash':
   case 'qcdash':      privateMode = true;  tvMode = false; break;
-  case 'clintoncf':   privateMode = false; tvMode = false;  break;
+  case 'regional':   privateMode = false; tvMode = false;  break;
   case 'clinton':
   case 'qc':          privateMode = false; tvMode = true; break;
 }
@@ -707,7 +707,7 @@ async function outputAllVessels() {
 }
 
 function outputPassengerTrackerOverlay() {
-  //console.log("outputPassengerTrackerOverlay() "+liveScanModel.passengerTrackerIsOn)
+  console.log("outputPassengerTrackerOverlay() "+liveScanModel.watchedTrackerIsOn+" WATCHED="+liveScanModel.vesselsAreWatched.length)
 
   //Supercede Events list with passenger vessel tracking map
   if(liveScanModel.vesselsAreWatched.length>0 && !liveScanModel.watchedTrackerIsOn) {
@@ -836,8 +836,12 @@ function outputPassengerAlerts() {
 }
 
 function outputOtherAlerts() {
+    console.log("outputOtherAlerts()", liveScanModel.alertsAll);
   //Build output for other alerts
-  if(!liveScanModel.alertsAll.length || liveScanModel.watchedTrackerIsOn || liveScanModel.manualTrackerIsOn) return;
+  if(!liveScanModel.alertsAll.length || liveScanModel.watchedTrackerIsOn || liveScanModel.manualTrackerIsOn) {
+    ulOther.innerHTML = `<li id="all19" class="card animate__animated animate__slideInRight"><h4>outputOtherAlers() ended </h4></li>`;
+    return;
+  }
   let alertsOutputOther =
   `<li id="all19" class="card animate__animated animate__slideInRight">
   <h4>${liveScanModel.alertsAll[19].apubVesselName} <time class="timeago" datetime="${liveScanModel.alertsAll[19].date.toISOString()}">${timeAgo.format(liveScanModel.alertsAll[19].date)}</time></h4>
@@ -1004,34 +1008,36 @@ async function initLiveScan(rotateTransponders=true) {
       }
     })
     liveScanModel.idTime.forEach(async (idt) => {
-      if(now.min==idt.min && now.sec==idt.sec) {
-        await outputWaypoint(
-          liveScanModel.cameraStatus.showVideoOn,
-          liveScanModel.cameraStatus.showVideo,
-          liveScanModel.cameraStatus.webcamID,
-          idt.videoIsFull,
-          true,
-          false,
-          false
-        )
-      }
-      if(
-        now.month==liveScanModel.videoProgram.month &&
-        now.date ==liveScanModel.videoProgram.date  &&
-        now.hour ==liveScanModel.videoProgram.hour  &&
-        now.min  ==liveScanModel.videoProgram.min   &&
-        now.sec  ==liveScanModel.videoProgram.sec) {
-          await outputWaypoint(
+        if(now.min==idt.min && now.sec==idt.sec) {
+            await outputWaypoint(
             liveScanModel.cameraStatus.showVideoOn,
             liveScanModel.cameraStatus.showVideo,
             liveScanModel.cameraStatus.webcamID,
-            liveScanModel.videoProgram.videoIsFull,
-            false,
+            idt.videoIsFull,
             true,
+            false,
             false
-            
-          )
+            )
         }
+      
+        if(liveScanModel.videoProgram &&
+            now.month==liveScanModel.videoProgram.month &&
+            now.date ==liveScanModel.videoProgram.date  &&
+            now.hour ==liveScanModel.videoProgram.hour  &&
+            now.min  ==liveScanModel.videoProgram.min   &&
+            now.sec  ==liveScanModel.videoProgram.sec) {
+                await outputWaypoint(
+                liveScanModel.cameraStatus.showVideoOn,
+                liveScanModel.cameraStatus.showVideo,
+                liveScanModel.cameraStatus.webcamID,
+                liveScanModel.videoProgram.videoIsFull,
+                false,
+                true,
+                false
+            )
+        }
+      
+      
     })
 
 
@@ -1039,14 +1045,24 @@ async function initLiveScan(rotateTransponders=true) {
   /*  END OF CLOCK LOOP   */
 
 
-  await fetchAllAlerts();
-  await fetchPassengerAlerts();
+  await fetchAllAlerts().then((unsubscribe) =>{
+    //Do outputs
+    console.log("//Doing outputOtherAlerts AFTER fetch.");
+    outputOtherAlerts();
+  });
+  await fetchPassengerAlerts().then((unsubscribe) => {
+    console.log("//Doing outputPassengerAlerts AFTER fetch.");
+    outputPassengerAlerts();
+  });
+  await fetchWebcamSources();
+  await fetchWebcamSites();
   await fetchWaypoint();
   await fetchNews();
   await fetchPassagesList()
   //Do first outputs
-  outputOtherAlerts();
-  outputPassengerAlerts();
+//   console.log("//Do first outputs");
+//   outputOtherAlerts();
+//   outputPassengerAlerts();
   //outputTrackerAlerts();
   outputSelVessel();
   outputVideoOverlay();
@@ -1132,8 +1148,9 @@ async function updateLiveScanData() {
         //Otherwise update the data
         } else {
             liveScans[key] = await liveScanModel.mapper(liveScans[key], dat, false);
-            //Test for watched vessels
-            if(liveScans[key].vesselWatchOn==true) {
+            //Test for watched vessels (limit to moving vessels added 9/19/23)
+            console.log("Test for watched vessels, on, speed ",liveScans[key].vesselWatchOn, liveScans[key].speed)
+            if(liveScans[key].vesselWatchOn==true && liveScans[key].speed > 1) {
                 vesselsAreWatched.push(liveScans[key]);
             }
             //If manualTracker on, update stored obj
@@ -1163,145 +1180,172 @@ async function updateLiveScanData() {
 
 
 function fetchPassagesList() {
-  return new Promise(async (resolve, reject )=>{
-    if(liveScanModel.passagesList[0].type==="default") {
-      const passagesAllRef = doc(db, liveScanModel.passagesCollection, 'All');
-      let plObj, key, listArr = [], tmpArr = {},  nameArr = [], idx = 0, nKey, nObj, i;
-      //const document;
-      await getDoc(passagesAllRef).then(
-        (document) => {
-          if(document.exists()) {
-            plObj = document.data();
-            //console.log("plObj", plObj);
-            for(key in plObj) {
-              plObj[key].id = parseInt(plObj[key].id) //Correct data type
-              nKey = plObj[key].name;
-              nObj = plObj[key];
-              if(nKey=="---") { continue; }
-              nameArr.push(nKey);
-              tmpArr[nKey] = nObj;
-            }
-            nameArr.sort();
-            for(i=0; i<nameArr.length; i++) {
-              nKey = nameArr[i];
-              nObj = tmpArr[nKey];
-              nObj.localIndex = i;
-              listArr.push(nObj);
-            }
-            liveScanModel.passagesList = listArr; 
-          }     
-      });      
-    }
-    resolve(liveScanModel.passagesList.length)
-    reject()
-  })
-}
-
-async function fetchAllAlerts() {
-  if(liveScanModel.alertsAll[0].apubID == "loading") {
-    const apubSnapshot = onSnapshot(doc(db, liveScanModel.alertpublishCollection, "all"), (querySnapshot) => {
-      let tempAlertsAll = []
-      let dataSet = querySnapshot.data()
-      let i = 0
-      for(let data in dataSet) {
-        dataSet[data]['date'] = new Date(dataSet[data]['apubTS']*1000)
-        tempAlertsAll.push(dataSet[data])
-        i++
+    return new Promise(async (resolve, reject )=>{
+      if(liveScanModel.passagesList[0].type==="default") {
+        const passagesAllRef = doc(db, liveScanModel.passagesCollection, 'All');
+        let plObj, key, listArr = [], tmpArr = {},  nameArr = [], idx = 0, nKey, nObj, i;
+        //const document;
+        await getDoc(passagesAllRef).then(
+          (document) => {
+            if(document.exists()) {
+              plObj = document.data();
+              //console.log("plObj", plObj);
+              for(key in plObj) {
+                plObj[key].id = parseInt(plObj[key].id) //Correct data type
+                nKey = plObj[key].name;
+                nObj = plObj[key];
+                if(nKey=="---") { continue; }
+                nameArr.push(nKey);
+                tmpArr[nKey] = nObj;
+              }
+              nameArr.sort();
+              for(i=0; i<nameArr.length; i++) {
+                nKey = nameArr[i];
+                nObj = tmpArr[nKey];
+                nObj.localIndex = i;
+                listArr.push(nObj);
+              }
+              liveScanModel.passagesList = listArr; 
+            }     
+        });      
       }
-      //Sort by apubTS decending
-      tempAlertsAll.sort( (a,b) => parseInt(a.apubTS) - parseInt(b.apubTS))
-      liveScanModel.alertsAll = [...tempAlertsAll]
-      //Skip during watchedTracker mode otherwise update in browser
-      if(liveScanModel.watchedTrackerIsOn) {
-        outputTrackerAlerts(true);
-      } else if(liveScanModel.manualTrackerIsOn) {
-        outputPassengerAlerts(false);
-      }      
-      //playSound();  MOVED TO fetchWaypoint()
+      resolve(liveScanModel.passagesList.length)
+      reject()
     })
   }
-  return new Promise((resolve, reject )=>{
-    resolve()
-    reject()
-  })
-}
 
 async function fetchPassengerAlerts() {
-  if(liveScanModel.alertsPassenger[0].apubID == "loading") {
-    const apubSnapshot = onSnapshot(doc(db, liveScanModel.alertpublishCollection, "passenger"), (querySnapshot) => {
-      let tempAlertsPassenger = []
-      let dataSet = querySnapshot.data()
-      let i = 0
-      for(var data in dataSet) {
-        dataSet[data]['date'] = new Date(dataSet[data]['apubTS']*1000)
-        tempAlertsPassenger.push(dataSet[data])
-        i++
-      }
-      //Sort by apubTS decending
-      tempAlertsPassenger.sort( (a,b) => parseInt(a.apubTS) - parseInt(b.apubTS))
-      //After building array replace liveScanModel version
-      liveScanModel.alertsPassenger = [...tempAlertsPassenger]
-      //Skip during watchedTracker mode otherwise update in browser
-      if(liveScanModel.watchedTrackerIsOn) {
-        outputTrackerAlerts(true);
-      } else if(liveScanModel.manualTrackerIsOn) {
-        outputPassengerAlerts(false);
-      }    
-    })
+    console.log("fetchPassengerAlerts()");
+    if (liveScanModel.alertsPassenger[0].apubID == "loading") {
+      return new Promise((resolve) => {
+        const unsubscribe = onSnapshot(
+          doc(db, liveScanModel.alertpublishCollection, "passenger"),
+          (querySnapshot) => {
+            let tempAlertsPassenger = [];
+            let dataSet = querySnapshot.data();
+            let i = 0;
+            for (var data in dataSet) {
+              dataSet[data]['date'] = new Date(dataSet[data]['apubTS'] * 1000);
+              tempAlertsPassenger.push(dataSet[data]);
+              i++;
+            }
+            // Sort by apubTS descending
+            tempAlertsPassenger.sort((a, b) => parseInt(a.apubTS) - parseInt(b.apubTS));
+            // After building array replace liveScanModel version
+            liveScanModel.alertsPassenger = [...tempAlertsPassenger];
+            console.log("alertsPassenger dataset (post-sort)", liveScanModel.alertsPassenger);
+            // Skip during watchedTracker mode otherwise update in the browser
+            if (liveScanModel.watchedTrackerIsOn) {
+              outputTrackerAlerts(true);
+            } else if (liveScanModel.manualTrackerIsOn) {
+              outputPassengerAlerts(false);
+            }
+            resolve(true); // Resolve the promise when finished
+          }
+        );
+        // Return the unsubscribe function for cleanup if needed
+        return () => unsubscribe();
+      });
+    }
   }
-  return new Promise((resolve, reject )=>{
-    resolve()
-    reject()
-  })
-}
+  
+  async function fetchAllAlerts() {
+    console.log("fetchAllAlerts()");
+    if (liveScanModel.alertsAll[0].apubID == "loading") {
+      return new Promise((resolve) => {
+        const unsubscribe = onSnapshot(
+          doc(db, liveScanModel.alertpublishCollection, "all"),
+          (querySnapshot) => {
+            let tempAlertsAll = [];
+            let dataSet = querySnapshot.data();
+            let i = 0;
+            for (let data in dataSet) {
+              dataSet[data]['date'] = new Date(dataSet[data]['apubTS'] * 1000);
+              tempAlertsAll.push(dataSet[data]);
+              i++;
+            }
+            // Sort by apubTS descending
+            tempAlertsAll.sort((a, b) => parseInt(a.apubTS) - parseInt(b.apubTS));
+            liveScanModel.alertsAll = [...tempAlertsAll];
+            console.log("alertsAll dataset (post-sort)", liveScanModel.alertsAll);
+            // Skip during watchedTracker mode otherwise update in the browser
+            if (liveScanModel.watchedTrackerIsOn) {
+              outputTrackerAlerts(true);
+            } else if (liveScanModel.manualTrackerIsOn) {
+              outputPassengerAlerts(false);
+            }
+            resolve(true); // Resolve the promise when finished
+          }
+        );
+        // Return the unsubscribe function for cleanup if needed
+        return () => unsubscribe();
+      });
+    }
+  }
+  
 
 async function fetchWebcamSources() {
-    const adminSnapshot = onSnapshot(doc(db, "Controls", "webcamSources"), (querySnapshot) => {
+    console.log("running fetchWebcamSources()");
+    const webcamSourcesSnapshot = onSnapshot(doc(db, "Controls", "webcamSources"), (querySnapshot) => {
         let dataSet = querySnapshot.data();
+        console.log("webcamSources ",dataSet);
         liveScanModel.webcamSources = dataSet;
+
     })
 }
 
 async function fetchWebcamSites() { //Gets latest data on webcam activation and switching
-    const adminSnapshot = onSnapshot(doc(db, "Controls", "webcamSites"), (querySnapshot) => {
-        let dataSet = querySnapshot.data();
-        if(!sitename.includes("dash")) {
-            liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.webcamSitesID].showVideo
-            liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.webcamSitesID].showVideoOn
-            liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamSitesID].srcID
-            liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamSitesID].vesselsInRange
-            liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamSitesID].zoom
-            liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamSitesID].videoIsPassingCloseup;
-            liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamSitesID].videoIsFull;
-            liveScanModel.resetTime = dataSet[liveScanModel.webcamSitesID].resetTime;
-            liveScanModel.idTime    = dataSet[liveScanModel.webcamSitesID].idTime;
-            /* DATA FORMAT
-                idTime [
-                    {min:14 sec:50 videoIsFull:false },
-                    {min:44 sec:50 videoIsFull:false },
-                ]
+    //console.log("running fetchWebcamSites() ");
+    const webcamSitesSnapshot = onSnapshot(doc(db, "Controls", "webcamSites"), (qs) => {
+        let dataSet = qs.data();
+        //console.log("fetchWebcamSites dataset "+ dataSet + " webcamSitesID is " + liveScanModel.webcamSitesID);
+        liveScanModel.cameraStatus.showVideo   = dataSet[liveScanModel.webcamSitesID].showVideo
+        liveScanModel.cameraStatus.showVideoOn = dataSet[liveScanModel.webcamSitesID].showVideoOn
+        liveScanModel.cameraStatus.webcamID   = dataSet[liveScanModel.webcamSitesID].srcID
+        liveScanModel.cameraStatus.vesselsInRange = dataSet[liveScanModel.webcamSitesID].vesselsInRange
+        liveScanModel.cameraStatus.webcamZoom  = dataSet[liveScanModel.webcamSitesID].zoom
+        liveScanModel.cameraStatus.videoIsPassingCloseup = dataSet[liveScanModel.webcamSitesID].videoIsPassingCloseup;
+        liveScanModel.cameraStatus.videoIsFull = dataSet[liveScanModel.webcamSitesID].videoIsFull;
+        liveScanModel.resetTime = dataSet[liveScanModel.webcamSitesID].resetTime;
+        liveScanModel.idTime    = dataSet[liveScanModel.webcamSitesID].idTime;
+        /* DATA FORMAT
+            idTime [
+                {min:14 sec:50 videoIsFull:false },
+                {min:44 sec:50 videoIsFull:false },
+            ]
+        */
+        liveScanModel.promoSources  = dataSet[liveScanModel.webcamSitesID].promoSources;
+        liveScanModel.videoProgram  = dataSet[liveScanModel.webcamSitesID].videoProgram;
+        /* DATA FORMAT 
+            videoProgram {
+            date: 5,
+            hour: 3,
+            min : 0,
+            month: 11,
+            sec: 0
+            source: "waypoint-notifications.m3u8",
+            title: "Waypoint Notifications",
+            videoIsFull: true
+            }
             */
-            liveScanModel.promoSources  = dataSet[liveScanModel.webcamSitesID].promoSources;
-            liveScanModel.videoProgram  = dataSet[liveScanModel.webcamSitesID].videoProgram;
-            /* DATA FORMAT 
-                videoProgram {
-                date: 5,
-                hour: 3,
-                min : 0,
-                month: 11,
-                sec: 0
-                source: "waypoint-notifications.m3u8",
-                title: "Waypoint Notifications",
-                videoIsFull: true
-                }
-                */
-        }
+        console.log("fetchWebcamSites() cameraStatus ="+liveScanModel.cameraStatus);
+         //Ensure view update for showVideo boolean changes
+      outputWaypoint(
+        liveScanModel.cameraStatus.showVideoOn, 
+        liveScanModel.cameraStatus.showVideo, 
+        liveScanModel.cameraStatus.webcamID,
+        liveScanModel.cameraStatus.videoIsFull, 
+        liveScanModel.promoIsOn,
+        liveScanModel.videoProgramIsOn,
+        liveScanModel.cameraStatus.videoIsPassingCloseup
+      )
+       
     })
 }
 
 async function fetchWaypoint() {
     
-  const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
+  const waypointSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data()
     let apubID, vpubID, lsLen, apublishCollection, vpublishCollection, waypoint 
     let wasOutput = false; //Resets when screen updates
@@ -1325,7 +1369,7 @@ async function fetchWaypoint() {
 
     apublishCollection = liveScanModel.alertpublishCollection;
     vpublishCollection = liveScanModel.voicepublishCollection;
-                                        */
+                                        
 
 
     //Compare lsLen to liveScan array size
@@ -1353,14 +1397,15 @@ async function fetchWaypoint() {
         let ts = Math.round(dt.getTime()/1000)
         let diff = ts - waypoint.apubTS
         //Is apubID (waypoint) new?
-        if(apubID > liveScanModel.prevApubID ) {
+        if(apubID > liveScanModel.prevApubID) {
           //Is model 0 default?
           if(liveScanModel.prevApubID == 0) {
             //Yes. Update stored obj and save new apubID
             liveScanModel.waypoint   = waypoint
             liveScanModel.prevApubID = apubID
           }
-          //Yes. Output true to report it.
+          console.log("Is diff < 300? -> "+diff+" apubRegion is "+liveScanModel.waypoint.apubRegion)
+
           return true
         }       
       } else {
@@ -1405,19 +1450,21 @@ async function fetchWaypoint() {
         return
       }
       //Change class of event with matching apubID
-      if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[19].apubID) {
-        const li = document.getElementById("pass19")
-        li.classList.add('isNew')      
-        console.log("waypoint match found to passenger event "+diff+" seconds ago -> playSound()")
-        playSound()
-      } else if(liveScanModel.waypoint.apubID===liveScanModel.alertsAll[19].apubID) {
-        const li = document.getElementById("all19")
-        li.classList.add('isNew')
-        console.log("waypoint match found to 'any' event "+diff+" seconds ago -> playSound()")
-        playSound()
-      } else {
-        console.log("no waypoint match to an event was found")
-      }
+      //if(liveScanModel.regionsWatched.includes(liveScanModel.waypoint.apubRegion)) {
+        if(liveScanModel.waypoint.apubID===liveScanModel.alertsPassenger[19].apubID) {
+            const li = document.getElementById("pass19")
+            li.classList.add('isNew')      
+            console.log("waypoint match found to passenger event "+diff+" seconds ago -> playSound()")
+            playSound()
+        } else if(liveScanModel.waypoint.apubID===liveScanModel.alertsAll[19].apubID) {
+            const li = document.getElementById("all19")
+            li.classList.add('isNew')
+            console.log("waypoint match found to 'any' event "+diff+" seconds ago -> playSound()")
+            playSound()
+        } else {
+            console.log("no waypoint match to an event was found")
+        }
+      //}  
       outputWaypoint(
         liveScanModel.cameraStatus.showVideoOn, 
         liveScanModel.cameraStatus.showVideo, 
@@ -1439,7 +1486,8 @@ async function fetchWaypoint() {
         let ts = Math.round(dt.getTime()/1000)
         let diff = ts - liveScanModel.announcement.vpubTS
         
-        if(vpubID > liveScanModel.prevVpubID && diff < 300) {
+        if(liveScanModel.regionsWatched.includes(liveScanModel.announcement.vpubRegion) &&
+        vpubID > liveScanModel.prevVpubID && diff < 300) {
           return true
         }
         return false
@@ -1491,12 +1539,17 @@ function fetchNews() {
       let start = new Date(dataSet[item].startTS)
       let end   = new Date(dataSet[item].endTS)
       if(now < start.getTime() || now > end.getTime()) {
-        console.log("news outside date range", dataSet[item])
+        //console.log("news outside date range", dataSet[item])
         i++
         continue
       }
       if(dataSet[item].hasOnlyDay==true && dataSet[item].onlyDay!=dow[day]) {
-        console.log("news onlyday fail", dataSet[item])
+        //console.log("news onlyday fail", dataSet[item])
+        i++
+        continue
+      }
+      if(!dataSet[item].regions.some(region => liveScanModel.regionsWatched.includes(region))) {
+        //console.log("news item not of watched region")
         i++
         continue
       }
@@ -1508,8 +1561,8 @@ function fetchNews() {
     liveScanModel.news = [...news]
   })
   return new Promise((resolve, reject )=>{
-    resolve()
     reject()
+    resolve()
   })
 }
 

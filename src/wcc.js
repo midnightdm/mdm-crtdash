@@ -4,30 +4,39 @@ import {
   onSnapshot, 
   doc, 
   getDoc,
-  setDoc
+  setDoc,
+  query,
+  where,
+  collection
 } from 'firebase/firestore'
 import { getAuth, signOut, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
+import { DataModel } from './DataModel.js'
 import { Environment } from './environment'
 
 
 /* State Management*/
+const dataModel = DataModel;
 let adminMsg = {};
 let user     = {};
 let userIsLogged = false;
 let userIsAdmin = false;
-let showVideo, showVideoOn, webcamNum, webcamZoom; 
+let showVideo, showVideoOn, webcamNum, webcamZoom, camSwitchBtns, camEnableBtns, fldrBtns, playerMain = null; 
 
 window.env    = Environment
+
+/* Link Database */
 const firebaseConfig = window.env.firebaseConfig
 const firebaseApp    = initializeApp(firebaseConfig)
 const db = getFirestore(firebaseApp);
 const adminMsgRef = doc(db, 'Passages', 'Admin');
+const controlsWebcamSitesRef = doc(db, 'Controls', 'webcamSites');
+//const camerasRef = doc(db, 'Cameras');
 const auth   = getAuth(firebaseApp);
 
-const cameraA      = document.getElementById('cameraA');
-const cameraB      = document.getElementById('cameraB');
-const cameraC      = document.getElementById('cameraC');
-const cameraD      = document.getElementById('cameraD');
+const insertPoint  = document.getElementById('insert-point');
+const siteFolderTabs = document.getElementById('site-folder-tabs')
+const preview = document.getElementById('preview')
+
 
 const holderA      = document.getElementById('cam1');
 const holderB      = document.getElementById('cam2');
@@ -77,16 +86,6 @@ const resetBtn     = document.getElementById("reset-button");
 const resetBtnTxt  = document.getElementById("reset-button-text");
 const resetCtrlTxt = document.getElementById("reset-control-text");
 
-/* Content values */
-const taLabel = "Trigger Activated";
-const toLabel = "Trigger Off";
-const taText  = "A near-by vessel has triggered the cabin webcams to broadcast live.";
-const toText  = "The cabin webcams are not currently triggered by any vessels.";
-const ccLabelOn = "Enabled";
-const ccTextOn  = "Cabin webcams are enabled for live streaming. Press the button above to override server control.";
-const ccLabelOff = "Disabled";
-const ccTextOff  = "The cabin webcams are disabled from server control. No video broadcasts will be allowed until you enable them.";
-
 
 
 const options      = {
@@ -115,10 +114,28 @@ let playerB;
 */
 async function initWcc() {  
   //Setup data model
-  monitorAuthState();  
+  monitorAuthState()
+  fetchData()
+  setTimeout(buildView, 4000)
+  //buildView()
 }
 
+async function fetchData() {
+    await fetchCameras()
+    await fetchSites()
+    await loadSavedSite()
+}
 
+function buildView() {
+    console.log("data for selected site", dataModel.webcamSites, dataModel.webcamSites.clinton);
+    dataModel.selectedCamera = dataModel.webcamSites[dataModel.selectedSite].srcID;
+    buildFolderTabs()
+    buildCameraButtons()
+    adjustVideoSize()
+    updatePlayer()
+    updateTallyLights()
+    dataModel.init = false
+}
 
 function monitorAuthState() {
   onAuthStateChanged(auth, async (u) => {
@@ -136,7 +153,7 @@ function monitorAuthState() {
         buttonLogout.classList.add("logged");
         gridCntr.classList.add("logged");
         loginCntr.classList.add("logged");
-        fetchAdminMessages();
+        //fetchAdminMessages();
         addAdminEventListeners();
       } else if (adminUsers[0]=="No admin users") {
         userIsLogged = false;
@@ -157,37 +174,295 @@ function monitorAuthState() {
   });
 }
 
+
+async function fetchCameras() {
+    let arr = [], data  
+    dataModel.cameras = {}
+    const q = query(collection(db, "Cameras"), where("srcID", "!=", ""))
+    const camerasSnapshot = onSnapshot( q, (dataSet) => {
+        //console.log("fetchCameras()")
+        dataSet.docChanges().forEach((docChange)=>{
+            data = docChange.doc.data()
+            if(docChange.type ==="added") {
+                // Only add new cameras to the arr array
+                if(!arr.some(x => x.srcID === data.srcID)) {
+                    arr.push(data)
+                    dataModel.cameras[data.srcID] = data
+                }
+            } else if(docChange.type === "modified") {
+                // Update the existing camera in the arr array
+                let index = arr.findIndex(x => x.srcID === data.srcID)
+                arr[index] = data
+            } else if(docChange.type === "removed") {
+                // Remove the duplicate camera from the arr array
+                let index = arr.findIndex(x => x.srcID === data.srcID)
+                arr.splice(index, 1)
+            }
+        })
+        arr.sort( (a, b) => {
+            if(a.srcID.toLowerCase() < b.srcID.toLowerCase()) { return -1 }
+            if(a.srcID.toLowerCase() > b.srcID.toLowerCase()) { return  1 }
+            return 0
+        })        
+        dataModel.camerasArr = arr
+        if(dataModel.init==true) {
+            return
+        }
+        buildCameraButtons()
+        updateTallyLights()
+        updatePlayer()
+    });    
+
+}
+
+
+async function fetchSites() {
+    const flagsSnapshot = onSnapshot(doc(db, "Controls", "webcamSites"), async (querySnapshot) => {  
+        dataModel.webcamSites = querySnapshot.data() 
+        //dataModel.selectedCamera = dataModel.webcamSites[dataModel.selectedSite].srcID
+        console.log("fetchSites() webcamSites",dataModel.webcamSites)
+        updatePlayer()
+        updateTallyLights()
+    })
+}
+
+
+async function loadSavedSite() {
+    try {
+        const site = window.localStorage.getItem('wccSelectedSite');
+        dataModel.selectedSite = site == undefined || "undefined" ? "regional" : site;
+        console.log("loadSavedSite()", window.localStorage)
+        return true
+    } catch(error) {
+        console.error("Error loading site", error)
+        return false
+    }
+}
+
+function buildCameraButtons() {
+    let i, bs, bString = "", bHolder = "", btnSets = {}, btn, iStr, selString
+    //Build button strings
+    for(bs in dataModel.siteList) {
+        i=0
+        btnSets[bs] = ""
+        dataModel.camerasArr.forEach((cam) => {
+            iStr = i.toString()
+            bString = cam.isViewEnabled==true ? "Enabled":"Disabled"
+            btnSets[bs] += 
+            `<button class="${dataModel.siteList[bs]} camswitch" id="${dataModel.siteList[bs]+cam.srcID+'btn'}" data-id="${cam.srcID}"><span id="${dataModel.siteList[bs]+cam.srcID+'led'}" class="led"></span>&nbsp;&nbsp;${cam.srcID}</button>
+            <button class="camenabled" id="${dataModel.siteList[bs]+cam.srcID+'-Enb'}" data-id="${cam.srcID}"><span class="oval ${bString}">${bString}</span></button></br/>`
+            i++
+        })
+        selString = dataModel.selectedSite==dataModel.siteList[bs] ? " selected" : "";
+        bHolder += `<div id="tb-${dataModel.siteList[bs]}" class="tab-body${selString}"><h3>${dataModel.siteList[bs].toUpperCase()}</h3><div><span>SELECT</span> &nbsp;&nbsp;&nbsp;<span>STATUS</span></div><div>${btnSets[bs]}</div></div>`
+    }
+    insertPoint.innerHTML = bHolder
+    //Set Event handlers
+    camSwitchBtns = document.getElementsByClassName('camswitch')
+    for(i=0; i < camSwitchBtns.length; i++) {
+        btn = camSwitchBtns[i]
+        btn.addEventListener('click', handleCameraSelection)
+    }
+    camEnableBtns = document.getElementsByClassName('camenabled')
+    for(i=0; i<camEnableBtns.length; i++) {
+        btn = camEnableBtns[i]
+        btn.addEventListener('click', handleCameraEnable)
+    }
+}
+
+
+function buildFolderTabs() {
+    let lString = "", selString, btn, i
+    dataModel.siteList.forEach( (site) => {
+        selString = site==dataModel.selectedSite ? " selected" : ""
+        lString += `<li id="${'tab-'+site}" class="ftab${selString}">${site}</li>`
+    })
+    siteFolderTabs.innerHTML = lString
+    fldrBtns = document.getElementsByClassName('ftab')
+    for(i=0; i<fldrBtns.length; i++) {
+        btn = fldrBtns[i]
+        btn.addEventListener('click', handleSiteSelection)
+    }
+}
+
+function updateTallyLights() {
+    //remove all current lights
+    let i, selcam, site, srcID, bs, onLeds = document.querySelectorAll('.led.on')    
+    for(i=0; i < onLeds?.length; i++) {
+        onLeds[i]?.classList.remove('on')
+    }
+    //Set currently active cameras from the dataModel    
+    for(bs in dataModel.siteList) {
+        site = dataModel.siteList[bs]
+        srcID = dataModel.webcamSites[site].srcID
+        console.log("updateTallyLights()",site, srcID)
+        selcam = document.querySelectorAll(`[id="${site+srcID+'btn'}"] span.led`)
+        selcam[0]?.classList.add('on')
+    }
+}
+
+
+async function updatePlayer() {
+    let i, camObj = dataModel.cameras[dataModel.selectedCamera]
+    console.log("updatePlayer() selectedCamera, camObj", dataModel.selectedCamera, camObj)
+
+    //initiate VJS if new
+    if(playerMain == null) {
+        const videoPlayerOptions= {
+            autoplay: true,
+            preload: "auto",
+            fluid: false,
+            loadingSpinner: false,
+            muted: true,
+            controls: false,
+            aspectRatio: "16:9",
+            techOrder: ["html5", "youtube"]
+        }
+        playerMain = videojs("vt-preview", videoPlayerOptions, function onPlayerReady() {
+            this.on('ended', function() {
+                this.play();
+            });
+            this.src({ 
+                type: camObj.srcType,
+                src: camObj.srcUrl 
+                
+            });
+            console.log("Video playing ", camObj.srcID)
+            dataModel.previousCamera = dataModel.selectedCamera
+            this.play();
+        }); 
+    //Otherwise just change source if its different
+    } else if(dataModel.selectedCamera != dataModel.previousCamera) {
+        playerMain.src({ 
+            type: camObj.srcType,
+            src: camObj.srcUrl 
+        })
+        playerMain.play()
+        console.log("Video playing ", camObj.srcID)
+        dataModel.previousCamera = dataModel.selectedCamera
+        return true
+    }
+    return false
+}
+
+function handleCameraSelection() {
+    if(!userIsAdmin && !userIsLogged) {
+        return alert("User not authorized for remote client refresh operation.")
+    }     
+    //Write to database
+    dataModel.selectedCamera = this.dataset.id
+    dataModel.selectedSite   = this.classList[0]
+    let webcamSites = Object.assign( {}, dataModel.webcamSites )    
+    webcamSites[dataModel.selectedSite].srcID = dataModel.selectedCamera 
+    webcamSites[dataModel.selectedSite].zoom  = defineZoom(dataModel.selectedCamera)
+    setDoc(controlsWebcamSitesRef, webcamSites, {merge: true})
+    adjustVideoSize()
+    console.log("handleCamerSelection() site, camera", dataModel.selectedSite,dataModel.webcamSites[dataModel.selectedSite].srcID)
+    
+}
+
+
+function adjustVideoSize() {
+    //Add CSS flag for certain video sizes
+    if(dataModel.webcamSites[dataModel.selectedSite].srcID=="CabinUR") {
+        preview.classList.remove('sd')
+        preview.classList.add('hd')
+    } else if(dataModel.webcamSites[dataModel.selectedSite].srcID=="CabinDR") {
+        preview.classList.remove('hd')
+        preview.classList.add('sd')
+    } else {
+        preview.classList.remove('hd', 'sd')
+    }
+}
+
+function handleSiteSelection() {
+    const clickedId = this.id;  // Get the element's ID
+    const siteName = clickedId.slice(4); // Extract substring starting from index 4 (after "tab-")
+    console.log("handleSiteSelection()", siteName);
+    dataModel.selectedSite = siteName
+    window.localStorage.setItem('wccSelectedSite', dataModel.selectedSite)
+    //Unselect all tabs
+    const tabs = document.querySelectorAll('li.ftab.selected')
+    tabs.forEach((tab)=> {tab.classList.remove('selected')})
+    //Unselect tab-body
+    const tb = document.querySelectorAll('div.tab-body.selected')
+    tb.forEach((tb)=> tb.classList.remove('selected'))
+    //Mark the selcted tab
+    const selectedLi = document.getElementById(clickedId) 
+    if(selectedLi) {
+        selectedLi.classList.add('selected')
+    }
+    //Mark the selected tab body
+    const selectedTabBody = document.getElementById('tb-'+siteName)
+    if(selectedTabBody) {
+        selectedTabBody.classList.add('selected')
+    }
+    dataModel.selectedCamera = dataModel.webcamSites[dataModel.selectedSite].srcID
+    dataModel.selectedZoom   = defineZoom(dataModel.selectedCamera)
+    adjustVideoSize()
+    updateTallyLights()
+    updatePlayer()
+
+}
+
+function handleCameraEnable() {
+    if(!userIsAdmin && !userIsLogged) {
+        return alert("User not authorized for camera enable/disable operation.")
+    }
+    let srcID = this.dataset.id
+    let camera = Object.assign( {}, dataModel.cameras[srcID])
+    if(camera.isViewEnabled == true) {
+        camera.isViewEnabled = false
+    }  else {
+        camera.isViewEnabled = true
+    }
+    setDoc(doc(db, "Cameras", srcID), camera)
+    //Enabled indicator propigates though fetch to buildButtons
+}
+
+function defineZoom(srcID) {
+    let zoom
+    switch(srcID) {
+        case "Sawmill-C": zoom="2"; break;
+        case "Sawmill-L": zoom="1"; break;
+        case "Sawmill-R": zoom="3"; break;
+        default:          zoom="0";
+    }
+    return zoom;
+}
+
 function addAdminEventListeners() {
-  switchButtonA.addEventListener('click', switchToCamA);
-  switchButtonB.addEventListener('click', switchToCamB);
-  switchButtonCL.addEventListener('click', switchToCamCL);
-  switchButtonCC.addEventListener('click', switchToCamCC);
-  switchButtonCR.addEventListener('click', switchToCamCR);
-  switchButtonD.addEventListener('click', switchToCamD);
-  buttonVideo.addEventListener("click", toggleWebcam);
+//   switchButtonA.addEventListener('click', switchToCamA);
+//   switchButtonB.addEventListener('click', switchToCamB);
+//   switchButtonCL.addEventListener('click', switchToCamCL);
+//   switchButtonCC.addEventListener('click', switchToCamCC);
+//   switchButtonCR.addEventListener('click', switchToCamCR);
+//   switchButtonD.addEventListener('click', switchToCamD);
+//   buttonVideo.addEventListener("click", toggleWebcam);
   buttonLogout.addEventListener('click', function() {
     handleLogout();
   })
   
-  cam3.addEventListener('mouseenter', function() {
-    iframeBtn.classList.add('show');
-    console.log("hover");
-    setTimeout(()=>iframeBtn.classList.remove('show'),5000);
-  });
+//   cam3.addEventListener('mouseenter', function() {
+//     iframeBtn.classList.add('show');
+//     console.log("hover");
+//     setTimeout(()=>iframeBtn.classList.remove('show'),5000);
+//   });
   
-  cam3.addEventListener('click', function() {
-    window.location = "index.html"
-  })
-  playerA = videojs("cameraA", options);
-  playerB = videojs("cameraB", options);
-  refreshBtn.addEventListener("click", refreshClients);
-  resetBtn.addEventListener("click", handleResetCams);
-  buttonDR.addEventListener("click", toggleDownriver);
-  buttonUR.addEventListener("click", toggleUpriver);
-  buttonSM.addEventListener("click", toggleSawmill);
+//   cam3.addEventListener('click', function() {
+//     window.location = "index.html"
+//   })
+//   playerA = videojs("cameraA", options);
+//   playerB = videojs("cameraB", options);
+//   refreshBtn.addEventListener("click", refreshClients);
+//   resetBtn.addEventListener("click", handleResetCams);
+//   buttonDR.addEventListener("click", toggleDownriver);
+//   buttonUR.addEventListener("click", toggleUpriver);
+//   buttonSM.addEventListener("click", toggleSawmill);
 
 }
 
+//Not needed?
 function fetchAdminMessages() {
   const adminSnapshot = onSnapshot(doc(db, "Passages", "Admin"), (querySnapshot) => {  
     let dataSet = querySnapshot.data();
@@ -197,7 +472,7 @@ function fetchAdminMessages() {
     webcamNum   = dataSet.webcamNumCl;
     webcamZoom  = dataSet.webcamZoomCl;
     updateTallyLights()    
-    outputWebcamControl(showVideoOn, showVideo, webcamNum);
+    //outputWebcamControl(showVideoOn, showVideo, webcamNum);
   });
 }         
 
@@ -269,62 +544,6 @@ async function handleResetCams() {
 }
 
 
-function toggleWebcam() {
-  console.log("toggleWebcam()",adminMsg);
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
-  }
-  if(adminMsg.showClVideoOn==true) {
-    adminMsg.showClVideoOn=false
-  } else {
-    adminMsg.showClVideoOn=true
-  }
-  setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-
-function toggleDownriver() {
-    console.log("toggleDownriver()",adminMsg);
-    if(!userIsAdmin && !userIsLogged) {
-      return alert("User not authorized for webcam operation.")
-    }
-    if(adminMsg.webcamClaIsDisabled==true) {
-      adminMsg.webcamClaIsDisabled=false
-      document.getElementById("skip-downriver-span").classList.add("green");
-    } else {
-      adminMsg.webcamClaIsDisabled=true
-    }
-    setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-function toggleUpriver() {
-    console.log("toggleUpriver()",adminMsg);
-    if(!userIsAdmin && !userIsLogged) {
-      return alert("User not authorized for webcam operation.")
-    }
-    if(adminMsg.webcamClbIsDisabled==true) {
-      adminMsg.webcamClbIsDisabled=false
-      document.getElementById("skip-upriver-span").classList.add("green")
-    } else {
-      adminMsg.webcamClbIsDisabled=true
-    }
-    setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-function toggleSawmill() {
-    console.log("toggleSawmill()",adminMsg);
-    if(!userIsAdmin && !userIsLogged) {
-      return alert("User not authorized for webcam operation.")
-    }
-    if(adminMsg.webcamClcIsDisabled==true) {
-      adminMsg.webcamClcIsDisabled=false
-      document.getElementById("skip-sawmill-span").classList.add("green")
-    } else {
-      adminMsg.webcamClcIsDisabled=true
-    }
-    setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
 
 function getTime() { 
   var date = new Date(); 
@@ -353,83 +572,6 @@ function xSecondsLater(time, x) {
 }
 
 
-function refreshClients() {
-  const tsbase = "15 seconds after pressing"
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for remote client refresh operation.")
-  }
-  let now = getTime()
-  let n15 = xSecondsLater(now, 15)
-  let tsmsg = "at "+n15.min+":"+n15.sec+" on the screen clock"
-  timeStatement.innerText = tsmsg
-  adminMsg.resetTime[4] = n15
-  setDoc(adminMsgRef, adminMsg, {merge: true})
-  setTimeout(()=>{
-    adminMsg.resetTime.pop()
-    setDoc(adminMsgRef, adminMsg, {merge: true})
-    timeStatement.innerText = tsbase
-  },30000)
-
-}
-
-function switchToCamA() {
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
-  }
-  adminMsg.webcamNumCl = "A";
-  updateTallyLights();
-  setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-
-function switchToCamB() {
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
-  }
-  adminMsg.webcamNumCl = "B";
-  updateTallyLights();
-  setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-function switchToCamCL() {
-  if(!userIsAdmin && !userIsLogged) {
-    return alert("User not authorized for webcam operation.")
-  }
-  adminMsg.webcamNumCl = "C";
-  adminMsg.webcamZoomCl = 1;
-  updateTallyLights();
-  setDoc(adminMsgRef, adminMsg, {merge: true})
-}
-
-function switchToCamCC() {
-   if(!userIsAdmin && !userIsLogged) {
-     return alert("User not authorized for webcam operation.")
-   }
-   adminMsg.webcamNumCl = "C";
-   adminMsg.webcamZoomCl = 2;
-   updateTallyLights();
-   setDoc(adminMsgRef, adminMsg, {merge: true})
- }
-
- function switchToCamCR() {
-   if(!userIsAdmin && !userIsLogged) {
-     return alert("User not authorized for webcam operation.")
-   }
-   adminMsg.webcamNumCl = "C";
-   adminMsg.webcamZoomCl = 3;
-   updateTallyLights();
-   setDoc(adminMsgRef, adminMsg, {merge: true})
- }
-
-function switchToCamD() {
-    console.log("switchToCamD()");
-    if(!userIsAdmin && !userIsLogged) {
-        return alert("User not authorized for webcam operation.")
-    }
-    adminMsg.webcamNumCl = "D";
-    updateTallyLights();
-    setDoc(adminMsgRef, adminMsg, {merge: true})
-}
 
 function testLoggeduserIsAdmin(uid) {
   //Test that obj property is array
@@ -443,84 +585,6 @@ function testLoggeduserIsAdmin(uid) {
 }
 
 
-function updateTallyLights() {
-    console.log("updateTallyLights() webcamZoom="+webcamZoom);
-    ledA.classList.remove("on")
-    ledB.classList.remove("on");
-    ledCL.classList.remove("on");
-    ledCC.classList.remove("on");
-    ledCR.classList.remove("on");
-    ledD.classList.remove("on")
-  if(webcamNum=="A") {
-    ledA.classList.add("on")
-  }
-  if(webcamNum=="B") {
-    ledB.classList.add("on")
-  }
-  if(webcamNum=="C") {
-
-   if(webcamZoom==1) {
-      ledCL.classList.add("on");
-   } 
-   if(webcamZoom==2) {
-      ledCC.classList.add("on");
-   }
-   if(webcamZoom==3) {
-      ledCR.classList.add("on");
-   }
-  }
-  if(webcamNum=="D") {
-    ledD.classList.add("on")
-  }
-  if(adminMsg.webcamClaIsDisabled) {
-    document.getElementById("skip-downriver-span").classList.remove("green");
-  } else {
-    document.getElementById("skip-downriver-span").classList.add("green");
-  }
-  if(adminMsg.webcamClbIsDisabled) {
-    document.getElementById("skip-upriver-span").classList.remove("green");
-  } else {
-    document.getElementById("skip-upriver-span").classList.add("green");
-  }
-  if(adminMsg.webcamClcIsDisabled) {
-    document.getElementById("skip-sawmill-span").classList.remove("green");
-  } else {
-    document.getElementById("skip-sawmill-span").classList.add("green");
-  }
-
-
-
-}
-
-
-function outputWebcamControl(showVideoOn, showVideo, webcamNum) {
-  
-  if(showVideoOn==true) {
-    controlLabel.innerText = "Video "+ccLabelOn;
-    controlLabel.classList.add("green");
-    controlText.innerText  = ccTextOn;
-    buttonVText.innerText = "Disable";
-  } else if(showVideoOn==false) {
-    controlLabel.innerText = "Video "+ccLabelOff;
-    controlLabel.classList.add("red");
-    controlText.innerText = ccTextOff;
-    buttonVText.innerText = "Enable";
-  }
-  if(showVideo==true && showVideoOn==true) {
-    if(webcamNum=="A") {
-      holderA.classList.add('active');
-      holderB.classList.remove('active');
-      console.log("A active")
-    }
-    if(webcamNum=="B") {
-      holderB.classList.add('active');
-      holderA.classList.remove('active');  
-      console.log("B active")
-    }
-  }
-  
-  console.log("outputWebcamControl() "+showVideoOn+showVideo+webcamNum);
-}
 
 
 //Activate

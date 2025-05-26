@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--link rel="shortcut icon" href="favicon.ico" type="image/x-icon"-->
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <link rel="stylesheet" href="wcc.css">
+
+  <title>Webcam Control</title>
+<script defer src="../wcc/wcc.js"></script></head>
+<body>
+  <navigation >
+    <div id="login-container">  
+      <h1>Login for Webcam Controls</h4><br />
+        <div class="input-field">
+          <input type="email" placeholder="Login Email" id="login-email" required size="40"/>
+          <label for="login-email">Email</label>
+        </div>
+        <div class="input-field">
+          <input type="password" placeholder="Login Password" id="login-password" required size="40" />
+          <label for="login-password">Password</label>
+        </div>
+        <button id="login-btn" class="btn yellow darken-2 z-depth-0">Login</button>
+    </div>
+  </navigation>
+  
+  <main class="grid-container">  
+    <h2>Camera Control Switch</h2>
+    <ul id="site-folder-tabs"></ul>
+    <div id="preview-container">
+        <div id="preview">
+            <video id="vt-preview">
+                <source id="vs-preview" src="https://cabinur.clintonrivertraffic.com/stream/CabinUR.m3u8" type="application/x-mpegURL">
+                <p class="vjs-no-js">
+                To view this video please enable JavaScript, and consider upgrading to a web browser that
+                <a href="https://videojs.com/html5-video-support/" target="_blank"
+                    >supports HTML5 video</a>
+                </p>
+            </video>
+        </div>
+    </div>
+    <section class="control-panel">    
+        <div id="insert-point"></div>
+    </section>
+
+    
+  </main>
+<script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/3.0.1/Youtube.js"></script>
+  
+<div class="nav-buttons">
+  <button type="submit" id="logout-btn" class="btn yellow darken-2 z-depth-0">Logout</button>
+</div>
+
+</body>
+</html>

@@ -4,7 +4,7 @@ export const LiveScanModel = {
   clinton: {lat: 41.8709102, lng:-90.184084},
   qc:      {lat:  41.5350474, lng:-90.4997822},
   interval: 20000,
-  fetchUrl: "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans/json",
+  fetchUrl: "https://mongorest.riverboattracker.com/live/json",
   tock: 0,
   minute: 0,
   resetTime: [
@@ -105,8 +105,7 @@ export const LiveScanModel = {
   prevApubID: 0,
   isReload: true,
   news: [ 
-    {key: "f00", text: "Clinton's Riverview Park is a great place to view Mississippi River boat traffic."},
-    {key: "f01", text: "Welcome to the <em>dashboard</em> page. It's optimized for HD wide screens."}
+    {key: "f00", text: "Welcome to the <em>dashboard</em> page. It's optimized for HD wide screens."}
   ],
   newsKey: 0,
   transponder: {
@@ -165,11 +164,11 @@ export const LiveScanModel = {
         this.focusPosition = this.qc;
         this.map1ZoomLevel = 11;
         this.passagesCollection = "PassagesQC";
-        this.alertpublishCollection = "AlertpublishQC";
-        this.voicepublishCollection = "VoicepublishQC";
-        this.announcementsCollection = "AnnouncementsQC";
-        this.apubFieldName = "lastQcApubID";
-        this.vpubFieldName = "lastQcVpubID";
+        this.alertpublishCollection = "Alertpublish";
+        this.voicepublishCollection = "Voicepublish";
+        this.announcementsCollection = "Announcements";
+        this.apubFieldName = "lastApubID";
+        this.vpubFieldName = "lastVpubID";
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
@@ -183,11 +182,11 @@ export const LiveScanModel = {
         this.focusPosition = this.qc;
         this.map1ZoomLevel = 11;
         this.passagesCollection = "PassagesQC";
-        this.alertpublishCollection = "AlertpublishQC";
-        this.voicepublishCollection = "VoicepublishQC";
-        this.announcementsCollection = "AnnouncementsQC";
-        this.apubFieldName = "lastQcApubID";
-        this.vpubFieldName = "lastQcVpubID";
+        this.alertpublishCollection = "Alertpublish";
+        this.voicepublishCollection = "Voicepublish";
+        this.announcementsCollection = "Announcements";
+        this.apubFieldName = "lastApubID";
+        this.vpubFieldName = "lastVpubID";
         this.lsLenField    = "liveScanLengthQC";
         this.showVideoField = "showQcVideo";
         this.showVideoOnField = "showQcVideoOn";
@@ -196,9 +195,9 @@ export const LiveScanModel = {
         this.regionsWatched = ["qc"]
         break;
       
-      case "clintoncf":
-        this.title = "clinton";
-        this.webcamSitesID = "clintoncf"; 
+      case "regional":
+        this.title = "regional";
+        this.webcamSitesID = "regional"; 
         this.focusPosition = this.clinton; 
         this.map1ZoomLevel = 9;
         this.passagesCollection = "Passages";
@@ -210,7 +209,7 @@ export const LiveScanModel = {
         this.lsLenField    = "liveScanLength";
         this.showVideoField = "showClVideo";
         this.showVideoOnField = "showClVideoOn";
-        this.webcamIDField = "webcamClintoncf";
+        this.webcamIDField = "webcamRegional";
         this.webcamZoomField = "webcamZoomCf";
         this.regionsWatched = ["clinton", "qc"];
         break;

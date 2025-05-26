@@ -12,7 +12,7 @@ function LiveScanModel() {
   let self = this;
 
   //Config values
-  self.fetchUrl  = "https://us-central1-mdm-qcrt-demo-1.cloudfunctions.net/livescans";
+  self.fetchUrl  = "https://mongorest.riverboattracker.com/live/json";
   //"https://storage.googleapis.com/www.clintonrivertraffic.com/livescan.json";
   self.tock      = 0;
 
