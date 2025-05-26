@@ -713,7 +713,9 @@ function initLiveScan() {
         //  liveScanModel.outputDetail(liveScanModel.selectedView.idx);
         //}
 
-      } 
+      } else {
+         console.error("Error fetching live scans: ", response.status, response.statusText);
+      }
     }
     //Advance clock every 1 sec
     liveScanModel.tock++

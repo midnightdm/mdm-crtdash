@@ -1108,7 +1108,9 @@ async function fetchLiveScanData() {
     });
     if(response.status===200) {
       data = await response.json();
-    }  
+    }  else {
+         console.error("Error fetching live scans: ", response.status, response.statusText);
+    }
   }
   return data
 }
