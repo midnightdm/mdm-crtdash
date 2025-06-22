@@ -10,7 +10,7 @@ const options = {
     host: '45.79.25.138',
     port: 22,
     username: 'root',
-    password: 'RokuAcreMountain'
+    password: 'AstroPlanetSoup'
 };
 
 // Set up remote directory path
